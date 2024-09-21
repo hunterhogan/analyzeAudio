@@ -1,0 +1,7 @@
+__pycache__/
+/Lib/
+/Scripts/
+/share/man/
+pyvenv.cfg
+*.egg-info/
+/build/
