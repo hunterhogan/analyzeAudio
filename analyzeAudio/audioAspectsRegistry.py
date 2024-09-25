@@ -5,7 +5,7 @@ the registrant
 a register; not to register
 by/during registration
 """
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm.auto import tqdm
 from typing import Any, Callable, Dict, List, Tuple, Union
 import inspect
@@ -86,7 +86,7 @@ def analyzeAudio(pathFilename: str, listAspectsTarget: List[str]) -> List[float]
 
 def analyzeListPathFilenamesAudio(listPathFilenames, listAspectsTarget):
     rowsListFilenameAspectValues: List[List[str|float]] = []
-    with ThreadPoolExecutor() as concurrencyManager:
+    with ProcessPoolExecutor() as concurrencyManager:
         dictionaryConcurrency = {concurrencyManager.submit(analyzeAudio, pathFilename, listAspectsTarget): pathFilename for pathFilename in listPathFilenames}
         for claimTicket in tqdm(as_completed(dictionaryConcurrency), total=len(listPathFilenames)):
             listValuesExtracted: List[float] = claimTicket.result()
