@@ -1,12 +1,12 @@
+from .pythonator import pythonizeFFprobe
 from analyzeAudio import registrationAudioAspect
 from cachetools import cached
-from .pythonator import pythonizeFFprobe
+from os import PathLike
 from typing import Dict, List
 import numpy
-import subprocess
-from os import PathLike
-import re
 import pathlib
+import re
+import subprocess
 
 @cached(cache={})
 def ffprobeShotgunAndCache(pathFilename: PathLike) -> Dict[str, float]:

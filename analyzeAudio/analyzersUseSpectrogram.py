@@ -1,4 +1,5 @@
-from analyzeAudio import registrationAudioAspect, audioAspects
+from analyzeAudio import registrationAudioAspect
+from .audioAspectsRegistry import audioAspects
 from functools import cache
 from typing import Any
 import librosa

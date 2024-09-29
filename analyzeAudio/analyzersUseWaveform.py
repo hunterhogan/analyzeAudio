@@ -1,4 +1,5 @@
-from analyzeAudio import audioAspects, registrationAudioAspect
+from .audioAspectsRegistry import audioAspects
+from analyzeAudio import registrationAudioAspect
 from functools import cache
 from typing import Any
 import librosa
@@ -10,7 +11,7 @@ def analyzeTempogram(waveform: numpy.ndarray, sampleRate: int, **kwargs: Any) ->
     return librosa.feature.tempogram(y=waveform, sr=sampleRate, **kwargs)
 
 # "RMS value from audio samples is faster ... However, ... spectrogram ... more accurate ... because ... windowed"
-@registrationAudioAspect('RMS')
+@registrationAudioAspect('RMS from waveform')
 def analyzeRMS(waveform: numpy.ndarray, **kwargs: Any) -> numpy.ndarray:
     arrayRMS = librosa.feature.rms(y=waveform, **kwargs)
     return 20 * numpy.log10(arrayRMS, where=arrayRMS != 0) # dB
