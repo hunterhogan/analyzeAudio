@@ -1,4 +1,4 @@
-from .audioAspectsRegistry import registrationAudioAspect, analyzeAudioFile, analyzeAudioListPathFilenames, getListAvailableAudioAspects
+from .audioAspectsRegistry import registrationAudioAspect, analyzeAudioFile, analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
 import configparser
 from pathlib import Path
 
@@ -13,7 +13,8 @@ __all__ = [
     '__author__', 
     '__version__',
     analyzeAudioFile, 
-    analyzeAudioListPathFilenames, 
+    analyzeAudioListPathFilenames,
+    audioAspects, 
     getListAvailableAudioAspects,
     ]
 
