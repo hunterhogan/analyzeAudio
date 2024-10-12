@@ -2,44 +2,64 @@ from .pythonator import pythonizeFFprobe
 from analyzeAudio import registrationAudioAspect
 from cachetools import cached
 from os import PathLike
+from pathlib import PureWindowsPath, Path
+from statistics import mean
 from typing import Dict, List
 import numpy
-import pathlib
-import re
+import re as regex
 import subprocess
+
+@registrationAudioAspect('SI-SDR mean')
+def getSI_SDRmean(pathFilenameAlpha: PathLike, pathFilenameBeta: PathLike) -> float:
+    """
+    Calculate the mean Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) between two audio files.
+    This function uses FFmpeg to compute the SI-SDR between two audio files specified by their paths.
+    The SI-SDR values are extracted from the FFmpeg output and their mean is calculated.
+    Args:
+        pathFilenameAlpha (PathLike): Path to the first audio file.
+        pathFilenameBeta (PathLike): Path to the second audio file.
+    Returns:
+        float: The mean SI-SDR value in decibels (dB).
+    Raises:
+        subprocess.CalledProcessError: If the FFmpeg command fails.
+        ValueError: If no SI-SDR values are found in the FFmpeg output.
+    """
+    commandLineFFmpeg = ['ffmpeg', '-hide_banner', '-loglevel', '32', 
+                         '-i', f'"{str(Path(pathFilenameAlpha))}"', '-i', f'"{str(Path(pathFilenameBeta))}"', 
+                         '-filter_complex', '[0][1]asisdr', '-f', 'null', '-']
+    systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stderrFFmpeg = systemProcessFFmpeg.stderr.decode()
+
+    regexSI_SDR = regex.compile(r"^\[Parsed_asisdr_.* (.*) dB", regex.MULTILINE)
+
+    listMatchesSI_SDR = regexSI_SDR.findall(stderrFFmpeg)
+    SI_SDRmean = mean([float(match) for match in listMatchesSI_SDR])
+    return SI_SDRmean
+
 
 @cached(cache={})
 def ffprobeShotgunAndCache(pathFilename: PathLike) -> Dict[str, float]:
-    # the colons after driveLetter letters can be tricky because they need to be escaped twice.
     
-    """
-    https://docs.python.org/3/library/pathlib.html
-Pure paths are useful in some special cases; for example:
-... the pure classes simply don't have any OS-accessing operations.
-    pathlib.PurePosixPath(pathFilename)<--this
-    that will help ensure that FFprobe receives the pathFilename in a POSIX-compliant format.
-    furthermore, it is "semantically" accurate because Python doesn't use the path: it's just a datapoint
-    """
+    # for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
+    pFn = PureWindowsPath(pathFilename)
+    lavfiPathFilename = pFn.drive.replace(":", "\\\\:")+pFn.with_segments(pFn.root,pFn.relative_to(pFn.anchor)).as_posix()
     
-    pathFilename = pathlib.Path(pathFilename).as_posix()
-    escapedColonPathFilename = re.sub(r'(?<!\\):', r'\\:', pathFilename)
-
-    filterchain: List[str] = []
-    filterchain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Dynamic_range:measure_overall=all"]
-    filterchain += ["aspectralstats"]
-    filterchain += ["ebur128=metadata=1:framelog=quiet"]
+    filterChain: List[str] = []
+    filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Dynamic_range:measure_overall=all"]
+    filterChain += ["aspectralstats"]
+    filterChain += ["ebur128=metadata=1:framelog=quiet"]
 
     entriesFFprobe = ["frame_tags"]
 
     commandLineFFprobe = [
         "ffprobe", "-hide_banner",
-        "-f", "lavfi", f"amovie={escapedColonPathFilename},{','.join(filterchain)}",
+        "-f", "lavfi", f"amovie={lavfiPathFilename},{','.join(filterChain)}",
         "-show_entries", ':'.join(entriesFFprobe),
         "-output_format", "json=compact=1",
     ]
 
-    systemprocessFFprobe = subprocess.Popen(commandLineFFprobe, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdoutFFprobe, DISCARDstderr = systemprocessFFprobe.communicate()
+    systemProcessFFprobe = subprocess.Popen(commandLineFFprobe, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdoutFFprobe, DISCARDstderr = systemProcessFFprobe.communicate()
     FFprobeStructured = pythonizeFFprobe(stdoutFFprobe.decode('utf-8'))[-1]
 
     dictionaryAspectsAnalyzed = {}
@@ -92,71 +112,71 @@ def analyzeRMS_peak(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('RMS_peak')
 
 @registrationAudioAspect('LUFS integrated')
-def analyzeI(pathFilename: PathLike) -> float:
+def analyzeLUFSintegrated(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('I')
 
 @registrationAudioAspect('LUFS loudness range')
-def analyzeI(pathFilename: PathLike) -> float:
+def analyzeLRA(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('LRA')
 
 @registrationAudioAspect('LUFS low')
-def analyzeI(pathFilename: PathLike) -> float:
+def analyzeLUFSlow(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('LRA.low')
 
 @registrationAudioAspect('LUFS high')
-def analyzeI(pathFilename: PathLike) -> float:
+def analyzeLUFShigh(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('LRA.high')
 
 @registrationAudioAspect('Spectral mean')
-def analyzemean(pathFilename: PathLike) -> float:
+def analyzeMean(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('mean')
 
 @registrationAudioAspect('Spectral variance')
-def analyzevariance(pathFilename: PathLike) -> float:
+def analyzeVariance(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('variance')
 
 @registrationAudioAspect('Spectral centroid')
-def analyzecentroid(pathFilename: PathLike) -> float:
+def analyzeCentroid(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('centroid')
 
 @registrationAudioAspect('Spectral spread')
-def analyzespread(pathFilename: PathLike) -> float:
+def analyzeSpread(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('spread')
 
 @registrationAudioAspect('Spectral skewness')
-def analyzeskewness(pathFilename: PathLike) -> float:
+def analyzeSkewness(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('skewness')
 
 @registrationAudioAspect('Spectral kurtosis')
-def analyzekurtosis(pathFilename: PathLike) -> float:
+def analyzeKurtosis(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('kurtosis')
 
 @registrationAudioAspect('Spectral entropy')
-def analyzeentropy(pathFilename: PathLike) -> float:
+def analyzeEntropy(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('entropy')
 
 @registrationAudioAspect('Spectral flatness')
-def analyzeflatness(pathFilename: PathLike) -> float:
+def analyzeFlatness(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('flatness')
 
 @registrationAudioAspect('Spectral crest')
-def analyzecrest(pathFilename: PathLike) -> float:
+def analyzeCrest(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('crest')
 
 @registrationAudioAspect('Spectral flux')
-def analyzeflux(pathFilename: PathLike) -> float:
+def analyzeFlux(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('flux')
 
 @registrationAudioAspect('Spectral slope')
-def analyzeslope(pathFilename: PathLike) -> float:
+def analyzeSlope(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('slope')
 
 @registrationAudioAspect('Spectral decrease')
-def analyzedecrease(pathFilename: PathLike) -> float:
+def analyzeDecrease(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('decrease')
 
 @registrationAudioAspect('Spectral rolloff')
-def analyzerolloff(pathFilename: PathLike) -> float:
+def analyzeRolloff(pathFilename: PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('rolloff')
 
 @registrationAudioAspect('Abs_Peak_count')
