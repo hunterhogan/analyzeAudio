@@ -25,7 +25,7 @@ def getSI_SDRmean(pathFilenameAlpha: PathLike, pathFilenameBeta: PathLike) -> fl
         ValueError: If no SI-SDR values are found in the FFmpeg output.
     """
     commandLineFFmpeg = ['ffmpeg', '-hide_banner', '-loglevel', '32', 
-                         '-i', f'"{str(Path(pathFilenameAlpha))}"', '-i', f'"{str(Path(pathFilenameBeta))}"', 
+                         '-i', f'{str(Path(pathFilenameAlpha))}', '-i', f'{str(Path(pathFilenameBeta))}', 
                          '-filter_complex', '[0][1]asisdr', '-f', 'null', '-']
     systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stderrFFmpeg = systemProcessFFmpeg.stderr.decode()
