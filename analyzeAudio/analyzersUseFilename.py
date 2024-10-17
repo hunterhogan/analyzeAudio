@@ -27,7 +27,8 @@ def getSI_SDRmean(pathFilenameAlpha: PathLike, pathFilenameBeta: PathLike) -> fl
     commandLineFFmpeg = ['ffmpeg', '-hide_banner', '-loglevel', '32', 
                          '-i', f'{str(Path(pathFilenameAlpha))}', '-i', f'{str(Path(pathFilenameBeta))}', 
                          '-filter_complex', '[0][1]asisdr', '-f', 'null', '-']
-    systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, check=True, stderr=subprocess.PIPE)
+
     stderrFFmpeg = systemProcessFFmpeg.stderr.decode()
 
     regexSI_SDR = regex.compile(r"^\[Parsed_asisdr_.* (.*) dB", regex.MULTILINE)
@@ -36,12 +37,11 @@ def getSI_SDRmean(pathFilenameAlpha: PathLike, pathFilenameBeta: PathLike) -> fl
     SI_SDRmean = mean([float(match) for match in listMatchesSI_SDR])
     return SI_SDRmean
 
-
 @cached(cache={})
 def ffprobeShotgunAndCache(pathFilename: PathLike) -> Dict[str, float]:
     
     # for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
-    pFn = PureWindowsPath(pathFilename)
+    pFn = Path(pathFilename)
     lavfiPathFilename = pFn.drive.replace(":", "\\\\:")+pFn.with_segments(pFn.root,pFn.relative_to(pFn.anchor)).as_posix()
     
     filterChain: List[str] = []
