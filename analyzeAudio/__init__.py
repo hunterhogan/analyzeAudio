@@ -1,6 +1,6 @@
-from .audioAspectsRegistry import registrationAudioAspect, analyzeAudioFile, analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
-import configparser
+from .audioAspectsRegistry import registrationAudioAspect, cacheAudioAnalyzers, analyzeAudioFile, analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
 from pathlib import Path
+import configparser
 
 parse_setupDOTcfg = configparser.ConfigParser()
 
@@ -10,12 +10,12 @@ __version__ = parse_setupDOTcfg.get('metadata', 'version', fallback='0.0.0')
 __author__ = parse_setupDOTcfg.get('metadata', 'author', fallback='Unknown')
 
 __all__ = [
-    '__author__', 
+    '__author__',
     '__version__',
-    analyzeAudioFile, 
-    analyzeAudioListPathFilenames,
-    audioAspects, 
-    getListAvailableAudioAspects,
+    'analyzeAudioFile',
+    'analyzeAudioListPathFilenames',
+    'audioAspects',
+    'getListAvailableAudioAspects',
     ]
 
 from . import analyzersUseFilename

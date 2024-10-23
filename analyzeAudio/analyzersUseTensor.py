@@ -4,7 +4,7 @@ from typing import Any
 import numpy
 import torch
 
-# perhaps numpy 2.0 can take the mean of tensors
+# TODO: can numpy 2.x take the mean of tensors?
 @registrationAudioAspect('SRMR mean')
 def analyzeSRMR(tensorAudio: torch.Tensor, sampleRate: int, pytorchOnCPU: bool=False, **kwargs: Any) -> float: #-> torch.Tensor:
     return numpy.mean(torch.Tensor.numpy(speech_reverberation_modulation_energy_ratio(tensorAudio, sampleRate, fast=pytorchOnCPU, **kwargs)))
@@ -12,4 +12,3 @@ def analyzeSRMR(tensorAudio: torch.Tensor, sampleRate: int, pytorchOnCPU: bool=F
 # I would like pytorchOnCPU to be an optional parameter
 # I didn't pass pytorchOnCPU, but got
 # ValueError: Expected argument `fast` to be a bool value
-    

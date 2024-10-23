@@ -1,11 +1,10 @@
-from .audioAspectsRegistry import audioAspects
-from analyzeAudio import registrationAudioAspect
-from functools import cache
+from analyzeAudio import registrationAudioAspect, audioAspects, cacheAudioAnalyzers
 from typing import Any
 import librosa
 import numpy
+import cachetools
 
-@cache
+@cachetools.cached(cache=cacheAudioAnalyzers)
 @registrationAudioAspect('Tempogram')
 def analyzeTempogram(waveform: numpy.ndarray, sampleRate: int, **kwargs: Any) -> numpy.ndarray:
     return librosa.feature.tempogram(y=waveform, sr=sampleRate, **kwargs)

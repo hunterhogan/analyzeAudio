@@ -1,9 +1,8 @@
 __pycache__/
-/Lib/
-/Scripts/
-/share/man/
-pyvenv.cfg
 *.egg-info/
 /build/
-/share/jupyter/
-/etc/jupyter/
+/Lib/
+/Scripts/
+pyvenv.cfg
+
+# .git\info\exclude

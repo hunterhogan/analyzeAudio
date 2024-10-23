@@ -1,7 +1,6 @@
-from analyzeAudio import registrationAudioAspect
-from .audioAspectsRegistry import audioAspects
-from functools import cache
+from analyzeAudio import registrationAudioAspect, audioAspects, cacheAudioAnalyzers
 from typing import Any
+import cachetools
 import librosa
 import numpy
 
@@ -18,7 +17,7 @@ def analyzeSpectralBandwidth(spectrogramMagnitude: numpy.ndarray, **kwargs: Any)
     centroid = audioAspects['Spectral Centroid']['analyzer'](spectrogramMagnitude)
     return librosa.feature.spectral_bandwidth(S=spectrogramMagnitude, centroid=centroid, **kwargs)
 
-@cache
+@cachetools.cached(cache=cacheAudioAnalyzers)
 @registrationAudioAspect('Spectral Centroid')
 def analyzeSpectralCentroid(spectrogramMagnitude: numpy.ndarray, **kwargs: Any) -> numpy.ndarray:
     return librosa.feature.spectral_centroid(S=spectrogramMagnitude, **kwargs)
