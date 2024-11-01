@@ -3,7 +3,7 @@ from typing import Dict, Any, Tuple, Union
 import json
 import numpy
 
-def pythonizeFFprobe(FFprobeJSON_utf8: str) -> Tuple[Dict[str, Any], Dict[str, Union[numpy.ndarray, Dict[str, numpy.ndarray]]]]:
+def pythonizeFFprobe(FFprobeJSON_utf8: str):
     FFroot: Dict[str, Any] = json.loads(FFprobeJSON_utf8)
     Z0Z_dictionaries: Dict[str, Union[numpy.ndarray, Dict[str, numpy.ndarray]]] = {}
     if 'packets_and_frames' in FFroot: # Divide into 'packets' and 'frames'

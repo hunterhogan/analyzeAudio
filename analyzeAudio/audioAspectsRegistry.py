@@ -67,14 +67,14 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[..., Any]], C
         }
 
         if issubclass(registrant.__annotations__.get('return', type(None)), numpy.ndarray):
-            def registrationAudioAspectMean(*args: Any, **kwargs: Any) -> float:
+            def registrationAudioAspectMean(*arguments: Any, **keywordArguments: Any) -> float:
                 """
                 `registrar` updates the registry with a new analyzer function that calculates the mean of the analyzer's numpy.ndarray result.
 
                 Returns:
                     float: Mean value of the analyzer's numpy.ndarray result.
                 """
-                return registrant(*args, **kwargs).mean()
+                return registrant(*arguments, **keywordArguments).mean()
 
             audioAspects[f"{aspectName} mean"] = {
                 'analyzer': registrationAudioAspectMean,

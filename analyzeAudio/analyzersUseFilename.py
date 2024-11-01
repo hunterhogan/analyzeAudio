@@ -2,23 +2,24 @@ from .pythonator import pythonizeFFprobe
 from analyzeAudio import registrationAudioAspect, cacheAudioAnalyzers
 from pathlib import Path
 from statistics import mean
-from typing import Dict, List
+from typing import Dict, List, Optional
 import cachetools
+from os import PathLike
 import numpy
 import re as regex
 import subprocess
 
 @registrationAudioAspect('SI-SDR mean')
-def getSI_SDRmean(pathFilenameAlpha: str | Path, pathFilenameBeta: str | Path) -> float:
+def getSI_SDRmean(pathFilenameAlpha: str | PathLike, pathFilenameBeta: str | PathLike) -> float:
     """
     Calculate the mean Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) between two audio files.
     This function uses FFmpeg to compute the SI-SDR between two audio files specified by their paths.
     The SI-SDR values are extracted from the FFmpeg output and their mean is calculated.
-    Args:
-        pathFilenameAlpha (str | Path): Path to the first audio file.
-        pathFilenameBeta (str | Path): Path to the second audio file.
+    Parameters:
+        pathFilenameAlpha: Path to the first audio file.
+        pathFilenameBeta: Path to the second audio file.
     Returns:
-        float: The mean SI-SDR value in decibels (dB).
+        SI_SDRmean: The mean SI-SDR value in decibels (dB).
     Raises:
         subprocess.CalledProcessError: If the FFmpeg command fails.
         ValueError: If no SI-SDR values are found in the FFmpeg output.
@@ -37,7 +38,7 @@ def getSI_SDRmean(pathFilenameAlpha: str | Path, pathFilenameBeta: str | Path) -
     return SI_SDRmean
 
 @cachetools.cached(cache=cacheAudioAnalyzers)
-def ffprobeShotgunAndCache(pathFilename: str | Path) -> Dict[str, float]:
+def ffprobeShotgunAndCache(pathFilename: str | PathLike) -> Dict[str, float]:
 
     # for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
     pFn = Path(pathFilename)
@@ -75,157 +76,157 @@ def ffprobeShotgunAndCache(pathFilename: str | Path) -> Dict[str, float]:
     return dictionaryAspectsAnalyzed
 
 @registrationAudioAspect('Zero-crossings rate')
-def analyzeZero_crossings_rate(pathFilename: str | Path) -> float:
+def analyzeZero_crossings_rate(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings_rate')
 
 @registrationAudioAspect('DC offset')
-def analyzeDCoffset(pathFilename: str | Path) -> float:
+def analyzeDCoffset(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('DC_offset')
 
 @registrationAudioAspect('Dynamic range')
-def analyzeDynamicRange(pathFilename: str | Path) -> float:
+def analyzeDynamicRange(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Dynamic_range')
 
 @registrationAudioAspect('Signal entropy')
-def analyzeEntropy(pathFilename: str | Path) -> float:
+def analyzeSignalEntropy(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Entropy')
 
 @registrationAudioAspect('Duration-samples')
-def analyzeNumber_of_samples(pathFilename: str | Path) -> float:
+def analyzeNumber_of_samples(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Number_of_samples')
 
 @registrationAudioAspect('Peak dB')
-def analyzePeak_level(pathFilename: str | Path) -> float:
+def analyzePeak_level(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Peak_level')
 
 @registrationAudioAspect('RMS total')
-def analyzeRMS_level(pathFilename: str | Path) -> float:
+def analyzeRMS_level(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('RMS_level')
 
 @registrationAudioAspect('Crest factor')
-def analyzeCrest_factor(pathFilename: str | Path) -> float:
+def analyzeCrest_factor(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Crest_factor')
 
 @registrationAudioAspect('RMS peak')
-def analyzeRMS_peak(pathFilename: str | Path) -> float:
+def analyzeRMS_peak(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('RMS_peak')
 
 @registrationAudioAspect('LUFS integrated')
-def analyzeLUFSintegrated(pathFilename: str | Path) -> float:
+def analyzeLUFSintegrated(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('I')
 
 @registrationAudioAspect('LUFS loudness range')
-def analyzeLRA(pathFilename: str | Path) -> float:
+def analyzeLRA(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('LRA')
 
 @registrationAudioAspect('LUFS low')
-def analyzeLUFSlow(pathFilename: str | Path) -> float:
+def analyzeLUFSlow(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('LRA.low')
 
 @registrationAudioAspect('LUFS high')
-def analyzeLUFShigh(pathFilename: str | Path) -> float:
+def analyzeLUFShigh(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('LRA.high')
 
 @registrationAudioAspect('Spectral mean')
-def analyzeMean(pathFilename: str | Path) -> float:
+def analyzeMean(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('mean')
 
 @registrationAudioAspect('Spectral variance')
-def analyzeVariance(pathFilename: str | Path) -> float:
+def analyzeVariance(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('variance')
 
 @registrationAudioAspect('Spectral centroid')
-def analyzeCentroid(pathFilename: str | Path) -> float:
+def analyzeCentroid(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('centroid')
 
 @registrationAudioAspect('Spectral spread')
-def analyzeSpread(pathFilename: str | Path) -> float:
+def analyzeSpread(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('spread')
 
 @registrationAudioAspect('Spectral skewness')
-def analyzeSkewness(pathFilename: str | Path) -> float:
+def analyzeSkewness(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('skewness')
 
 @registrationAudioAspect('Spectral kurtosis')
-def analyzeKurtosis(pathFilename: str | Path) -> float:
+def analyzeKurtosis(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('kurtosis')
 
 @registrationAudioAspect('Spectral entropy')
-def analyzeEntropy(pathFilename: str | Path) -> float:
+def analyzeSpectralEntropy(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('entropy')
 
 @registrationAudioAspect('Spectral flatness')
-def analyzeFlatness(pathFilename: str | Path) -> float:
+def analyzeFlatness(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('flatness')
 
 @registrationAudioAspect('Spectral crest')
-def analyzeCrest(pathFilename: str | Path) -> float:
+def analyzeCrest(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('crest')
 
 @registrationAudioAspect('Spectral flux')
-def analyzeFlux(pathFilename: str | Path) -> float:
+def analyzeFlux(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('flux')
 
 @registrationAudioAspect('Spectral slope')
-def analyzeSlope(pathFilename: str | Path) -> float:
+def analyzeSlope(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('slope')
 
 @registrationAudioAspect('Spectral decrease')
-def analyzeDecrease(pathFilename: str | Path) -> float:
+def analyzeDecrease(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('decrease')
 
 @registrationAudioAspect('Spectral rolloff')
-def analyzeRolloff(pathFilename: str | Path) -> float:
+def analyzeRolloff(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('rolloff')
 
 @registrationAudioAspect('Abs_Peak_count')
-def analyzeAbs_Peak_count(pathFilename: str | Path) -> float:
+def analyzeAbs_Peak_count(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Abs_Peak_count')
 
 @registrationAudioAspect('Bit_depth')
-def analyzeBit_depth(pathFilename: str | Path) -> float:
+def analyzeBit_depth(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Bit_depth')
 
 @registrationAudioAspect('Flat_factor')
-def analyzeFlat_factor(pathFilename: str | Path) -> float:
+def analyzeFlat_factor(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Flat_factor')
 
 @registrationAudioAspect('Max_difference')
-def analyzeMax_difference(pathFilename: str | Path) -> float:
+def analyzeMax_difference(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Max_difference')
 
 @registrationAudioAspect('Max_level')
-def analyzeMax_level(pathFilename: str | Path) -> float:
+def analyzeMax_level(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Max_level')
 
 @registrationAudioAspect('Mean_difference')
-def analyzeMean_difference(pathFilename: str | Path) -> float:
+def analyzeMean_difference(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Mean_difference')
 
 @registrationAudioAspect('Min_difference')
-def analyzeMin_difference(pathFilename: str | Path) -> float:
+def analyzeMin_difference(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Min_difference')
 
 @registrationAudioAspect('Min_level')
-def analyzeMin_level(pathFilename: str | Path) -> float:
+def analyzeMin_level(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Min_level')
 
 @registrationAudioAspect('Noise_floor')
-def analyzeNoise_floor(pathFilename: str | Path) -> float:
+def analyzeNoise_floor(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Noise_floor')
 
 @registrationAudioAspect('Noise_floor_count')
-def analyzeNoise_floor_count(pathFilename: str | Path) -> float:
+def analyzeNoise_floor_count(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Noise_floor_count')
 
 @registrationAudioAspect('Peak_count')
-def analyzePeak_count(pathFilename: str | Path) -> float:
+def analyzePeak_count(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('Peak_count')
 
 @registrationAudioAspect('RMS_difference')
-def analyzeRMS_difference(pathFilename: str | Path) -> float:
+def analyzeRMS_difference(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('RMS_difference')
 
 @registrationAudioAspect('RMS_trough')
-def analyzeRMS_trough(pathFilename: str | Path) -> float:
+def analyzeRMS_trough(pathFilename: str | PathLike) -> float:
     return ffprobeShotgunAndCache(pathFilename).get('RMS_trough')
