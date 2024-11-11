@@ -24,16 +24,20 @@ Usage:
 """
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from numpy.typing import NDArray
 from pathlib import PurePath
 from tqdm.auto import tqdm
 from typing import Any, Callable, Dict, List, TypedDict
-from numpy.typing import NDArray
+import cachetools
 import inspect
 import librosa
 import numpy
 import torch
 import warnings
-import cachetools
+import multiprocessing
+
+if __name__ == '__main__':
+    multiprocessing.set_start_method('spawn')
 
 warnings.filterwarnings('ignore', category=UserWarning, module='torchmetrics', message='.*fast=True.*')
 class analyzersAudioAspects(TypedDict):
@@ -98,7 +102,7 @@ def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str 
     """Despite returning a list, use a dictionary to preserve the order of the listAspectNames.
     Similarly, 'not found' ensures the returned list length == len(listAspectNames)"""
 
-    waveform, sampleRate = librosa.load(path=pathFilename, sr=None, mono=False)
+    waveform, sampleRate = librosa.load(path=str(pathFilename), sr=None, mono=False)
     # need "lazy" loading
     tryAgain = True
     while tryAgain:
