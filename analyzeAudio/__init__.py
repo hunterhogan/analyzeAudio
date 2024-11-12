@@ -1,4 +1,5 @@
-from .audioAspectsRegistry import registrationAudioAspect, cacheAudioAnalyzers, analyzeAudioFile, analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
+from .audioAspectsRegistry import registrationAudioAspect, cacheAudioAnalyzers, analyzeAudioFile, \
+    analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
 from pathlib import Path
 import configparser
 

@@ -25,4 +25,4 @@ def analyzeSpectralCentroid(spectrogramMagnitude: numpy.ndarray, **keywordArgume
 @registrationAudioAspect('Spectral Flatness')
 def analyzeSpectralFlatness(spectrogramMagnitude: numpy.ndarray, **keywordArguments: Any) -> numpy.ndarray:
     spectralFlatness = librosa.feature.spectral_flatness(S=spectrogramMagnitude, **keywordArguments)
-    return 20 * numpy.log10(spectralFlatness, where=spectralFlatness != 0) # dB
+    return 20 * numpy.log10(spectralFlatness, where=(spectralFlatness != 0)) # dB

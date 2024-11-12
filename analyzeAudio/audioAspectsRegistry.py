@@ -70,7 +70,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[..., Any]], C
             'analyzerParameters': inspect.getfullargspec(registrant).args
         }
 
-        if issubclass(registrant.__annotations__.get('return', type(None)), numpy.ndarray):
+        if isinstance(registrant.__annotations__.get('return', type(None)), type) and issubclass(registrant.__annotations__.get('return', type(None)), numpy.ndarray):
             def registrationAudioAspectMean(*arguments: Any, **keywordArguments: Any) -> float:
                 """
                 `registrar` updates the registry with a new analyzer function that calculates the mean of the analyzer's numpy.ndarray result.

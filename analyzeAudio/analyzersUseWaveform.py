@@ -13,7 +13,7 @@ def analyzeTempogram(waveform: numpy.ndarray, sampleRate: int, **keywordArgument
 @registrationAudioAspect('RMS from waveform')
 def analyzeRMS(waveform: numpy.ndarray, **keywordArguments: Any) -> numpy.ndarray:
     arrayRMS = librosa.feature.rms(y=waveform, **keywordArguments)
-    return 20 * numpy.log10(arrayRMS, where=arrayRMS != 0) # dB
+    return 20 * numpy.log10(arrayRMS, where=(arrayRMS != 0)) # dB
 
 @registrationAudioAspect('Tempo')
 def analyzeTempo(waveform: numpy.ndarray, sampleRate: int, **keywordArguments: Any) -> numpy.ndarray:
