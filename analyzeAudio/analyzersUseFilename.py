@@ -9,6 +9,7 @@ import pathlib
 import re as regex
 import subprocess
 from cachetools import cached
+from functools import lru_cache
 
 @registrationAudioAspect('SI-SDR mean')
 def getSI_SDRmean(pathFilenameAlpha: Union[str, os.PathLike[Any]], pathFilenameBeta: Union[str, os.PathLike[Any]]) -> Optional[float]:
@@ -40,9 +41,8 @@ def getSI_SDRmean(pathFilenameAlpha: Union[str, os.PathLike[Any]], pathFilenameB
     SI_SDRmean = mean(float(match) for match in listMatchesSI_SDR)
     return SI_SDRmean
 
-@cached(cache={})
+@lru_cache(maxsize=None)
 def ffprobeShotgunAndCache(pathFilename: Union[str, os.PathLike[Any]]) -> Dict[str, float]:
-
     # for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
     pFn = pathlib.PureWindowsPath(pathFilename)
     lavfiPathFilename = pFn.drive.replace(":", "\\\\:")+pathlib.PureWindowsPath(pFn.root,pFn.relative_to(pFn.anchor)).as_posix()
