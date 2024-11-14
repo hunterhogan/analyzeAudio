@@ -123,7 +123,7 @@ def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str 
 
     dictionaryAspectsAnalyzed = {
         aspectName:
-        audioAspects[aspectName]['analyzer'](*map(vars().get, audioAspects[aspectName]['analyzerParameters']))
+        audioAspects[aspectName]['analyzer'](*map(locals().get, audioAspects[aspectName]['analyzerParameters']))
         for aspectName in listAspectNames
     }
 
