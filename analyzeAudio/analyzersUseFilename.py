@@ -43,8 +43,8 @@ def getSI_SDRmean(pathFilenameAlpha: Union[str, os.PathLike[Any]], pathFilenameB
 def ffprobeShotgunAndCache(pathFilename: Union[str, os.PathLike[Any]]) -> Dict[str, float]:
 
     # for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
-    pFn = pathlib.Path(pathFilename)
-    lavfiPathFilename = pFn.drive.replace(":", "\\\\:") + pathlib.PurePath(pFn.root, pFn.relative_to(pFn.anchor)).as_posix()
+    pFn = pathlib.PureWindowsPath(pathFilename)
+    lavfiPathFilename = pFn.drive.replace(":", "\\\\:")+pathlib.PureWindowsPath(pFn.root,pFn.relative_to(pFn.anchor)).as_posix()
 
     filterChain: List[str] = []
     filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Dynamic_range:measure_overall=all"]
