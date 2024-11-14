@@ -121,7 +121,8 @@ def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str 
 
     pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not
     print('analyzeAudioFile' , pathFilename, audioAspects['Abs_Peak_count']['analyzerParameters'])
-    print(locals().get)
+    print(locals().get(audioAspects['Abs_Peak_count']['analyzerParameters'])) #<built-in method get of dict object at 0x7faab3388200>
+    print(locals().get(*audioAspects['Abs_Peak_count']['analyzerParameters'])) #<built-in method get of dict object at 0x7faab3388200>
     dictionaryAspectsAnalyzed = {
         aspectName:
         audioAspects[aspectName]['analyzer'](*map(locals().get, audioAspects[aspectName]['analyzerParameters']))
