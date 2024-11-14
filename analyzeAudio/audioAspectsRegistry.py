@@ -120,7 +120,8 @@ def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str 
     spectrogramPower = numpy.absolute(spectrogram) ** 2
 
     pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not
-
+    print('analyzeAudioFile' , pathFilename, audioAspects['Abs_Peak_count']['analyzerParameters'])
+    print(locals().get)
     dictionaryAspectsAnalyzed = {
         aspectName:
         audioAspects[aspectName]['analyzer'](*map(locals().get, audioAspects[aspectName]['analyzerParameters']))
