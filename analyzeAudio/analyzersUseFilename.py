@@ -39,7 +39,7 @@ def getSI_SDRmean(pathFilenameAlpha: Union[str, PathLike], pathFilenameBeta: Uni
     SI_SDRmean = mean(float(match) for match in listMatchesSI_SDR)
     return SI_SDRmean
 
-@cachetools.cached(cache=cacheAudioAnalyzers)
+@cachetools.cached(cache={})
 def ffprobeShotgunAndCache(pathFilename: Union[str, PathLike]) -> Dict[str, float]:
 
     # for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
