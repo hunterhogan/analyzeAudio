@@ -118,7 +118,7 @@ def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str 
     spectrogram = librosa.stft(y=waveform)
     spectrogramMagnitude, DISCARDEDphase = librosa.magphase(D=spectrogram)
     spectrogramPower = numpy.absolute(spectrogram) ** 2
-
+    pathFilename = str(pathFilename)
     pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not
     print('analyzeAudioFile' , pathFilename, audioAspects['Abs_Peak_count']['analyzerParameters'])
     print(*map(locals().get, audioAspects['Abs_Peak_count']['analyzerParameters']))
