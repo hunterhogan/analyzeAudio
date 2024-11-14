@@ -184,6 +184,7 @@ def analyzeRolloff(pathFilename: Union[str, os.PathLike[Any]]) -> Optional[float
 
 @registrationAudioAspect('Abs_Peak_count')
 def analyzeAbs_Peak_count(pathFilename: Union[str, os.PathLike[Any]]) -> Optional[float]:
+    print('Abs_Peak_count', pathFilename)
     return ffprobeShotgunAndCache(pathFilename).get('Abs_Peak_count')
 
 @registrationAudioAspect('Bit_depth')
