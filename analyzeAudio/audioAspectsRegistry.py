@@ -28,6 +28,7 @@ from numpy.typing import NDArray
 from pathlib import PurePath
 from tqdm.auto import tqdm
 from typing import Any, Callable, Dict, List, TypedDict
+import cachetools
 import inspect
 import librosa
 import numpy
@@ -118,15 +119,12 @@ def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str 
     spectrogram = librosa.stft(y=waveform)
     spectrogramMagnitude, DISCARDEDphase = librosa.magphase(D=spectrogram)
     spectrogramPower = numpy.absolute(spectrogram) ** 2
-    pathFilename = str(pathFilename)
+
     pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not
-    print('analyzeAudioFile' , pathFilename, audioAspects['Abs_Peak_count']['analyzerParameters'])
-    print(*map(locals().get, audioAspects['Abs_Peak_count']['analyzerParameters']))
-    print(locals().get('pathFilename'))
-    print(locals())
+
     dictionaryAspectsAnalyzed = {
         aspectName:
-        audioAspects[aspectName]['analyzer'](*map(locals().get, audioAspects[aspectName]['analyzerParameters']))
+        audioAspects[aspectName]['analyzer'](*map(vars().get, audioAspects[aspectName]['analyzerParameters']))
         for aspectName in listAspectNames
     }
 
@@ -149,6 +147,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: List[str], listAspectNames:
                                  : pathFilename 
                                  for pathFilename in listPathFilenames}
         for claimTicket in tqdm(as_completed(dictionaryConcurrency), total=len(listPathFilenames)):
+            cacheAudioAnalyzers.pop(dictionaryConcurrency[claimTicket], None)
             listValuesExtracted = claimTicket.result()
             rowsListFilenameAspectValues.append(
                 [str(PurePath(dictionaryConcurrency[claimTicket]).as_posix())] 
@@ -163,3 +162,5 @@ def getListAvailableAudioAspects() -> List[str]:
         List[str]: A list of available audio aspects.
     """
     return sorted(list(audioAspects.keys()))
+
+cacheAudioAnalyzers = cachetools.LRUCache(maxsize=256)

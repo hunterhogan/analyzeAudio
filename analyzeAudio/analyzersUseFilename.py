@@ -1,5 +1,5 @@
 from .pythonator import pythonizeFFprobe
-from analyzeAudio import registrationAudioAspect
+from analyzeAudio import registrationAudioAspect, cacheAudioAnalyzers
 from statistics import mean
 from typing import Any, Dict, List, Optional, Union, cast
 import cachetools
@@ -41,7 +41,7 @@ def getSI_SDRmean(pathFilenameAlpha: Union[str, os.PathLike[Any]], pathFilenameB
     SI_SDRmean = mean(float(match) for match in listMatchesSI_SDR)
     return SI_SDRmean
 
-@lru_cache(maxsize=None)
+@cachetools.cached(cache=cacheAudioAnalyzers)
 def ffprobeShotgunAndCache(pathFilename: Union[str, os.PathLike[Any]]) -> Dict[str, float]:
     # for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
     pFn = pathlib.PureWindowsPath(pathFilename)
