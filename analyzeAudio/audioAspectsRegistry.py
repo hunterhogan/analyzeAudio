@@ -28,7 +28,6 @@ from numpy.typing import NDArray
 from pathlib import PurePath
 from tqdm.auto import tqdm
 from typing import Any, Callable, Dict, List, TypedDict
-import cachetools
 import inspect
 import librosa
 import numpy
@@ -147,7 +146,6 @@ def analyzeAudioListPathFilenames(listPathFilenames: List[str], listAspectNames:
                                  : pathFilename 
                                  for pathFilename in listPathFilenames}
         for claimTicket in tqdm(as_completed(dictionaryConcurrency), total=len(listPathFilenames)):
-            cacheAudioAnalyzers.pop(dictionaryConcurrency[claimTicket], None)
             listValuesExtracted = claimTicket.result()
             rowsListFilenameAspectValues.append(
                 [str(PurePath(dictionaryConcurrency[claimTicket]).as_posix())] 
@@ -162,5 +160,3 @@ def getListAvailableAudioAspects() -> List[str]:
         List[str]: A list of available audio aspects.
     """
     return sorted(list(audioAspects.keys()))
-
-cacheAudioAnalyzers = cachetools.LRUCache(maxsize=256)
