@@ -25,16 +25,17 @@ Usage:
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
-from pathlib import PurePath
 from tqdm.auto import tqdm
 from typing import Any, Callable, Dict, List, TypedDict
 import cachetools
 import inspect
 import librosa
+import multiprocessing
 import numpy
+import os
+import pathlib 
 import torch
 import warnings
-import multiprocessing
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
@@ -87,7 +88,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[..., Any]], C
         return registrant
     return registrar
 
-def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str | float | NDArray[Any]]:
+def analyzeAudioFile(pathFilename: os.PathLike[Any], listAspectNames: List[str]) -> List[str | float | NDArray[Any]]:
     """
     Analyzes an audio file for specified aspects and returns the results.
 
@@ -130,7 +131,7 @@ def analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str 
 
     return [dictionaryAspectsAnalyzed[aspectName] for aspectName in listAspectNames]
 
-def analyzeAudioListPathFilenames(listPathFilenames: List[str], listAspectNames: List[str]) -> List[List[str | float | NDArray[Any]]]:
+def analyzeAudioListPathFilenames(listPathFilenames: List[os.PathLike[Any]], listAspectNames: List[str]) -> List[List[str | float | NDArray[Any]]]:
     """
     Analyzes a list of audio files for specified aspects of the individual files and returns the results.
 
@@ -150,7 +151,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: List[str], listAspectNames:
             cacheAudioAnalyzers.pop(dictionaryConcurrency[claimTicket], None)
             listValuesExtracted = claimTicket.result()
             rowsListFilenameAspectValues.append(
-                [str(PurePath(dictionaryConcurrency[claimTicket]).as_posix())] 
+                [str(pathlib.PurePath(dictionaryConcurrency[claimTicket]).as_posix())] 
                 + listValuesExtracted)
     return rowsListFilenameAspectValues
 

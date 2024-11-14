@@ -8,8 +8,6 @@ import os
 import pathlib
 import re as regex
 import subprocess
-from cachetools import cached
-from functools import lru_cache
 
 @registrationAudioAspect('SI-SDR mean')
 def getSI_SDRmean(pathFilenameAlpha: Union[str, os.PathLike[Any]], pathFilenameBeta: Union[str, os.PathLike[Any]]) -> Optional[float]:
