@@ -26,7 +26,7 @@ Usage:
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
 from tqdm.auto import tqdm
-from typing import Any, Callable, Dict, List, TypedDict
+from typing import Any, Callable, Dict, List, Sequence, TypedDict
 import cachetools
 import inspect
 import librosa
@@ -131,7 +131,7 @@ def analyzeAudioFile(pathFilename: os.PathLike[Any], listAspectNames: List[str])
 
     return [dictionaryAspectsAnalyzed[aspectName] for aspectName in listAspectNames]
 
-def analyzeAudioListPathFilenames(listPathFilenames: List[os.PathLike[Any]], listAspectNames: List[str]) -> List[List[str | float | NDArray[Any]]]:
+def analyzeAudioListPathFilenames(listPathFilenames: Sequence[os.PathLike[Any]], listAspectNames: List[str]) -> List[List[str | float | NDArray[Any]]]:
     """
     Analyzes a list of audio files for specified aspects of the individual files and returns the results.
 
