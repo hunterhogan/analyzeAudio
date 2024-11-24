@@ -1,28 +1,3 @@
-"""
-This module provides functionality to register and analyze various aspects of audio data.
-
-Classes:
-    analyzersAudioAspects: A TypedDict that defines the structure for storing analyzer functions and their parameters.
-
-Functions:
-    registrationAudioAspect(aspectName: str) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-        A decorator function to register an analyzer function for a specific audio aspect.
-
-    analyzeAudioFile(pathFilename: str, listAspectNames: List[str]) -> List[str | float]:
-        Analyzes an audio file for specified aspects and returns the results.
-
-    analyzeAudioListPathFilenames(listPathFilenames: List[str], listAspectNames: List[str]) -> List[List[str | float]]:
-        Analyzes a list of audio files for specified aspects and returns the results.
-
-    getListAvailableAudioAspects() -> List[str]:
-        Returns a list of available audio aspects that can be analyzed.
-
-Usage:
-    Use the `registrationAudioAspect` decorator to register analyzer functions.
-    Call `analyzeAudioFile` to analyze a single audio file.
-    Call `analyzeAudioListPathFilenames` to analyze multiple audio files concurrently.
-"""
-
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
 from tqdm.auto import tqdm
@@ -38,6 +13,7 @@ import multiprocessing
 import numpy
 import os
 import pathlib
+import soundfile
 import torch
 import warnings
 
@@ -50,12 +26,12 @@ parameterSpecifications = ParamSpec('parameterSpecifications')
 typeReturned = TypeVar('typeReturned')
 
 subclassTarget: TypeAlias = numpy.ndarray
-
+audioAspect: TypeAlias = str
 class analyzersAudioAspects(TypedDict):
     analyzer: Callable[..., Any]
     analyzerParameters: List[str]
 
-audioAspects: Dict[str, analyzersAudioAspects] = {}
+audioAspects: Dict[audioAspect, analyzersAudioAspects] = {}
 """A register of 1) measurable aspects of audio data, 2) analyzer functions to measure audio aspects, 3) and parameters of analyzer functions."""
 
 def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpecifications, typeReturned]], Callable[parameterSpecifications, typeReturned]]:
@@ -112,14 +88,20 @@ def analyzeAudioFile(pathFilename: Union[str, os.PathLike[Any]], listAspectNames
     Returns:
         listAspectValues: A list of analyzed values in the same order as `listAspectNames`.
     """
+    pathlib.Path(pathFilename).stat() # raises FileNotFoundError if the file does not exist
     dictionaryAspectsAnalyzed: Dict[str, Union[str, float, NDArray[Any]]] = {aspectName: 'not found' for aspectName in listAspectNames}
     """Despite returning a list, use a dictionary to preserve the order of the listAspectNames.
     Similarly, 'not found' ensures the returned list length == len(listAspectNames)"""
 
-    waveform, sampleRate = librosa.load(path=str(pathFilename), sr=None, mono=False)
-    # need "lazy" loading
+    # waveform, sampleRate = librosa.load(path=str(pathFilename), sr=None, mono=False)
+    with soundfile.SoundFile(pathFilename) as readSoundFile:
+        sampleRate: int = readSoundFile.samplerate
+        waveform = readSoundFile.read()
+        waveform = waveform.T
+
+    # I need "lazy" loading
     tryAgain = True
-    while tryAgain:
+    while tryAgain: # `tenacity`?
         try:
             tensorAudio = torch.from_numpy(waveform)  # memory-sharing
             tryAgain = False

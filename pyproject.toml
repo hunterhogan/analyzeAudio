@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "analyzeAudio"
-version = "0.0.10"
+version = "0.0.11"
 description = "audio analysis tools"
 authors = [{ name = "Hunter Hogan" }]
 readme = "README.md"
