@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "analyzeAudio"
-dynamic = ["version", "authors"]
+dynamic = ["version"]
 readme = "README.md"
 dependencies = [
     "cachetools",
@@ -25,4 +25,3 @@ include = ["*"]
 
 [tool.setuptools.dynamic]
 version = { attr = "analyzeAudio.__version__" }
-authors = [{ attr = "analyzeAudio.__author__" }]
