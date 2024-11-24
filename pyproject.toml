@@ -1,3 +1,22 @@
 [build-system]
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "analyzeAudio"
+version = "0.0.10"
+description = "audio analysis tools"
+authors = [{ name = "Hunter Hogan" }]
+readme = "README.md"
+dependencies = [
+    "cachetools",
+    "librosa",
+    "numpy",
+    "torch",
+    "torchmetrics[audio]",
+    "tqdm",
+    "Z0Z_tools @ git+https://github.com/hunterhogan/Z0Z_tools.git",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/hunterhogan/analyzeAudio"
