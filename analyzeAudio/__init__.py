@@ -1,17 +1,8 @@
 from .audioAspectsRegistry import registrationAudioAspect, cacheAudioAnalyzers, analyzeAudioFile, \
     analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
-from pathlib import Path
-import configparser
-import toml
 
-parse_setupDOTcfg = configparser.ConfigParser()
-
-parse_setupDOTcfg.read(Path(__file__).resolve().parent.parent / 'setup.cfg')
-
-parsePyproject = toml.load(Path(__file__).resolve().parent.parent / 'pyproject.toml')
-dictionaryProjectMetadata = parsePyproject.get('project', {})
-__version__ = dictionaryProjectMetadata.get('version', '0.0.0')
-__author__ = dictionaryProjectMetadata.get('authors', [{'name': 'Unknown'}])[0]['name']
+__version__ = "0.0.11"
+__author__ = "Hunter Hogan"
 
 __all__ = [
     '__author__',
@@ -20,7 +11,7 @@ __all__ = [
     'analyzeAudioListPathFilenames',
     'audioAspects',
     'getListAvailableAudioAspects',
-    ]
+]
 
 from . import analyzersUseFilename
 from . import analyzersUseSpectrogram
