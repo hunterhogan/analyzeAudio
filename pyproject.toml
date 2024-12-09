@@ -4,8 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "analyzeAudio"
-dynamic = ["version"]
+version = "0.0.11"
 readme = "README.md"
+authors = [
+    {name = "Hunter Hogan", email = "HunterHogan@pm.me"}
+]
 dependencies = [
     "cachetools",
     "librosa",
@@ -13,7 +16,7 @@ dependencies = [
     "torch",
     "torchmetrics[audio]",
     "tqdm",
-    "Z0Z_tools @ git+https://github.com/hunterhogan/Z0Z_tools.git",
+    "Z0Z-tools",
 ]
 
 [project.urls]
@@ -22,6 +25,3 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["*"]
-
-[tool.setuptools.dynamic]
-version = { attr = "analyzeAudio.__version__" }

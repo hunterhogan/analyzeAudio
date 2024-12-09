@@ -133,7 +133,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequen
     Parameters:
         listPathFilenames: A list of paths to the audio files to be analyzed.
         listAspectNames: A list of aspect names to analyze in each audio file.
-        Z0Z_concurrencyLevel (gluttonous resource usage): The maximum number of concurrent processes to use (default is None, which uses the number of CPUs).
+        CPUlimit (gluttonous resource usage): The maximum number of concurrent processes to use (default is None, which uses the number of CPUs).
 
     Returns:
         rowsListFilenameAspectValues: A list of lists, where each inner list contains the filename and
@@ -157,7 +157,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequen
     max_workers = None
     if CPUlimit is not None:
         if isinstance(CPUlimit, bool):
-            if CPUlimit == False:
+            if CPUlimit == True:
                 max_workers = 1
         elif isinstance(CPUlimit, int):
             if CPUlimit > 0:
