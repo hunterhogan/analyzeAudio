@@ -1,11 +1,8 @@
+from Z0Z_tools import defineConcurrencyLimit, oopsieKwargsie
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
 from tqdm.auto import tqdm
-from typing import Any, Callable, cast, Dict, List, Optional, ParamSpec, Sequence, TypeAlias, TypeVar, Union
-try:
-    from typing import TypedDict
-except ImportError:
-    from typing_extensions import TypedDict
+from typing import Any, Callable, cast, Dict, List, Optional, ParamSpec, Sequence, TypeAlias, TYPE_CHECKING, TypeVar, Union
 import cachetools
 import inspect
 import librosa
@@ -16,6 +13,11 @@ import pathlib
 import soundfile
 import torch
 import warnings
+
+if TYPE_CHECKING:
+    from typing import TypedDict
+else:
+    TypedDict = dict
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
@@ -133,11 +135,19 @@ def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequen
     Parameters:
         listPathFilenames: A list of paths to the audio files to be analyzed.
         listAspectNames: A list of aspect names to analyze in each audio file.
-        CPUlimit (gluttonous resource usage): The maximum number of concurrent processes to use (default is None, which uses the number of CPUs).
+        CPUlimit (gluttonous resource usage): whether and how to limit the CPU usage. See notes for details.
 
     Returns:
         rowsListFilenameAspectValues: A list of lists, where each inner list contains the filename and
         analyzed values corresponding to the specified aspects, which are in the same order as `listAspectNames`.
+
+    Limits on CPU usage CPUlimit:
+        False, None, or 0: No limits on CPU usage; uses all available CPUs. All other values will potentially limit CPU usage.
+        True: Yes, limit the CPU usage; limits to 1 CPU.
+        Integer >= 1: Limits usage to the specified number of CPUs.
+        Decimal value (float) between 0 and 1: Fraction of total CPUs to use.
+        Decimal value (float) between -1 and 0: Fraction of CPUs to *not* use.
+        Integer <= -1: Subtract the absolute value from total CPUs.
 
     You can save the data with `Z0Z_tools.dataTabularTOpathFilenameDelimited()`.
     For example,
@@ -154,25 +164,14 @@ def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequen
     """
     rowsListFilenameAspectValues = []
 
-    max_workers = None
-    if CPUlimit is not None:
-        if isinstance(CPUlimit, bool):
-            if CPUlimit == True:
-                max_workers = 1
-        elif isinstance(CPUlimit, int):
-            if CPUlimit > 0:
-                max_workers = CPUlimit
-            elif CPUlimit == 0:
-                max_workers = None
-            elif CPUlimit < 0:
-                max_workers = max(multiprocessing.cpu_count() + CPUlimit, 1)
-        elif isinstance(CPUlimit, float):
-            max_workers = max(int(CPUlimit * multiprocessing.cpu_count()), 1)
+    if not (CPUlimit is None or isinstance(CPUlimit, (bool, int, float))):
+        CPUlimit = oopsieKwargsie(CPUlimit)
+    max_workers = defineConcurrencyLimit(CPUlimit)
 
     with ProcessPoolExecutor(max_workers=max_workers) as concurrencyManager:
         dictionaryConcurrency = {concurrencyManager.submit(analyzeAudioFile, pathFilename, listAspectNames)
-                                 : pathFilename
-                                 for pathFilename in listPathFilenames}
+                                    : pathFilename
+                                    for pathFilename in listPathFilenames}
 
         for claimTicket in as_completed(dictionaryConcurrency):
             cacheAudioAnalyzers.pop(dictionaryConcurrency[claimTicket], None)

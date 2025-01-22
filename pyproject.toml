@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "analyzeAudio"
+description = "Measure one or more aspects of one or more audio files."
 version = "0.0.11"
 readme = "README.md"
-authors = [
-    {name = "Hunter Hogan", email = "HunterHogan@pm.me"}
-]
+requires-python = ">=3.10,<4.0"
+authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 dependencies = [
     "cachetools",
     "librosa",
@@ -20,8 +20,34 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/hunterhogan/analyzeAudio"
+homepage = "https://github.com/hunterhogan/analyzeAudio"
+
+[project.optional-dependencies]
+testing = ["pytest", "pytest-cov", "pytest-env"]
+
+[tool.setuptools]
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["*"]
+
+[tool.coverage.run]
+branch = true
+source = ["analyzeAudio"]
+data_file = "tests/coverage/.coverage"
+omit = ["tests/*", "Z0Z_*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+    "if __name__ == \"__main__\":",
+]
+ignore_errors = false
+
+[tool.coverage.xml]
+output = "tests/coverage/coverage.xml"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--color=yes"]
