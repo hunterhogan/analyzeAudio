@@ -3,24 +3,29 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "analyzeAudio"
-description = "Measure one or more aspects of one or more audio files."
-version = "0.0.11"
-readme = "README.md"
-requires-python = ">=3.10,<4.0"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
-dependencies = [
-    "cachetools",
-    "librosa",
-    "numpy",
-    "torch",
-    "torchmetrics[audio]",
-    "tqdm",
-    "Z0Z-tools",
-]
-
+classifiers = [ "Development Status :: 4 - Beta", "Environment :: Console", "Intended Audience :: Developers", "Intended Audience :: End Users/Desktop", "Intended Audience :: Other Audience", "Natural Language :: English", "Operating System :: OS Independent", "Programming Language :: Python", "Topic :: Multimedia :: Sound/Audio :: Analysis", "Typing :: Typed", ]
+dependencies = [ "cachetools", "librosa", "numpy", "torch", "torchmetrics[audio]", "tqdm", "Z0Z-tools", ]
+description = "Measure one or more aspects of one or more audio files."
+# entry-points
+# gui-scripts
+keywords = ["audio", "analysis", "measurement", "metrics", "torch"]
+license = "CC-BY-NC-4.0"
+# license-files
+# maintainers
+name = "analyzeAudio"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.10"
+# scripts
+version = "0.0.11"
 [project.urls]
-homepage = "https://github.com/hunterhogan/analyzeAudio"
+Homepage = "https://github.com/hunterhogan/analyzeAudio"
+Donate = "https://www.patreon.com/integrated"
+# Download
+# Changelog, Change log, Release notes, News, What's new, History
+# Documentation*
+# Bug*, Issue*, Tracker*, Report*
+# Youtube youtube.com, youtu.be
 
 [project.optional-dependencies]
 testing = ["pytest", "pytest-cov", "pytest-env"]
@@ -39,10 +44,7 @@ data_file = "tests/coverage/.coverage"
 omit = ["tests/*", "Z0Z_*"]
 
 [tool.coverage.report]
-exclude_lines = [
-    "if TYPE_CHECKING:",
-    "if __name__ == \"__main__\":",
-]
+exclude_lines = ["if TYPE_CHECKING:", "if __name__ == \"__main__\":"]
 ignore_errors = false
 
 [tool.coverage.xml]
