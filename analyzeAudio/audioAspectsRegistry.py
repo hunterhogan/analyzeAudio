@@ -141,14 +141,6 @@ def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequen
         rowsListFilenameAspectValues: A list of lists, where each inner list contains the filename and
         analyzed values corresponding to the specified aspects, which are in the same order as `listAspectNames`.
 
-    Limits on CPU usage CPUlimit:
-        False, None, or 0: No limits on CPU usage; uses all available CPUs. All other values will potentially limit CPU usage.
-        True: Yes, limit the CPU usage; limits to 1 CPU.
-        Integer >= 1: Limits usage to the specified number of CPUs.
-        Decimal value (float) between 0 and 1: Fraction of total CPUs to use.
-        Decimal value (float) between -1 and 0: Fraction of CPUs to *not* use.
-        Integer <= -1: Subtract the absolute value from total CPUs.
-
     You can save the data with `Z0Z_tools.dataTabularTOpathFilenameDelimited()`.
     For example,
 
@@ -161,6 +153,15 @@ def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequen
     ```
 
     Nevertheless, I aspire to improve `analyzeAudioListPathFilenames` by radically improving the structure of the returned data.
+
+    Limits on CPU usage CPUlimit:
+        False, None, or 0: No limits on CPU usage; uses all available CPUs. All other values will potentially limit CPU usage.
+        True: Yes, limit the CPU usage; limits to 1 CPU.
+        Integer >= 1: Limits usage to the specified number of CPUs.
+        Decimal value (float) between 0 and 1: Fraction of total CPUs to use.
+        Decimal value (float) between -1 and 0: Fraction of CPUs to *not* use.
+        Integer <= -1: Subtract the absolute value from total CPUs.
+
     """
     rowsListFilenameAspectValues = []
 

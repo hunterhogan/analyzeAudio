@@ -12,9 +12,9 @@ Some options to [download FFmpeg and FFprobe](https://www.ffmpeg.org/download.ht
 
 ```python
 from analyzeAudio import analyzeAudioFile
-listAspectNames = ['LUFS integrated', 
-                   'RMS peak', 
-                   'SRMR mean', 
+listAspectNames = ['LUFS integrated',
+                   'RMS peak',
+                   'SRMR mean',
                    'Spectral Flatness mean']
 listMeasurements = analyzeAudioFile(pathFilename, listAspectNames)
 ```
@@ -44,32 +44,13 @@ from analyzeAudio import audioAspects
 print(audioAspects['Chromagram']['analyzerParameters'])
 ```
 
-## Install this package
-
-### From Github
+## Installation
 
 ```sh
-pip install analyzeAudio@git+https://github.com/hunterhogan/analyzeAudio.git
+pip install analyzeAudio
 ```
 
-### From a local directory
+## My recovery
 
-#### Windows
-
-```powershell
-git clone https://github.com/hunterhogan/analyzeAudio.git \path\to\analyzeAudio
-pip install analyzeAudio@file:\path\to\analyzeAudio
-```
-
-#### POSIX
-
-```bash
-git clone https://github.com/hunterhogan/analyzeAudio.git /path/to/analyzeAudio
-pip install analyzeAudio@file:/path/to/analyzeAudio
-```
-
-## Install updates
-
-```sh
-pip install --upgrade analyzeAudio@git+https://github.com/hunterhogan/analyzeAudio.git
-```
+[![Static Badge](https://img.shields.io/badge/2011_August-Homeless_since-blue?style=flat)](https://HunterThinks.com/support)
+[![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UC3Gx7kz61009NbhpRtPP7tw)](https://www.youtube.com/@HunterHogan)
