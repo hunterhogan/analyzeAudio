@@ -14,8 +14,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Topic :: Multimedia :: Sound/Audio :: Analysis",
-    "Typing :: Typed",
-]
+    "Typing :: Typed",]
 dependencies = [
     "cachetools",
     "librosa",
@@ -23,42 +22,37 @@ dependencies = [
     "torch",
     "torchmetrics[audio]",
     "tqdm",
-    "Z0Z_tools",
-]
+    "Z0Z_tools",]
 description = "Measure one or more aspects of one or more audio files."
 keywords = ["audio", "analysis", "measurement", "metrics", "torch"]
-license = { text = "CC-BY-NC-4.0" }
+license = { 'text' = "CC-BY-NC-4.0" }
 name = "analyzeAudio"
+optional-dependencies = { testing = [
+    "pytest-cov",
+    "pytest-xdist",
+    "pytest",] }
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
+urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Repository = "https://github.com/hunterhogan/analyzeAudio.git"  }
 version = "0.0.11"
-[project.urls]
-Homepage = "https://github.com/hunterhogan/analyzeAudio"
-Donate = "https://www.patreon.com/integrated"
 
-[project.optional-dependencies]
-testing = ["pytest", "pytest-cov", "pytest-env"]
+[tool.coverage]
+report = { exclude_lines = [
+    "if TYPE_CHECKING:",
+    "if __name__ == \"__main__\":",
+], ignore_errors = false }
+run = { branch = true, concurrency = [
+    "multiprocessing",
+    "thread",
+], data_file = "tests/coverage/.coverage", omit = [
+    "tests/*",
+], parallel = true, source = [
+    ".",] }
+xml = { output = "tests/coverage/coverage.xml" }
 
-[tool.setuptools]
-include-package-data = true
+[tool.pytest.ini_options]
+addopts = ["--color=yes", "-n 4"]
+testpaths = ["tests"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["*"]
-
-[tool.coverage.run]
-branch = true
-source = ["analyzeAudio"]
-data_file = "tests/coverage/.coverage"
-omit = ["tests/*", "Z0Z_*"]
-
-[tool.coverage.report]
-exclude_lines = ["if TYPE_CHECKING:", "if __name__ == \"__main__\":"]
-ignore_errors = false
-
-[tool.coverage.xml]
-output = "tests/coverage/coverage.xml"
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = ["--color=yes"]
