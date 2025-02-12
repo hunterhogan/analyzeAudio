@@ -1,11 +1,11 @@
 from .audioAspectsRegistry import registrationAudioAspect, cacheAudioAnalyzers, analyzeAudioFile, \
-    analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
+	analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
 
 __all__ = [
-    'analyzeAudioFile',
-    'analyzeAudioListPathFilenames',
-    'audioAspects',
-    'getListAvailableAudioAspects',
+	'analyzeAudioFile',
+	'analyzeAudioListPathFilenames',
+	'audioAspects',
+	'getListAvailableAudioAspects',
 ]
 
 from . import analyzersUseFilename
