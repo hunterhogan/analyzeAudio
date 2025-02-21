@@ -1,11 +1,11 @@
 from collections import defaultdict
-from typing import Dict, Any, Tuple, Union
+from typing import Any
 import json
 import numpy
 
 def pythonizeFFprobe(FFprobeJSON_utf8: str):
-	FFroot: Dict[str, Any] = json.loads(FFprobeJSON_utf8)
-	Z0Z_dictionaries: Dict[str, Union[numpy.ndarray, Dict[str, numpy.ndarray]]] = {}
+	FFroot: dict[str, Any] = json.loads(FFprobeJSON_utf8)
+	Z0Z_dictionaries: dict[str, numpy.ndarray | dict[str, numpy.ndarray]] = {}
 	if 'packets_and_frames' in FFroot: # Divide into 'packets' and 'frames'
 		FFroot = defaultdict(list, FFroot)
 		for packetOrFrame in FFroot['packets_and_frames']:
@@ -54,7 +54,7 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 										if registrant not in Z0Z_dictionaries:
 											Z0Z_dictionaries[registrant] = {}
 										elif statistic not in Z0Z_dictionaries[registrant]:
-											Z0Z_dictionaries[registrant][statistic] = numpy.zeros((len(FFroot['frames'])))
+											Z0Z_dictionaries[registrant][statistic] = numpy.zeros(len(FFroot['frames']))
 										else:
 											raise  # Re-raise the exception
 							else:

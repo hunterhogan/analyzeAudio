@@ -2,6 +2,9 @@ name: Python Tests
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
 
   get-python-versions:
@@ -11,16 +14,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install Python packages
-        run: pip install packaging requests tomli
+      - run: pip install packaging requests tomli
       - id: get-python-versions
         run: |
-          set -e
-          VERSIONS=$(python -c "
+          python -c "
           from packaging.specifiers import SpecifierSet
           from packaging.version import Version
           from pathlib import Path
-          import itertools, json, requests, tomli
+          import itertools, json, requests, tomli, os
 
           specifications = SpecifierSet(tomli.loads(Path('pyproject.toml').read_text())['project']['requires-python'])
 
@@ -29,9 +30,9 @@ jobs:
               'https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json').json())
             , lambda V: V.release[0:-1])]
 
-          print(json.dumps(listPythonVersions))
-          ")
-          echo "versions=$(echo $VERSIONS | jq -c .)" >> "$GITHUB_OUTPUT"
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as writeStream:
+              writeStream.write(f'versions={json.dumps(listPythonVersions)}\n')
+          "
 
   make-testbeds:
     needs: get-python-versions
@@ -47,10 +48,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install package
+      - name: Install package[testing]
         run: |
           python -m pip install --upgrade pip
           pip install ".[testing]"
 
-      - name: Run Python tests
-        run: pytest
+      - run: pytest

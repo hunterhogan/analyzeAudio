@@ -1,8 +1,9 @@
 from Z0Z_tools import defineConcurrencyLimit, oopsieKwargsie
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
-from tqdm.auto import tqdm
-from typing import Any, Callable, cast, Dict, List, Optional, ParamSpec, Sequence, TypeAlias, TYPE_CHECKING, TypeVar, Union
+from typing import Any, cast, ParamSpec, TypeAlias, TYPE_CHECKING, TypeVar
+
+from collections.abc import Callable, Sequence
 import cachetools
 import inspect
 import librosa
@@ -31,9 +32,9 @@ subclassTarget: TypeAlias = numpy.ndarray
 audioAspect: TypeAlias = str
 class analyzersAudioAspects(TypedDict):
 	analyzer: Callable[..., Any]
-	analyzerParameters: List[str]
+	analyzerParameters: list[str]
 
-audioAspects: Dict[audioAspect, analyzersAudioAspects] = {}
+audioAspects: dict[audioAspect, analyzersAudioAspects] = {}
 """A register of 1) measurable aspects of audio data, 2) analyzer functions to measure audio aspects, 3) and parameters of analyzer functions."""
 
 def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpecifications, typeReturned]], Callable[parameterSpecifications, typeReturned]]:
@@ -79,7 +80,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 		return registrant
 	return registrar
 
-def analyzeAudioFile(pathFilename: Union[str, os.PathLike[Any]], listAspectNames: List[str]) -> List[Union[str, float, NDArray[Any]]]:
+def analyzeAudioFile(pathFilename: str | os.PathLike[Any], listAspectNames: list[str]) -> list[str | float | NDArray[Any]]:
 	"""
 	Analyzes an audio file for specified aspects and returns the results.
 
@@ -91,7 +92,7 @@ def analyzeAudioFile(pathFilename: Union[str, os.PathLike[Any]], listAspectNames
 		listAspectValues: A list of analyzed values in the same order as `listAspectNames`.
 	"""
 	pathlib.Path(pathFilename).stat() # raises FileNotFoundError if the file does not exist
-	dictionaryAspectsAnalyzed: Dict[str, Union[str, float, NDArray[Any]]] = {aspectName: 'not found' for aspectName in listAspectNames}
+	dictionaryAspectsAnalyzed: dict[str, str | float | NDArray[Any]] = {aspectName: 'not found' for aspectName in listAspectNames}
 	"""Despite returning a list, use a dictionary to preserve the order of the listAspectNames.
 	Similarly, 'not found' ensures the returned list length == len(listAspectNames)"""
 
@@ -128,7 +129,7 @@ def analyzeAudioFile(pathFilename: Union[str, os.PathLike[Any]], listAspectNames
 
 	return [dictionaryAspectsAnalyzed[aspectName] for aspectName in listAspectNames]
 
-def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequence[os.PathLike[Any]]], listAspectNames: List[str], CPUlimit: Optional[Union[int, float, bool]] = None) -> List[List[Union[str, float, NDArray[Any]]]]:
+def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[os.PathLike[Any]], listAspectNames: list[str], CPUlimit: int | float | bool | None = None) -> list[list[str | float | NDArray[Any]]]:
 	"""
 	Analyzes a list of audio files for specified aspects of the individual files and returns the results.
 
@@ -183,7 +184,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: Union[Sequence[str], Sequen
 
 	return rowsListFilenameAspectValues
 
-def getListAvailableAudioAspects() -> List[str]:
+def getListAvailableAudioAspects() -> list[str]:
 	"""
 	Returns a sorted list of audio aspect names. All valid values for the parameter `listAspectNames`, for example,
 	are returned by this function.
