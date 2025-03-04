@@ -1,0 +1,15 @@
+abstract:
+authors:
+- given-names: Hunter
+  family-names: Hogan
+  email: HunterHogan@pm.me
+cff-version: 1.2.0
+keywords:
+license: CC-BY-NC-4.0
+message: Cite this software with the metadata in this file.
+repository: https://github.com/hunterhogan/Z0Z_tools.git
+repository-artifact: https://pypi.org/project/z0z-tools/0.10.3/
+repository-code: https://github.com/hunterhogan/Z0Z_tools/releases/tag/0.10.3
+title: Z0Z_tools
+url: https://github.com/hunterhogan/Z0Z_tools
+version: 0.10.3

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
@@ -13,12 +13,14 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
+	"Programming Language :: Python :: 3",
     "Topic :: Multimedia :: Sound/Audio :: Analysis",
     "Typing :: Typed",]
 dependencies = [
     "cachetools",
     "librosa",
     "numpy",
+    "optype[numpy]",
     "torch",
     "torchmetrics[audio]",
     "tqdm",
@@ -35,7 +37,10 @@ optional-dependencies = { testing = [
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Repository = "https://github.com/hunterhogan/analyzeAudio.git"  }
-version = "0.0.11"
+version = "0.0.12"
+
+[project.scripts]
+whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
 
 [tool.coverage]
 report = { exclude_lines = [
@@ -51,6 +56,7 @@ run = { branch = true, concurrency = [
 xml = { output = "tests/coverage/coverage.xml" }
 
 [tool.pytest.ini_options]
+log_auto_indent = ["On"]
 addopts = ["--color=yes", "-n 4"]
 testpaths = ["tests"]
 

@@ -44,6 +44,13 @@ from analyzeAudio import audioAspects
 print(audioAspects['Chromagram']['analyzerParameters'])
 ```
 
+### Use `whatMeasurements` command line tool to list available measurements
+
+```sh
+(.venv) C:\apps\analyzeAudio> whatMeasurements
+['Abs_Peak_count', 'Bit_depth', 'Chromagram', 'Chromagram mean', 'Crest factor', 'DC offset', 'Duration-samples', 'Dynamic range', 'Flat_factor', 'LUFS high', 'LUFS integrated', 'LUFS loudness range', 'LUFS low', 'Max_difference', 'Max_level', 'Mean_difference', 'Min_difference', 'Min_level', 'Noise_floor', 'Noise_floor_count', 'Peak dB', 'Peak_count', 'RMS from waveform', 'RMS from waveform mean', 'RMS peak', 'RMS total', 'RMS_difference', 'RMS_trough', 'SI-SDR mean', 'SRMR', 'SRMR mean', 'Signal entropy', 'Spectral Bandwidth', 'Spectral Bandwidth mean', 'Spectral Centroid', 'Spectral Centroid mean', 'Spectral Contrast', 'Spectral Contrast mean', 'Spectral Flatness', 'Spectral Flatness mean', 'Spectral centroid', 'Spectral crest', 'Spectral decrease', 'Spectral entropy', 'Spectral flatness', 'Spectral flux', 'Spectral kurtosis', 'Spectral mean', 'Spectral rolloff', 'Spectral skewness', 'Spectral slope', 'Spectral spread', 'Spectral variance', 'Tempo', 'Tempo mean', 'Tempogram', 'Tempogram mean', 'Zero-crossing rate', 'Zero-crossing rate mean', 'Zero-crossings rate']
+```
+
 ## Installation
 
 ```sh
@@ -54,3 +61,5 @@ pip install analyzeAudio
 
 [![Static Badge](https://img.shields.io/badge/2011_August-Homeless_since-blue?style=flat)](https://HunterThinks.com/support)
 [![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UC3Gx7kz61009NbhpRtPP7tw)](https://www.youtube.com/@HunterHogan)
+
+[![CC-BY-NC-4.0](https://github.com/hunterhogan/analyzeAudio/blob/main/CC-BY-NC-4.0.png)](https://creativecommons.org/licenses/by-nc/4.0/)

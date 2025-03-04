@@ -5,7 +5,7 @@ import numpy
 
 def pythonizeFFprobe(FFprobeJSON_utf8: str):
 	FFroot: dict[str, Any] = json.loads(FFprobeJSON_utf8)
-	Z0Z_dictionaries: dict[str, numpy.ndarray | dict[str, numpy.ndarray]] = {}
+	Z0Z_dictionaries: dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]] = {}
 	if 'packets_and_frames' in FFroot: # Divide into 'packets' and 'frames'
 		FFroot = defaultdict(list, FFroot)
 		for packetOrFrame in FFroot['packets_and_frames']:
@@ -25,7 +25,7 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 	leftCrumbs = False
 	if 'frames' in FFroot:
 		leftCrumbs = False
-		listTuplesBlackdetect = []
+		listTuplesBlackdetect: list[float | tuple[float]] = []
 		for indexFrame, FFframe in enumerate(FFroot['frames']):
 			if 'tags' in FFframe:
 				if 'lavfi.black_start' in FFframe['tags']:

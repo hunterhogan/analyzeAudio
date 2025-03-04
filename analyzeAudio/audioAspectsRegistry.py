@@ -1,15 +1,14 @@
-from Z0Z_tools import defineConcurrencyLimit, oopsieKwargsie
+from collections.abc import Callable, Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
 from typing import Any, cast, ParamSpec, TypeAlias, TYPE_CHECKING, TypeVar
-
-from collections.abc import Callable, Sequence
+from Z0Z_tools import defineConcurrencyLimit, oopsieKwargsie, stft
 import cachetools
 import inspect
 import librosa
 import multiprocessing
 import numpy
-import os
+from os import PathLike
 import pathlib
 import soundfile
 import torch
@@ -28,7 +27,6 @@ warnings.filterwarnings('ignore', category=UserWarning, module='torchmetrics', m
 parameterSpecifications = ParamSpec('parameterSpecifications')
 typeReturned = TypeVar('typeReturned')
 
-subclassTarget: TypeAlias = numpy.ndarray
 audioAspect: TypeAlias = str
 class analyzersAudioAspects(TypedDict):
 	analyzer: Callable[..., Any]
@@ -62,7 +60,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 
 		# if registrant.__annotations__.get('return') is not None and issubclass(registrant.__annotations__['return'], subclassTarget): # maybe someday I will understand why this doesn't work
 		# if registrant.__annotations__.get('return') is not None and issubclass(registrant.__annotations__.get('return', type(None)), subclassTarget): # maybe someday I will understand why this doesn't work
-		if isinstance(registrant.__annotations__.get('return', type(None)), type) and issubclass(registrant.__annotations__.get('return', type(None)), subclassTarget): # maybe someday I will understand what all of this statement means
+		if isinstance(registrant.__annotations__.get('return', type(None)), type) and issubclass(registrant.__annotations__.get('return', type(None)), numpy.ndarray): # maybe someday I will understand what all of this statement means
 			def registrationAudioAspectMean(*arguments: parameterSpecifications.args, **keywordArguments: parameterSpecifications.kwargs) -> numpy.floating[Any]:
 				"""
 				`registrar` updates the registry with a new analyzer function that calculates the mean of the analyzer's numpy.ndarray result.
@@ -71,7 +69,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 					mean: Mean value of the analyzer's numpy.ndarray result.
 				"""
 				aspectValue = registrant(*arguments, **keywordArguments)
-				return numpy.mean(cast(subclassTarget, aspectValue))
+				return numpy.mean(cast(NDArray[Any], aspectValue))
 				# return aspectValue.mean()
 			audioAspects[f"{aspectName} mean"] = {
 				'analyzer': registrationAudioAspectMean,
@@ -80,7 +78,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 		return registrant
 	return registrar
 
-def analyzeAudioFile(pathFilename: str | os.PathLike[Any], listAspectNames: list[str]) -> list[str | float | NDArray[Any]]:
+def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[str]) -> list[str | float | NDArray[Any]]:
 	"""
 	Analyzes an audio file for specified aspects and returns the results.
 
@@ -96,10 +94,9 @@ def analyzeAudioFile(pathFilename: str | os.PathLike[Any], listAspectNames: list
 	"""Despite returning a list, use a dictionary to preserve the order of the listAspectNames.
 	Similarly, 'not found' ensures the returned list length == len(listAspectNames)"""
 
-	# waveform, sampleRate = librosa.load(path=str(pathFilename), sr=None, mono=False)
 	with soundfile.SoundFile(pathFilename) as readSoundFile:
 		sampleRate: int = readSoundFile.samplerate
-		waveform = readSoundFile.read()
+		waveform = readSoundFile.read(dtype='float32').astype(numpy.float32)
 		waveform = waveform.T
 
 	# I need "lazy" loading
@@ -115,9 +112,9 @@ def analyzeAudioFile(pathFilename: str | os.PathLike[Any], listAspectNames: list
 			else:
 				raise ERRORmessage
 
-	spectrogram = librosa.stft(y=waveform)
-	spectrogramMagnitude, DISCARDEDphase = librosa.magphase(D=spectrogram)
-	spectrogramPower = numpy.absolute(spectrogram) ** 2
+	spectrogram = stft(waveform, sampleRate=sampleRate)
+	spectrogramMagnitude = numpy.absolute(spectrogram)
+	spectrogramPower = spectrogramMagnitude ** 2
 
 	pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not
 
@@ -129,7 +126,7 @@ def analyzeAudioFile(pathFilename: str | os.PathLike[Any], listAspectNames: list
 
 	return [dictionaryAspectsAnalyzed[aspectName] for aspectName in listAspectNames]
 
-def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[os.PathLike[Any]], listAspectNames: list[str], CPUlimit: int | float | bool | None = None) -> list[list[str | float | NDArray[Any]]]:
+def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[PathLike[Any]], listAspectNames: list[str], CPUlimit: int | float | bool | None = None) -> list[list[str | float | NDArray[Any]]]:
 	"""
 	Analyzes a list of audio files for specified aspects of the individual files and returns the results.
 
@@ -164,7 +161,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[os
 		Integer <= -1: Subtract the absolute value from total CPUs.
 
 	"""
-	rowsListFilenameAspectValues = []
+	rowsListFilenameAspectValues: list[list[str | float | NDArray[Any]]] = []
 
 	if not (CPUlimit is None or isinstance(CPUlimit, (bool, int, float))):
 		CPUlimit = oopsieKwargsie(CPUlimit)
@@ -194,4 +191,4 @@ def getListAvailableAudioAspects() -> list[str]:
 	"""
 	return sorted(audioAspects.keys())
 
-cacheAudioAnalyzers = cachetools.LRUCache(maxsize=256)
+cacheAudioAnalyzers: cachetools.LRUCache[str | PathLike[Any], NDArray[Any]] = cachetools.LRUCache(maxsize=256)
