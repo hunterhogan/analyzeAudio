@@ -47,8 +47,86 @@ print(audioAspects['Chromagram']['analyzerParameters'])
 ### Use `whatMeasurements` command line tool to list available measurements
 
 ```sh
-(.venv) C:\apps\analyzeAudio> whatMeasurements
-['Abs_Peak_count', 'Bit_depth', 'Chromagram', 'Chromagram mean', 'Crest factor', 'DC offset', 'Duration-samples', 'Dynamic range', 'Flat_factor', 'LUFS high', 'LUFS integrated', 'LUFS loudness range', 'LUFS low', 'Max_difference', 'Max_level', 'Mean_difference', 'Min_difference', 'Min_level', 'Noise_floor', 'Noise_floor_count', 'Peak dB', 'Peak_count', 'RMS from waveform', 'RMS from waveform mean', 'RMS peak', 'RMS total', 'RMS_difference', 'RMS_trough', 'SI-SDR mean', 'SRMR', 'SRMR mean', 'Signal entropy', 'Spectral Bandwidth', 'Spectral Bandwidth mean', 'Spectral Centroid', 'Spectral Centroid mean', 'Spectral Contrast', 'Spectral Contrast mean', 'Spectral Flatness', 'Spectral Flatness mean', 'Spectral centroid', 'Spectral crest', 'Spectral decrease', 'Spectral entropy', 'Spectral flatness', 'Spectral flux', 'Spectral kurtosis', 'Spectral mean', 'Spectral rolloff', 'Spectral skewness', 'Spectral slope', 'Spectral spread', 'Spectral variance', 'Tempo', 'Tempo mean', 'Tempogram', 'Tempogram mean', 'Zero-crossing rate', 'Zero-crossing rate mean', 'Zero-crossings rate']
+(.venv) C:\apps\analyzeAudio>whatMeasurements
+['Abs_Peak_count', 'Bit_depth', 'Chromagram', 'Chromagram mean', 'Crest factor', 'DC offset', 'Duration-samples', 'Dynamic range', 'Flat_factor', 'LUFS high', 'LUFS integrated', 'LUFS loudness range', 'LUFS low', 'Max_difference', 'Max_level', 'Mean_difference', 'Min_difference', 'Min_level', 'Noise_floor', 'Noise_floor_count', 'Peak dB', 'Peak_count', 'Power spectral density', 'Power spectral density mean', 'RMS from waveform', 'RMS from waveform mean', 'RMS peak', 'RMS total', 'RMS_difference', 'RMS_trough', 'SI-SDR mean', 'SRMR', 'SRMR mean', 'Signal entropy', 'Spectral Bandwidth', 'Spectral Bandwidth mean', 'Spectral Centroid', 'Spectral Centroid mean', 'Spectral Contrast', 'Spectral Contrast mean', 'Spectral Flatness', 'Spectral Flatness mean', 'Spectral centroid', 'Spectral centroid mean', 'Spectral crest', 'Spectral crest mean', 'Spectral decrease', 'Spectral decrease mean', 'Spectral entropy', 'Spectral entropy mean', 'Spectral flatness', 'Spectral flatness mean', 'Spectral flux', 'Spectral flux mean', 'Spectral kurtosis', 'Spectral kurtosis mean', 'Spectral rolloff', 'Spectral rolloff mean', 'Spectral skewness', 'Spectral skewness mean', 'Spectral slope', 'Spectral slope mean', 'Spectral spread', 'Spectral spread mean', 'Spectral variance', 'Spectral variance mean', 'Tempo', 'Tempo mean', 'Tempogram', 'Tempogram mean', 'Zero-crossing rate', 'Zero-crossing rate mean', 'Zero-crossings rate']
+```
+
+## Some clues about the aspects
+
+```python
+'Abs_Peak_count': float
+'Bit_depth': float
+'Chromagram': NDArray[float64] # shape(..., 12, frames)
+'Chromagram mean': float
+'Crest factor': float
+'DC offset': float
+'Duration-samples': float
+'Dynamic range': float
+'Flat_factor': float
+'LUFS high': float
+'LUFS integrated': float
+'LUFS loudness range': float
+'LUFS low': float
+'Max_difference': float
+'Max_level': float
+'Mean_difference': float
+'Min_difference': float
+'Min_level': float
+'Noise_floor_count': float
+'Noise_floor': float
+'Peak dB': float
+'Peak_count': float
+'Power spectral density': NDArray[float64] # shape(channels, frames)
+'Power spectral density mean': float
+'RMS from waveform': NDArray[float64] # shape(..., 1, frames)
+'RMS from waveform mean': float
+'RMS peak': float
+'RMS total': float
+'RMS_difference': float
+'RMS_trough': float
+'SI-SDR mean': float
+'Signal entropy': float
+'Spectral Bandwidth': NDArray[float64] # shape(..., 1, frames)
+'Spectral Bandwidth mean': float
+'Spectral centroid': NDArray[float64] # shape(channels, frames)
+'Spectral centroid mean': float
+'Spectral Centroid': NDArray[float64] # shape(..., 1, frames)
+'Spectral Centroid mean': float
+'Spectral Contrast': NDArray[float64] # shape(..., 7, frames)
+'Spectral Contrast mean': float
+'Spectral crest': NDArray[float64] # shape(channels, frames)
+'Spectral crest mean': float
+'Spectral decrease': NDArray[float64] # shape(channels, frames)
+'Spectral decrease mean': float
+'Spectral entropy': NDArray[float64] # shape(channels, frames)
+'Spectral entropy mean': float
+'Spectral flatness': NDArray[float64] # shape(channels, frames)
+'Spectral flatness mean': float
+'Spectral Flatness': NDArray[float64] # shape(..., 1, frames)
+'Spectral Flatness mean': float
+'Spectral flux': NDArray[float64] # shape(channels, frames)
+'Spectral flux mean': float
+'Spectral kurtosis': NDArray[float64] # shape(channels, frames)
+'Spectral kurtosis mean': float
+'Spectral rolloff': NDArray[float64] # shape(channels, frames)
+'Spectral rolloff mean': float
+'Spectral skewness': NDArray[float64] # shape(channels, frames)
+'Spectral skewness mean': float
+'Spectral slope': NDArray[float64] # shape(channels, frames)
+'Spectral slope mean': float
+'Spectral spread': NDArray[float64] # shape(channels, frames)
+'Spectral spread mean': float
+'Spectral variance': NDArray[float64] # shape(channels, frames)
+'Spectral variance mean': float
+'SRMR': NDArray[float64] # shape(...)
+'SRMR mean': float
+'Tempo': NDArray[float64] # shape(...)
+'Tempo mean': float
+'Tempogram': NDArray[float64] # shape(..., 384, samples)
+'Tempogram mean': float
+'Zero-crossing rate': NDArray[float64] # shape(..., 1, frames)
+'Zero-crossing rate mean': float
+'Zero-crossings rate': float
 ```
 
 ## Installation

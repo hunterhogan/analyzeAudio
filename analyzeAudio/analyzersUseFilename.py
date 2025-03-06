@@ -40,7 +40,7 @@ def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str 
 	return SI_SDRmean
 
 @cachetools.cached(cache=cacheAudioAnalyzers)
-def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
+def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float | numpy.ndarray]:
 	# for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
 	pFn = pathlib.PureWindowsPath(pathFilename)
 	lavfiPathFilename = pFn.drive.replace(":", "\\\\:")+pathlib.PureWindowsPath(pFn.root,pFn.relative_to(pFn.anchor)).as_posix()
@@ -63,16 +63,20 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 	stdoutFFprobe, _DISCARDstderr = systemProcessFFprobe.communicate()
 	FFprobeStructured = pythonizeFFprobe(stdoutFFprobe.decode('utf-8'))[-1]
 
-	dictionaryAspectsAnalyzed: dict[str, float] = {}
+	dictionaryAspectsAnalyzed: dict[str, float | numpy.ndarray] = {}
 	if 'aspectralstats' in FFprobeStructured:
 		for keyName in FFprobeStructured['aspectralstats']:
-			dictionaryAspectsAnalyzed[keyName] = numpy.mean(FFprobeStructured['aspectralstats'][keyName]).astype(float)
+			# No matter how many channels, each keyName is `numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]`
+			# where `tuple[int, int]` is (channel, frame)
+			# NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing
+			dictionaryAspectsAnalyzed[keyName] = FFprobeStructured['aspectralstats'][keyName]
+			# dictionaryAspectsAnalyzed[keyName] = numpy.mean(FFprobeStructured['aspectralstats'][keyName]).astype(float)
 	if 'r128' in FFprobeStructured:
 		for keyName in FFprobeStructured['r128']:
 			dictionaryAspectsAnalyzed[keyName] = FFprobeStructured['r128'][keyName][-1]
 	if 'astats' in FFprobeStructured:
 		for keyName, arrayFeatureValues in cast(dict[str, numpy.ndarray[Any, Any]], FFprobeStructured['astats']).items():
-			dictionaryAspectsAnalyzed[keyName.split('.')[-1]] = numpy.mean(arrayFeatureValues[..., -1:]).astype(float)
+			dictionaryAspectsAnalyzed[keyName.split('.')[-1]] = numpy.mean(arrayFeatureValues[..., -1:None]).astype(float)
 
 	return dictionaryAspectsAnalyzed
 
@@ -128,56 +132,56 @@ def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> float | None:
 def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('LRA.high')
 
-@registrationAudioAspect('Spectral mean')
-def analyzeMean(pathFilename: str | PathLike[Any]) -> float | None:
+@registrationAudioAspect('Power spectral density')
+def analyzeMean(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('mean')
 
 @registrationAudioAspect('Spectral variance')
-def analyzeVariance(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeVariance(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('variance')
 
 @registrationAudioAspect('Spectral centroid')
-def analyzeCentroid(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeCentroid(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('centroid')
 
 @registrationAudioAspect('Spectral spread')
-def analyzeSpread(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeSpread(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('spread')
 
 @registrationAudioAspect('Spectral skewness')
-def analyzeSkewness(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeSkewness(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('skewness')
 
 @registrationAudioAspect('Spectral kurtosis')
-def analyzeKurtosis(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeKurtosis(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('kurtosis')
 
 @registrationAudioAspect('Spectral entropy')
-def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('entropy')
 
 @registrationAudioAspect('Spectral flatness')
-def analyzeFlatness(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeFlatness(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('flatness')
 
 @registrationAudioAspect('Spectral crest')
-def analyzeCrest(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeCrest(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('crest')
 
 @registrationAudioAspect('Spectral flux')
-def analyzeFlux(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeFlux(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('flux')
 
 @registrationAudioAspect('Spectral slope')
-def analyzeSlope(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeSlope(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('slope')
 
 @registrationAudioAspect('Spectral decrease')
-def analyzeDecrease(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeDecrease(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('decrease')
 
 @registrationAudioAspect('Spectral rolloff')
-def analyzeRolloff(pathFilename: str | PathLike[Any]) -> float | None:
+def analyzeRolloff(pathFilename: str | PathLike[Any]) -> numpy.ndarray:
 	return ffprobeShotgunAndCache(pathFilename).get('rolloff')
 
 @registrationAudioAspect('Abs_Peak_count')
