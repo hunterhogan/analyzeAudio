@@ -3,12 +3,12 @@ authors:
   family-names: Hogan
   email: HunterHogan@pm.me
 cff-version: 1.2.0
-commit: 93ff17bb77de29d591c7f5ac5a4c1c3f806cb7d8
-date-released: '2025-03-04'
+commit: 7b83b7571f919259fa1018a8699ed206823f2291
+date-released: '2025-03-06'
 identifiers:
 - type: url
-  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.12
-  description: The URL for Z0Z_tools 0.0.12.
+  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.13
+  description: The URL for Z0Z_tools 0.0.13.
 keywords:
 - audio
 - analysis
@@ -18,8 +18,8 @@ keywords:
 license: CC-BY-NC-4.0
 message: Cite this software with the metadata in this file.
 repository: https://github.com/hunterhogan/analyzeAudio.git
-repository-artifact: https://pypi.org/project/z0z-tools/0.0.12/
-repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.12
+repository-artifact: https://pypi.org/project/z0z-tools/0.0.13/
+repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.13
 title: Z0Z_tools
 url: https://github.com/hunterhogan/analyzeAudio
-version: 0.0.12
+version: 0.0.13
