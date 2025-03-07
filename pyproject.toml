@@ -9,35 +9,48 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Information Technology",
     "Intended Audience :: Other Audience",
+    "License :: Free for non-commercial use",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-	"Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio",
     "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Multimedia :: Sound/Audio :: Conversion",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",]
 dependencies = [
     "cachetools",
     "librosa",
     "numpy",
     "optype[numpy]",
+    "standard-aifc;python_version>='3.13'",
+    "standard-sunau;python_version>='3.13'",
     "torch",
     "torchmetrics[audio]",
     "tqdm",
     "Z0Z_tools",]
 description = "Measure one or more aspects of one or more audio files."
-keywords = ["audio", "analysis", "measurement", "metrics", "torch"]
+keywords = ["audio", "analysis", "measurement", "metrics", "torch", "spectrum", "spectral", "waveform", "loudness", "LUFS", "RMS", "FFmpeg", "FFprobe", "SRMR", "audio-analysis", "signal-processing"]
 license = { 'text' = "CC-BY-NC-4.0" }
 name = "analyzeAudio"
 optional-dependencies = { testing = [
     "pytest-cov",
     "pytest-xdist",
     "pytest",
-	"pyupgrade",] }
+    "pyupgrade",] }
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Repository = "https://github.com/hunterhogan/analyzeAudio.git"  }
-version = "0.0.13"
+version = "0.0.14"
 
 [project.scripts]
 whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
