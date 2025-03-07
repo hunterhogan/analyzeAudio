@@ -1,25 +1,42 @@
+abstract: analyzeAudio is a Python package for measuring aspects of audio files. It
+  provides comprehensive audio analysis capabilities including spectral measurements
+  (centroid, contrast, flatness, etc.), loudness metrics (LUFS, RMS), temporal features
+  (tempo, zero-crossing rate), and signal quality assessments (SRMR). The library
+  integrates with FFmpeg/FFprobe for efficient analysis and supports both single file
+  and batch processing with concurrent execution.
 authors:
 - given-names: Hunter
   family-names: Hogan
   email: HunterHogan@pm.me
 cff-version: 1.2.0
-commit: 7b83b7571f919259fa1018a8699ed206823f2291
-date-released: '2025-03-06'
+commit: d633e3d8935d9aeb935f86dc2c692ae45a8aa106
+date-released: '2025-03-07'
 identifiers:
 - type: url
-  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.13
-  description: The URL for Z0Z_tools 0.0.13.
+  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.14
+  description: The URL for analyzeAudio 0.0.14.
 keywords:
 - audio
 - analysis
 - measurement
 - metrics
 - torch
+- spectrum
+- spectral
+- waveform
+- loudness
+- LUFS
+- RMS
+- FFmpeg
+- FFprobe
+- SRMR
+- audio-analysis
+- signal-processing
 license: CC-BY-NC-4.0
 message: Cite this software with the metadata in this file.
 repository: https://github.com/hunterhogan/analyzeAudio.git
-repository-artifact: https://pypi.org/project/z0z-tools/0.0.13/
-repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.13
-title: Z0Z_tools
+repository-artifact: https://pypi.org/project/analyzeaudio/0.0.14/
+repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.14
+title: analyzeAudio
 url: https://github.com/hunterhogan/analyzeAudio
-version: 0.0.13
+version: 0.0.14
