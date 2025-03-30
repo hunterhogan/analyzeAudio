@@ -12,7 +12,6 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Other Audience",
-    "License :: Free for non-commercial use",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
@@ -43,9 +42,9 @@ keywords = ["audio", "analysis", "measurement", "metrics", "torch", "spectrum", 
 license = { 'text' = "CC-BY-NC-4.0" }
 name = "analyzeAudio"
 optional-dependencies = { testing = [
+    "pytest",
     "pytest-cov",
     "pytest-xdist",
-    "pytest",
     "pyupgrade",] }
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -69,12 +68,13 @@ run = { branch = true, concurrency = [
 xml = { output = "tests/coverage/coverage.xml" }
 
 [tool.pytest.ini_options]
-log_auto_indent = ["On"]
+log_auto_indent = true
 addopts = ["--color=yes", "-n 4"]
 testpaths = ["tests"]
 
-[tool.setuptools.packages.find]
-where = ["."]
+[tool.setuptools]
+package-data = { "*" = ["py.typed"] }
+packages = { find = {} }
 
 [tool.updateCitation]
 filenameCitationDOTcff = 'CITATION.cff'

@@ -140,4 +140,4 @@ pip install analyzeAudio
 [![Static Badge](https://img.shields.io/badge/2011_August-Homeless_since-blue?style=flat)](https://HunterThinks.com/support)
 [![YouTube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UC3Gx7kz61009NbhpRtPP7tw)](https://www.youtube.com/@HunterHogan)
 
-[![CC-BY-NC-4.0](https://github.com/hunterhogan/analyzeAudio/blob/main/CC-BY-NC-4.0.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+[![CC-BY-NC-4.0](https://github.com/hunterhogan/analyzeAudio/blob/main/CC-BY-NC-4.0.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
