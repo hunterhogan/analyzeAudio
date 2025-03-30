@@ -9,12 +9,12 @@ authors:
   family-names: Hogan
   email: HunterHogan@pm.me
 cff-version: 1.2.0
-commit: a6f33f1e7429def8ac35018cb40f3eeecb8d5599
-date-released: '2025-03-07'
+commit: 2ebf6ec82b5e75bc41e1dbc23a3990730b5b9712
+date-released: '2025-03-30'
 identifiers:
 - type: url
-  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.14
-  description: The URL for analyzeAudio 0.0.14.
+  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.15
+  description: The URL for analyzeAudio 0.0.15.
 keywords:
 - audio
 - analysis
@@ -35,8 +35,8 @@ keywords:
 license: CC-BY-NC-4.0
 message: Cite this software with the metadata in this file.
 repository: https://github.com/hunterhogan/analyzeAudio.git
-repository-artifact: https://pypi.org/project/analyzeaudio/0.0.14/
-repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.14
+repository-artifact: https://pypi.org/project/analyzeaudio/0.0.15/
+repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.15
 title: analyzeAudio
 url: https://github.com/hunterhogan/analyzeAudio
-version: 0.0.14
+version: 0.0.15
