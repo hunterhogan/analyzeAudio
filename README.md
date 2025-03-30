@@ -88,12 +88,45 @@ print(audioAspects['Chromagram']['analyzerParameters'])
 'Signal entropy': float
 'Spectral Bandwidth': NDArray[float64] # shape(..., 1, frames)
 'Spectral Bandwidth mean': float
-'Spectral centroid': NDArray[float64] # shape(channels, frames)
-'Spectral centroid mean': float
 'Spectral Centroid': NDArray[float64] # shape(..., 1, frames)
 'Spectral Centroid mean': float
 'Spectral Contrast': NDArray[float64] # shape(..., 7, frames)
 'Spectral Contrast mean': float
+'Spectral Flatness': NDArray[float64] # shape(..., 1, frames)
+'Spectral Flatness mean': float
+'SRMR': NDArray[float64] # shape(...)
+'SRMR mean': float
+'Tempo': NDArray[float64] # shape(...)
+'Tempo mean': float
+'Tempogram': NDArray[float64] # shape(..., 384, samples)
+'Tempogram mean': float
+'Zero-crossing rate': NDArray[float64] # shape(..., 1, frames)
+'Zero-crossing rate mean': float
+'Zero-crossings rate': float
+```
+
+### I had to revert back to these
+
+```python
+'Spectral centroid': float
+'Spectral crest': float
+'Spectral decrease': float
+'Spectral entropy': float
+'Spectral flatness': float
+'Spectral flux': float
+'Spectral kurtosis': float
+'Spectral rolloff': float
+'Spectral skewness': float
+'Spectral slope': float
+'Spectral spread': float
+'Spectral variance': float
+```
+
+### Removed (temporarily, I hope)
+
+```python
+'Spectral centroid': NDArray[float64] # shape(channels, frames)
+'Spectral centroid mean': float
 'Spectral crest': NDArray[float64] # shape(channels, frames)
 'Spectral crest mean': float
 'Spectral decrease': NDArray[float64] # shape(channels, frames)
@@ -102,8 +135,6 @@ print(audioAspects['Chromagram']['analyzerParameters'])
 'Spectral entropy mean': float
 'Spectral flatness': NDArray[float64] # shape(channels, frames)
 'Spectral flatness mean': float
-'Spectral Flatness': NDArray[float64] # shape(..., 1, frames)
-'Spectral Flatness mean': float
 'Spectral flux': NDArray[float64] # shape(channels, frames)
 'Spectral flux mean': float
 'Spectral kurtosis': NDArray[float64] # shape(channels, frames)
@@ -118,15 +149,6 @@ print(audioAspects['Chromagram']['analyzerParameters'])
 'Spectral spread mean': float
 'Spectral variance': NDArray[float64] # shape(channels, frames)
 'Spectral variance mean': float
-'SRMR': NDArray[float64] # shape(...)
-'SRMR mean': float
-'Tempo': NDArray[float64] # shape(...)
-'Tempo mean': float
-'Tempogram': NDArray[float64] # shape(..., 384, samples)
-'Tempogram mean': float
-'Zero-crossing rate': NDArray[float64] # shape(..., 1, frames)
-'Zero-crossing rate mean': float
-'Zero-crossings rate': float
 ```
 
 ## Installation

@@ -1,14 +1,12 @@
 from collections.abc import Callable, Sequence
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
+from os import PathLike
 from typing import Any, cast, ParamSpec, TypeAlias, TYPE_CHECKING, TypeVar
 from Z0Z_tools import defineConcurrencyLimit, oopsieKwargsie, stft
 import cachetools
 import inspect
-import librosa
-import multiprocessing
 import numpy
-from os import PathLike
 import pathlib
 import soundfile
 import torch
@@ -19,8 +17,11 @@ if TYPE_CHECKING:
 else:
 	TypedDict = dict
 
-if __name__ == '__main__':
-	multiprocessing.set_start_method('spawn')
+from multiprocessing import set_start_method as multiprocessing_set_start_method
+try:
+	multiprocessing_set_start_method('spawn')
+except RuntimeError:
+	pass
 
 warnings.filterwarnings('ignore', category=UserWarning, module='torchmetrics', message='.*fast=True.*')
 
@@ -112,9 +113,9 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 			else:
 				raise ERRORmessage
 
-	spectrogram = stft(waveform, sampleRate=sampleRate)
-	spectrogramMagnitude = numpy.absolute(spectrogram)
-	spectrogramPower = spectrogramMagnitude ** 2
+	# spectrogram = stft(waveform, sampleRate=sampleRate)
+	# spectrogramMagnitude = numpy.absolute(spectrogram)
+	# spectrogramPower = spectrogramMagnitude ** 2
 
 	pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not
 

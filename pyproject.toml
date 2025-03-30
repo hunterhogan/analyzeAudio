@@ -49,7 +49,7 @@ optional-dependencies = { testing = [
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Repository = "https://github.com/hunterhogan/analyzeAudio.git"  }
-version = "0.0.14"
+version = "0.0.15"
 
 [project.scripts]
 whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
