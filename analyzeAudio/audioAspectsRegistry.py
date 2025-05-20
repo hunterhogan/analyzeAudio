@@ -3,7 +3,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from numpy.typing import NDArray
 from os import PathLike
 from typing import Any, cast, ParamSpec, TypeAlias, TYPE_CHECKING, TypeVar
-from Z0Z_tools import defineConcurrencyLimit, oopsieKwargsie, stft
+from Z0Z_tools import defineConcurrencyLimit, oopsieKwargsie, stft, Spectrogram
 import cachetools
 import inspect
 import numpy
@@ -102,7 +102,7 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 
 	# I need "lazy" loading
 	tryAgain = True
-	while tryAgain: # `tenacity`?
+	while tryAgain:
 		try:
 			tensorAudio = torch.from_numpy(waveform)  # memory-sharing
 			tryAgain = False
@@ -113,9 +113,9 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 			else:
 				raise ERRORmessage
 
-	# spectrogram = stft(waveform, sampleRate=sampleRate)
-	# spectrogramMagnitude = numpy.absolute(spectrogram)
-	# spectrogramPower = spectrogramMagnitude ** 2
+	spectrogram = stft(waveform, sampleRate=sampleRate)
+	spectrogramMagnitude = numpy.absolute(spectrogram)
+	spectrogramPower = spectrogramMagnitude ** 2
 
 	pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not
 

@@ -1,4 +1,5 @@
-from .pythonator import pythonizeFFprobe
+"""Analyzers that use the filename of an audio file to analyze its audio data."""
+from analyzeAudio.pythonator import pythonizeFFprobe
 from analyzeAudio import registrationAudioAspect, cacheAudioAnalyzers
 from os import PathLike
 from statistics import mean

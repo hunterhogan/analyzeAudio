@@ -1,3 +1,4 @@
+"""Convert FFprobe output to a standardized Python object."""
 from collections import defaultdict
 from typing import Any, cast, NamedTuple
 import json
@@ -89,7 +90,7 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 											Z0Z_dictionaries[registrant] = {}
 										elif statistic not in Z0Z_dictionaries[registrant]:
 												# NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing
-												valueSherpa = cast(numpy.ndarray, numpy.zeros((channel, len(FFroot['frames']))))
+												valueSherpa = cast(numpy.ndarray, numpy.zeros((channel, len(FFroot['frames'])))) # type: ignore
 												Z0Z_dictionaries[registrant][statistic] = valueSherpa
 										else:
 											raise  # Re-raise the exception

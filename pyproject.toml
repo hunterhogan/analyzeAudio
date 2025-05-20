@@ -30,7 +30,6 @@ dependencies = [
     "cachetools",
     "librosa",
     "numpy",
-    "optype[numpy]",
     "standard-aifc;python_version>='3.13'",
     "standard-sunau;python_version>='3.13'",
     "torch",
@@ -49,7 +48,7 @@ optional-dependencies = { testing = [
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Repository = "https://github.com/hunterhogan/analyzeAudio.git"  }
-version = "0.0.15"
+version = "0.0.16"
 
 [project.scripts]
 whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
@@ -69,7 +68,7 @@ xml = { output = "tests/coverage/coverage.xml" }
 
 [tool.pytest.ini_options]
 log_auto_indent = true
-addopts = ["--color=yes", "-n 4"]
+addopts = ["--color=auto", "-n 4"]
 testpaths = ["tests"]
 
 [tool.setuptools]
