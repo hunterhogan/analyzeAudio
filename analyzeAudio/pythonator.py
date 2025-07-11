@@ -1,4 +1,5 @@
 """Convert FFprobe output to a standardized Python object."""
+# ruff: noqa: D103
 from collections import defaultdict
 from typing import Any, cast, NamedTuple
 import json
@@ -12,11 +13,11 @@ import numpy
 # NOTE You changed the code because a static type checker was mad at you. Ask yourself,
 # "Are you the tool or is the type checker the tool?"
 
-class Blackdetect(NamedTuple):
+class Blackdetect(NamedTuple):  # noqa: D101
 	black_start: float | None = None
 	black_end: float | None = None
 
-def pythonizeFFprobe(FFprobeJSON_utf8: str):
+def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[defaultdict[str, Any] | dict[str, Any], dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]]]:  # noqa: C901, PLR0912, PLR0915
 	FFroot: dict[str, Any] = json.loads(FFprobeJSON_utf8)
 	Z0Z_dictionaries: dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]] = {}
 	if 'packets_and_frames' in FFroot: # Divide into 'packets' and 'frames'
@@ -26,7 +27,8 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 				FFroot[section := packetOrFrame['type'] + 's'].append(packetOrFrame)
 				del FFroot[section][-1]['type']
 			else:
-				raise ValueError("'packets_and_frames' for the win!")
+				msg = "'packets_and_frames' for the win!"
+				raise ValueError(msg)
 		del FFroot['packets_and_frames']
 
 	Z0Z_register = [
@@ -38,16 +40,16 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 	leftCrumbs = False
 	if 'frames' in FFroot:
 		leftCrumbs = False
-		# listTuplesBlackdetect = [] # uncommentToFixBlackdetect
+		# listTuplesBlackdetect = [] # uncommentToFixBlackdetect  # noqa: ERA001
 		listTuplesBlackdetect: list[Blackdetect] = []
 		for indexFrame, FFframe in enumerate(FFroot['frames']):
 			if 'tags' in FFframe:
 				if 'lavfi.black_start' in FFframe['tags']:
-					# listTuplesBlackdetect.append(float(FFframe['tags']['lavfi.black_start'])) # uncommentToFixBlackdetect
+					# listTuplesBlackdetect.append(float(FFframe['tags']['lavfi.black_start'])) # uncommentToFixBlackdetect  # noqa: ERA001
 					listTuplesBlackdetect.append(Blackdetect(black_start=float(FFframe['tags']['lavfi.black_start'])))
 					del FFframe['tags']['lavfi.black_start']
 				if 'lavfi.black_end' in FFframe['tags']:
-					# listTuplesBlackdetect[-1] = (listTuplesBlackdetect[-1], float(FFframe['tags']['lavfi.black_end'])) # uncommentToFixBlackdetect
+					# listTuplesBlackdetect[-1] = (listTuplesBlackdetect[-1], float(FFframe['tags']['lavfi.black_end'])) # uncommentToFixBlackdetect  # noqa: ERA001
 					tupleBlackdetectLast = listTuplesBlackdetect.pop() if listTuplesBlackdetect else Blackdetect()
 					match tupleBlackdetectLast.black_end:
 						case None:
@@ -89,15 +91,15 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 										if registrant not in Z0Z_dictionaries:
 											Z0Z_dictionaries[registrant] = {}
 										elif statistic not in Z0Z_dictionaries[registrant]:
-												# NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing
-												valueSherpa = cast(numpy.ndarray, numpy.zeros((channel, len(FFroot['frames'])))) # type: ignore
+												# NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing  # noqa: ERA001
+												valueSherpa = cast('numpy.ndarray', numpy.zeros((channel, len(FFroot['frames']))))  # pyright: ignore[reportMissingTypeArgument, reportUnknownVariableType]
 												Z0Z_dictionaries[registrant][statistic] = valueSherpa
 										else:
 											raise  # Re-raise the exception
 									except IndexError:
 										if channel > Z0Z_dictionaries[registrant][statistic].shape[0]:
 											Z0Z_dictionaries[registrant][statistic] = numpy.resize(Z0Z_dictionaries[registrant][statistic], (channel, len(FFroot['frames'])))
-											# Z0Z_dictionaries[registrant][statistic].resize((channel, len(FFroot['frames'])))
+											# Z0Z_dictionaries[registrant][statistic].resize((channel, len(FFroot['frames'])))  # noqa: ERA001
 										else:
 											raise  # Re-raise the exception
 
@@ -106,7 +108,7 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 			if FFframe:
 				leftCrumbs = True
 		if listTuplesBlackdetect:
-			# 2025-03-06: I am _shocked_ that I was able to create a numpy structured array whenever it was that I originally wrote this code.
+			# 2025-03-06 I am _shocked_ that I was able to create a numpy structured array whenever it was when I originally wrote this code.
 			arrayBlackdetect = numpy.array(
 				[(
 					-1.0 if detect.black_start is None else detect.black_start,
@@ -116,7 +118,7 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str):
 				copy=False
 			)
 			Z0Z_dictionaries['blackdetect'] = arrayBlackdetect
-			# Z0Z_dictionaries['blackdetect'] = numpy.array(listTuplesBlackdetect, dtype=[('black_start', numpy.float32), ('black_end', numpy.float32)], copy=False) # uncommentToFixBlackdetect
+			# Z0Z_dictionaries['blackdetect'] = numpy.array(listTuplesBlackdetect, dtype=[('black_start', numpy.float32), ('black_end', numpy.float32)], copy=False) # uncommentToFixBlackdetect  # noqa: ERA001
 	if not leftCrumbs:
 		del FFroot['frames']
 	return FFroot, Z0Z_dictionaries

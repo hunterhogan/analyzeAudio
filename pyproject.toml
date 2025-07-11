@@ -1,80 +1,103 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
-authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Environment :: Console",
-    "Intended Audience :: Developers",
-    "Intended Audience :: End Users/Desktop",
-    "Intended Audience :: Science/Research",
-    "Intended Audience :: Information Technology",
-    "Intended Audience :: Other Audience",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Topic :: Multimedia :: Sound/Audio",
-    "Topic :: Multimedia :: Sound/Audio :: Analysis",
-    "Topic :: Multimedia :: Sound/Audio :: Conversion",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Typing :: Typed",]
-dependencies = [
-    "cachetools",
-    "librosa",
-    "numpy",
-    "standard-aifc;python_version>='3.13'",
-    "standard-sunau;python_version>='3.13'",
-    "torch",
-    "torchmetrics[audio]",
-    "tqdm",
-    "Z0Z_tools",]
-description = "Measure one or more aspects of one or more audio files."
-keywords = ["audio", "analysis", "measurement", "metrics", "torch", "spectrum", "spectral", "waveform", "loudness", "LUFS", "RMS", "FFmpeg", "FFprobe", "SRMR", "audio-analysis", "signal-processing"]
-license = { 'text' = "CC-BY-NC-4.0" }
 name = "analyzeAudio"
-optional-dependencies = { testing = [
-    "pytest",
-    "pytest-cov",
-    "pytest-xdist",
-    "pyupgrade",] }
+version = "0.0.17"
+description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
-urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Repository = "https://github.com/hunterhogan/analyzeAudio.git"  }
-version = "0.0.16"
+license = { 'text' = "CC-BY-NC-4.0" }
+authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
+keywords = [
+  "FFmpeg",
+  "FFprobe",
+  "LUFS",
+  "RMS",
+  "SRMR",
+  "analysis",
+  "audio",
+  "audio-analysis",
+  "loudness",
+  "measurement",
+  "metrics",
+  "signal-processing",
+  "spectral",
+  "spectrum",
+  "torch",
+  "waveform",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Other Audience",
+  "Intended Audience :: Science/Research",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Sound/Audio",
+  "Topic :: Multimedia :: Sound/Audio :: Analysis",
+  "Topic :: Multimedia :: Sound/Audio :: Conversion",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Issues = "https://github.com/hunterhogan/", Repository = "https://github.com/hunterhogan/analyzeAudio.git" }
+dependencies = [
+  "Z0Z_tools",
+  "cachetools",
+  "hunterMakesPy",
+  "librosa",
+  "numpy",
+  "standard-aifc;python_version>='3.13'",
+  "standard-sunau;python_version>='3.13'",
+  "torch",
+  "torchmetrics[audio]",
+  "tqdm",
+  "typing_extensions",
+]
+optional-dependencies = { testing = [
+  "pytest",
+  "pytest-cov",
+  "pytest-xdist",
+  "pyupgrade",
+] }
 
 [project.scripts]
 whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
 
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
 [tool.coverage]
 report = { exclude_lines = [
-    "if TYPE_CHECKING:",
-    "if __name__ == \"__main__\":",
+  "if TYPE_CHECKING:",
+  "if __name__ == \"__main__\":",
 ], ignore_errors = false }
 run = { branch = true, concurrency = [
-    "multiprocessing",
+  "multiprocessing",
 ], data_file = "tests/coverage/.coverage", omit = [
-    "tests/*",
+  "tests/*",
 ], parallel = true, source = [
-    ".",] }
+  ".",
+] }
 xml = { output = "tests/coverage/coverage.xml" }
 
 [tool.pytest.ini_options]
-log_auto_indent = true
 addopts = ["--color=auto", "-n 4"]
+log_auto_indent = true
 testpaths = ["tests"]
 
 [tool.setuptools]
 package-data = { "*" = ["py.typed"] }
-packages = { find = {} }
+packages = { find = {  } }
 
 [tool.updateCitation]
-filenameCitationDOTcff = 'CITATION.cff'
+filenameCitationDOTcff = "CITATION.cff"
 pathFilenameCitationSSOT = "citations/CITATION.cff"

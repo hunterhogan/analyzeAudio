@@ -1,9 +1,3 @@
 __pycache__/
 *.egg-info/
-/.vscode/
 /build/
-/Lib/
-/Scripts/
-pyvenv.cfg
-
-# .git\info\exclude

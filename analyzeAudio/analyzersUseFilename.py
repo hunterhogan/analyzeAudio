@@ -1,6 +1,7 @@
 """Analyzers that use the filename of an audio file to analyze its audio data."""
+# ruff: noqa: D103
+from analyzeAudio import cacheAudioAnalyzers, registrationAudioAspect
 from analyzeAudio.pythonator import pythonizeFFprobe
-from analyzeAudio import registrationAudioAspect, cacheAudioAnalyzers
 from os import PathLike
 from statistics import mean
 from typing import Any, cast
@@ -12,22 +13,31 @@ import subprocess
 
 @registrationAudioAspect('SI-SDR mean')
 def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
-	"""
-	Calculate the mean Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) between two audio files.
-	This function uses FFmpeg to compute the SI-SDR between two audio files specified by their paths.
-	The SI-SDR values are extracted from the FFmpeg output and their mean is calculated.
-	Parameters:
-		pathFilenameAlpha: Path to the first audio file.
-		pathFilenameBeta: Path to the second audio file.
-	Returns:
-		SI_SDRmean: The mean SI-SDR value in decibels (dB).
-	Raises:
-		subprocess.CalledProcessError: If the FFmpeg command fails.
-		ValueError: If no SI-SDR values are found in the FFmpeg output.
+	"""Calculate the mean Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) between two audio files.
+
+	Parameters
+	----------
+	pathFilenameAlpha : str | PathLike[Any]
+		Path to the first audio file.
+	pathFilenameBeta : str | PathLike[Any]
+		Path to the second audio file.
+
+	Returns
+	-------
+	SI_SDRmean : float | None
+		The mean SI-SDR value in decibels (dB).
+
+	Raises
+	------
+	subprocess.CalledProcessError
+		If the FFmpeg command fails.
+	ValueError
+		If no SI-SDR values are found in the FFmpeg output.
+
 	"""
 	commandLineFFmpeg = [
 		'ffmpeg', '-hide_banner', '-loglevel', '32',
-		'-i', f'{str(pathlib.Path(pathFilenameAlpha))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',
+		'-i', f'{str(pathlib.Path(pathFilenameAlpha))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',  # noqa: RUF010
 		'-filter_complex', '[0][1]asisdr', '-f', 'null', '-'
 	]
 	systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, check=True, stderr=subprocess.PIPE)
@@ -37,8 +47,7 @@ def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str 
 	regexSI_SDR = regex.compile(r"^\[Parsed_asisdr_.* (.*) dB", regex.MULTILINE)
 
 	listMatchesSI_SDR = regexSI_SDR.findall(stderrFFmpeg)
-	SI_SDRmean = mean(float(match) for match in listMatchesSI_SDR)
-	return SI_SDRmean
+	return mean(float(match) for match in listMatchesSI_SDR)
 
 @cachetools.cached(cache=cacheAudioAnalyzers)
 def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
@@ -67,16 +76,16 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 	dictionaryAspectsAnalyzed: dict[str, float] = {}
 	if 'aspectralstats' in FFprobeStructured:
 		for keyName in FFprobeStructured['aspectralstats']:
-			# No matter how many channels, each keyName is `numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]`
-			# where `tuple[int, int]` is (channel, frame)
-			# NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing
-			# dictionaryAspectsAnalyzed[keyName] = FFprobeStructured['aspectralstats'][keyName]
+			"""No matter how many channels, each keyName is `numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]`
+			where `tuple[int, int]` is (channel, frame)
+			NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing
+			dictionaryAspectsAnalyzed[keyName] = FFprobeStructured['aspectralstats'][keyName]"""
 			dictionaryAspectsAnalyzed[keyName] = numpy.mean(FFprobeStructured['aspectralstats'][keyName]).astype(float)
 	if 'r128' in FFprobeStructured:
 		for keyName in FFprobeStructured['r128']:
 			dictionaryAspectsAnalyzed[keyName] = FFprobeStructured['r128'][keyName][-1]
 	if 'astats' in FFprobeStructured:
-		for keyName, arrayFeatureValues in cast(dict[str, numpy.ndarray[Any, Any]], FFprobeStructured['astats']).items():
+		for keyName, arrayFeatureValues in cast('dict[str, numpy.ndarray[Any, Any]]', FFprobeStructured['astats']).items():
 			dictionaryAspectsAnalyzed[keyName.split('.')[-1]] = numpy.mean(arrayFeatureValues[..., -1:None]).astype(float)
 
 	return dictionaryAspectsAnalyzed
@@ -187,7 +196,6 @@ def analyzeRolloff(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Abs_Peak_count')
 def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> float | None:
-	print('Abs_Peak_count', pathFilename)
 	return ffprobeShotgunAndCache(pathFilename).get('Abs_Peak_count')
 
 @registrationAudioAspect('Bit_depth')
