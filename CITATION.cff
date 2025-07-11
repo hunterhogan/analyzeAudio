@@ -1,42 +1,43 @@
-abstract: analyzeAudio is a Python package for measuring aspects of audio files. It
-  provides comprehensive audio analysis capabilities including spectral measurements
-  (centroid, contrast, flatness, etc.), loudness metrics (LUFS, RMS), temporal features
-  (tempo, zero-crossing rate), and signal quality assessments (SRMR). The library
-  integrates with FFmpeg/FFprobe for efficient analysis and supports both single file
-  and batch processing with concurrent execution.
+abstract: analyzeAudio is a Python package for measuring aspects of audio files.
+  It provides comprehensive audio analysis capabilities including spectral 
+  measurements (centroid, contrast, flatness, etc.), loudness metrics (LUFS, 
+  RMS), temporal features (tempo, zero-crossing rate), and signal quality 
+  assessments (SRMR). The library integrates with FFmpeg/FFprobe for efficient 
+  analysis and supports both single file and batch processing with concurrent 
+  execution.
 authors:
 - given-names: Hunter
   family-names: Hogan
   email: HunterHogan@pm.me
 cff-version: 1.2.0
-commit: f290c22f91d5b01d9ec3ff31cceeb165ffca7962
-date-released: '2025-05-20'
+commit: f0fb2e6d6fa572aa9ce62f9662cf1fea997b4c9f
+date-released: '2025-07-11'
 identifiers:
 - type: url
-  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.16
-  description: The URL for analyzeAudio 0.0.16.
+  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.17
+  description: The URL for analyzeAudio 0.0.17.
 keywords:
-- audio
-- analysis
-- measurement
-- metrics
-- torch
-- spectrum
-- spectral
-- waveform
-- loudness
-- LUFS
-- RMS
 - FFmpeg
 - FFprobe
+- LUFS
+- RMS
 - SRMR
+- analysis
+- audio
 - audio-analysis
+- loudness
+- measurement
+- metrics
 - signal-processing
+- spectral
+- spectrum
+- torch
+- waveform
 license: CC-BY-NC-4.0
 message: Cite this software with the metadata in this file.
 repository: https://github.com/hunterhogan/analyzeAudio.git
-repository-artifact: https://pypi.org/project/analyzeaudio/0.0.16/
-repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.16
+repository-artifact: https://pypi.org/project/analyzeaudio/0.0.17/
+repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.0.17
 title: analyzeAudio
 url: https://github.com/hunterhogan/analyzeAudio
-version: 0.0.16
+version: 0.0.17
