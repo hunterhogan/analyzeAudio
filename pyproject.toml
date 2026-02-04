@@ -1,9 +1,9 @@
 [project]
 name = "analyzeAudio"
-version = "0.0.17"
+version = "0.0.18"
 description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { 'text' = "CC-BY-NC-4.0" }
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 keywords = [
@@ -36,10 +36,10 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Multimedia :: Sound/Audio",
   "Topic :: Multimedia :: Sound/Audio :: Analysis",
   "Topic :: Multimedia :: Sound/Audio :: Conversion",
@@ -47,7 +47,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Typing :: Typed",
 ]
-urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Issues = "https://github.com/hunterhogan/", Repository = "https://github.com/hunterhogan/analyzeAudio.git" }
+urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Issues = "https://github.com/hunterhogan/analyzeAudio/issues", Repository = "https://github.com/hunterhogan/analyzeAudio.git" }
 dependencies = [
   "Z0Z_tools",
   "cachetools",
@@ -61,11 +61,12 @@ dependencies = [
   "tqdm",
   "typing_extensions",
 ]
-optional-dependencies = { testing = [
+optional-dependencies = { development = [
+  "setuptools-scm",
+], testing = [
   "pytest",
   "pytest-cov",
   "pytest-xdist",
-  "pyupgrade",
 ] }
 
 [project.scripts]
@@ -89,9 +90,9 @@ run = { branch = true, concurrency = [
 ] }
 xml = { output = "tests/coverage/coverage.xml" }
 
-[tool.pytest.ini_options]
+[tool.pytest]
 addopts = ["--color=auto", "-n 4"]
-log_auto_indent = true
+log_auto_indent = "On"
 testpaths = ["tests"]
 
 [tool.setuptools]

@@ -37,7 +37,7 @@ def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str 
 	"""
 	commandLineFFmpeg = [
 		'ffmpeg', '-hide_banner', '-loglevel', '32',
-		'-i', f'{str(pathlib.Path(pathFilenameAlpha))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',  # noqa: RUF010
+		'-i', f'{str(pathlib.Path(pathFilenameAlpha))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',
 		'-filter_complex', '[0][1]asisdr', '-f', 'null', '-'
 	]
 	systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, check=True, stderr=subprocess.PIPE)

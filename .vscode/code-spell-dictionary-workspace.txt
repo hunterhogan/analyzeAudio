@@ -1,0 +1,27 @@
+# Custom Dictionary Words
+amovie
+asisdr
+aspectralstats
+astats
+Blackdetect
+cachetools
+Chromagram
+dists
+ebur
+ffprobe
+framelog
+fricken
+lavfi
+LUFS
+optype
+pythonator
+pythonize
+Rmean
+rolloff
+samplerate
+signalstats
+softprops
+SRMR
+sunau
+Tempogram
+torchmetrics

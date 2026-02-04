@@ -1,0 +1,150 @@
+
+`ffprobe -hide_banner -sections`:
+
+Sections:
+W... = Section is a wrapper (contains other sections, no local entries)
+.A.. = Section contains an array of elements of the same type
+..V. = Section may contain a variable number of fields with variable keys
+...T = Section contain a unique type
+FLAGS NAME/UNIQUE_NAME
+----
+W...   root
+.A..      chapters
+....          chapter
+..V.              tags/chapter_tags
+....      format
+..V.          tags/format_tags
+.A..      frames
+....          frame
+..V.              tags/frame_tags
+.A..              side_data_list/frame_side_data_list
+..VT                  side_data/frame_side_data
+.A..                      timecodes
+....                          timecode
+.A..                      components/frame_side_data_components
+..VT                          component/frame_side_data_component
+.A..                              pieces/frame_side_data_pieces
+..VT                                  piece/frame_side_data_piece
+.A..              logs
+....                  log
+....          subtitle
+.A..      programs
+....          program
+..V.              tags/program_tags
+.A..              streams/program_streams
+....                  stream/program_stream
+....                      disposition/program_stream_disposition
+..V.                      tags/program_stream_tags
+.A..      stream_groups
+....          stream_group
+..V.              tags/stream_group_tags
+....              disposition/stream_group_disposition
+.A..              components/stream_group_components
+..VT                  component/stream_group_component
+.A..                      subcomponents
+..VT                          subcomponent
+.A..                              pieces/stream_group_pieces
+..VT                                  piece/stream_group_piece
+.A..                                      subpieces
+..VT                                          subpiece
+.A..                                              blocks
+..VT                                                  block
+.A..              streams/stream_group_streams
+....                  stream/stream_group_stream
+....                      disposition/stream_group_stream_disposition
+..V.                      tags/stream_group_stream_tags
+.A..      streams
+....          stream
+....              disposition/stream_disposition
+..V.              tags/stream_tags
+.A..              side_data_list/stream_side_data_list
+..VT                  side_data/stream_side_data
+.A..      packets
+....          packet
+..V.              tags/packet_tags
+.A..              side_data_list/packet_side_data_list
+..VT                  side_data/packet_side_data
+....      error
+....      program_version
+.A..      library_versions
+....          library_version
+.A..      pixel_formats
+....          pixel_format
+....              flags/pixel_format_flags
+.A..              components/pixel_format_components
+....                  component
+
+Sample output:
+packets.packet.0.codec_type="audio"
+packets.packet.0.stream_index=0
+packets.packet.0.pts=0
+packets.packet.0.pts_time="0.000000"
+packets.packet.0.dts=0
+packets.packet.0.dts_time="0.000000"
+packets.packet.0.duration=4096
+packets.packet.0.duration_time="0.092880"
+packets.packet.0.size="16384"
+packets.packet.0.pos="44"
+packets.packet.0.flags="K__"
+packets.packet.1.codec_type="audio"
+packets.packet.1.stream_index=0
+packets.packet.1.pts=4096
+packets.packet.1.pts_time="0.092880"
+...
+
+library_versions/library_version/0/name="libavutil"
+library_versions/library_version/0/major=59
+library_versions/library_version/0/minor=45
+library_versions/library_version/0/micro=100
+library_versions/library_version/0/version=3878244
+library_versions/library_version/0/ident="Lavu59.45.100"
+library_versions/library_version/1/name="libavcodec"
+library_versions/library_version/1/major=61
+...
+
+frames,frame,0,media_type="audio"
+frames,frame,0,stream_index=0
+frames,frame,0,key_frame=1
+frames,frame,0,pts=0
+frames,frame,0,pts_time="0.000000"
+frames,frame,0,pkt_dts=0
+frames,frame,0,pkt_dts_time="0.000000"
+frames,frame,0,best_effort_timestamp=0
+frames,frame,0,best_effort_timestamp_time="0.000000"
+frames,frame,0,duration=4096
+frames,frame,0,duration_time="0.092880"
+frames,frame,0,pkt_pos="44"
+frames,frame,0,pkt_size="16384"
+frames,frame,0,sample_fmt="s16"
+frames,frame,0,nb_samples=4096
+frames,frame,0,channels=2
+frames,frame,0,channel_layout="unknown"
+frames,frame,1,media_type="audio"
+frames,frame,1,stream_index=0
+...
+
+One undocumented difference:
+
+packets_and_frames.frame.0.duration_time="0.092880"
+packets_and_frames.frame.0.pkt_pos="44"
+packets_and_frames.frame.0.pkt_size="16384"
+packets_and_frames.frame.0.sample_fmt="s16"
+packets_and_frames.frame.0.nb_samples=4096
+packets_and_frames.frame.0.channels=2
+packets_and_frames.frame.0.channel_layout="unknown"
+packets_and_frames.packet.1.codec_type="audio"
+packets_and_frames.packet.1.stream_index=0
+packets_and_frames.packet.1.pts=4096
+packets_and_frames.packet.1.pts_time="0.092880"
+packets_and_frames.packet.1.dts=4096
+packets_and_frames.packet.1.dts_time="0.092880"
+packets_and_frames.packet.1.duration=4096
+packets_and_frames.packet.1.duration_time="0.092880"
+packets_and_frames.packet.1.size="16384"
+packets_and_frames.packet.1.pos="16428"
+packets_and_frames.packet.1.flags="K__"
+packets_and_frames.frame.1.media_type="audio"
+packets_and_frames.frame.1.stream_index=0
+packets_and_frames.frame.1.key_frame=1
+
+In total, 100% of the output from FFprove can be accessed with `-show_entries root` and any subdivision of the output can be accessed with the "flags".

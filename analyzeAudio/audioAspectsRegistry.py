@@ -1,6 +1,6 @@
 from collections.abc import Callable, Sequence  # noqa: D100
 from concurrent.futures import as_completed, ProcessPoolExecutor
-from hunterMakesPy import defineConcurrencyLimit, oopsieKwargsie
+from hunterMakesPy.parseParameters import defineConcurrencyLimit, oopsieKwargsie
 from multiprocessing import set_start_method as multiprocessing_set_start_method
 from numpy.typing import NDArray
 from os import PathLike
@@ -29,7 +29,6 @@ audioAspect: TypeAlias = str
 class analyzersAudioAspects(TypedDict):  # noqa: D101
 	analyzer: Callable[..., Any]
 	analyzerParameters: list[str]
-
 
 audioAspects: dict[audioAspect, analyzersAudioAspects] = {}
 """A register of 1) measurable aspects of audio data, 2) analyzer functions to measure audio aspects, 3) and parameters of analyzer functions."""
@@ -75,7 +74,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 
 				"""
 				aspectValue = registrant(*arguments, **keywordArguments)
-				return numpy.mean(cast('NDArray[Any]', aspectValue))
+				return numpy.mean(cast(NDArray[Any], aspectValue))
 				# return aspectValue.mean()
 			audioAspects[f"{aspectName} mean"] = {
 				'analyzer': registrationAudioAspectMean,
@@ -117,7 +116,7 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 		try:
 			tensorAudio = torch.from_numpy(waveform)  # pyright: ignore[reportUnknownMemberType] # memory-sharing  # noqa: F841
 			tryAgain = False
-		except RuntimeError as ERRORmessage:  # noqa: PERF203
+		except RuntimeError as ERRORmessage:
 			if 'negative stride' in str(ERRORmessage):
 				waveform = waveform.copy()  # not memory-sharing
 				tryAgain = True
@@ -138,7 +137,7 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 
 	return [dictionaryAspectsAnalyzed[aspectName] for aspectName in listAspectNames]
 
-def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[PathLike[Any]], listAspectNames: list[str], CPUlimit: int | float | bool | None = None) -> list[list[str | float | NDArray[Any]]]:  # noqa: FBT001, PYI041
+def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[PathLike[Any]], listAspectNames: list[str], CPUlimit: int | float | bool | None = None) -> list[list[str | float | NDArray[Any]]]:  # noqa: FBT001
 	"""
 	Analyzes a list of audio files for specified aspects of the individual files and returns the results.
 

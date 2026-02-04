@@ -17,7 +17,7 @@ class Blackdetect(NamedTuple):  # noqa: D101
 	black_start: float | None = None
 	black_end: float | None = None
 
-def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[defaultdict[str, Any] | dict[str, Any], dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]]]:  # noqa: C901, PLR0912, PLR0915
+def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[defaultdict[str, Any] | dict[str, Any], dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]]]:
 	FFroot: dict[str, Any] = json.loads(FFprobeJSON_utf8)
 	Z0Z_dictionaries: dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]] = {}
 	if 'packets_and_frames' in FFroot: # Divide into 'packets' and 'frames'
@@ -92,7 +92,7 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[defaultdict[str, Any] | dic
 											Z0Z_dictionaries[registrant] = {}
 										elif statistic not in Z0Z_dictionaries[registrant]:
 												# NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing  # noqa: ERA001
-												valueSherpa = cast('numpy.ndarray', numpy.zeros((channel, len(FFroot['frames']))))  # pyright: ignore[reportMissingTypeArgument, reportUnknownVariableType]
+												valueSherpa = cast(numpy.ndarray, numpy.zeros((channel, len(FFroot['frames']))))  # pyright: ignore[reportMissingTypeArgument, reportUnknownVariableType]
 												Z0Z_dictionaries[registrant][statistic] = valueSherpa
 										else:
 											raise  # Re-raise the exception

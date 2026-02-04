@@ -16,15 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-      - run: python -m pip install toml
+          python-version: '>=3.11'
       - name: Get package version
         id: getVersionPackage
         run: |
-          versionPackage=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          versionPackage=$(python -c "import tomllib; from pathlib import Path; print(tomllib.loads(Path('pyproject.toml').read_text())['project']['version'])")
           echo "versionPackage=$versionPackage" >> "$GITHUB_OUTPUT"
       - name: Check for existing release
         id: checkRelease

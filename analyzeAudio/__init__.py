@@ -1,5 +1,7 @@
-from .audioAspectsRegistry import registrationAudioAspect, cacheAudioAnalyzers, analyzeAudioFile, \
-	analyzeAudioListPathFilenames, getListAvailableAudioAspects, audioAspects
+"""Docstring?! Ain't nobody got time for that!."""
+from .audioAspectsRegistry import (
+	analyzeAudioFile, analyzeAudioListPathFilenames, audioAspects, cacheAudioAnalyzers, getListAvailableAudioAspects,
+	registrationAudioAspect)
 
 __all__ = [
 	'analyzeAudioFile',
@@ -8,7 +10,5 @@ __all__ = [
 	'getListAvailableAudioAspects',
 ]
 
-from . import analyzersUseFilename
-from . import analyzersUseSpectrogram
-from . import analyzersUseTensor
-from . import analyzersUseWaveform
+# isort: split
+from . import analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform
