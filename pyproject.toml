@@ -73,7 +73,7 @@ optional-dependencies = { development = [
 whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage]
