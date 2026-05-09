@@ -1,4 +1,7 @@
-from collections.abc import Callable, Sequence  # noqa: D100
+# noqa: D100
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
 from concurrent.futures import as_completed, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit, oopsieKwargsie
 from multiprocessing import set_start_method as multiprocessing_set_start_method
@@ -75,7 +78,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 				"""
 				aspectValue = registrant(*arguments, **keywordArguments)
 				return numpy.mean(cast(NDArray[Any], aspectValue))
-				# return aspectValue.mean()
+				# return aspectValue.mean()  # noqa: ERA001
 			audioAspects[f"{aspectName} mean"] = {
 				'analyzer': registrationAudioAspectMean,
 				'analyzerParameters': inspect.getfullargspec(registrant).args
@@ -180,7 +183,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 	rowsListFilenameAspectValues: list[list[str | float | NDArray[Any]]] = []
 
 	if not (CPUlimit is None or isinstance(CPUlimit, (bool, int, float))):
-		CPUlimit = oopsieKwargsie(CPUlimit)
+		CPUlimit = oopsieKwargsie(CPUlimit)  # ty:ignore[invalid-assignment]
 	max_workers = defineConcurrencyLimit(limit=CPUlimit)
 
 	with ProcessPoolExecutor(max_workers=max_workers) as concurrencyManager:

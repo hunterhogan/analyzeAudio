@@ -1,4 +1,6 @@
 """Analyzers that use the tensor to analyze audio data."""
+from __future__ import annotations
+
 from analyzeAudio import registrationAudioAspect
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 from typing import Any

@@ -1,5 +1,7 @@
 """Convert FFprobe output to a standardized Python object."""
 # ruff: noqa: D103
+from __future__ import annotations
+
 from collections import defaultdict
 from typing import Any, cast, NamedTuple
 import json
@@ -27,8 +29,8 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[defaultdict[str, Any] | dic
 				FFroot[section := packetOrFrame['type'] + 's'].append(packetOrFrame)
 				del FFroot[section][-1]['type']
 			else:
-				msg = "'packets_and_frames' for the win!"
-				raise ValueError(msg)
+				message = "'packets_and_frames' for the win!"
+				raise ValueError(message)
 		del FFroot['packets_and_frames']
 
 	Z0Z_register = [

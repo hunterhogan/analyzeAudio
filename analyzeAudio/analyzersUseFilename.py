@@ -1,5 +1,7 @@
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 # ruff: noqa: D103
+from __future__ import annotations
+
 from analyzeAudio import cacheAudioAnalyzers, registrationAudioAspect
 from analyzeAudio.pythonator import pythonizeFFprobe
 from os import PathLike

@@ -1,5 +1,7 @@
 """Analyzers that use the spectrogram to analyze audio data."""
 # ruff: noqa: D103
+from __future__ import annotations
+
 from analyzeAudio import audioAspects, cacheAudioAnalyzers, registrationAudioAspect
 from numpy import dtype, floating
 from typing import Any

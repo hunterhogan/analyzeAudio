@@ -1,5 +1,7 @@
 """Analyzers that use the waveform of audio data."""
 # ruff: noqa: D103
+from __future__ import annotations
+
 from analyzeAudio import audioAspects, cacheAudioAnalyzers, registrationAudioAspect
 from typing import Any
 import cachetools

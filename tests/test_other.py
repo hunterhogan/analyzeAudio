@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from collections.abc import Callable
-from hunterMakesPy.pytestForYourUse import PytestFor_defineConcurrencyLimit, PytestFor_oopsieKwargsie
+from hunterMakesPy.tests.test_parseParameters import PytestFor_defineConcurrencyLimit, PytestFor_oopsieKwargsie
 import pytest
 
 @pytest.mark.parametrize("nameOfTest,callablePytest", PytestFor_defineConcurrencyLimit())

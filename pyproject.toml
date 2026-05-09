@@ -5,6 +5,7 @@ description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.11"
 license = "CC-BY-NC-4.0"
+license-files = ["LICEN[CS]E*"]
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 keywords = [
   "FFmpeg",
@@ -47,7 +48,6 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Typing :: Typed",
 ]
-urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/analyzeAudio", Issues = "https://github.com/hunterhogan/analyzeAudio/issues", Repository = "https://github.com/hunterhogan/analyzeAudio.git" }
 dependencies = [
   "Z0Z_tools",
   "cachetools",
@@ -61,19 +61,25 @@ dependencies = [
   "tqdm",
   "typing_extensions",
 ]
-optional-dependencies = { development = [
-  "setuptools-scm",
-], testing = [
+optional-dependencies = { testing = [
   "pytest",
   "pytest-cov",
   "pytest-xdist",
 ] }
 
+[project.urls]
+Context7 = "https://context7.com/hunterhogan/analyzeaudio"
+Donate = "https://www.patreon.com/integrated"
+Download = "https://pypi.org/project/analyzeAudio"
+Homepage = "https://github.com/hunterhogan/analyzeAudio"
+Issues = "https://github.com/hunterhogan/analyzeAudio/issues"
+Repository = "https://github.com/hunterhogan/analyzeAudio.git"
+
 [project.scripts]
 whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
 
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage]
@@ -97,7 +103,7 @@ testpaths = ["tests"]
 
 [tool.setuptools]
 package-data = { "*" = ["py.typed"] }
-packages = { find = {  } }
+packages = { find = {} }
 
 [tool.updateCitation]
 filenameCitationDOTcff = "CITATION.cff"
