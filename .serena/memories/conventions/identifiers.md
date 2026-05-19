@@ -1,0 +1,23 @@
+# Identifier Conventions
+
+- Identifiers/labels include Python identifiers, type aliases, mapping keys, serialized keys, filenames, entry points, CLI flags, and environment variable names.
+- Default style: camelCase for variables, parameters, functions, methods, fixtures, and most labels.
+- Exceptions: pytest test functions use `test_*`; dunder names are allowed; underscores only when semantically meaningful.
+- Naming order is left-to-right: past -> future, cause -> effect, general -> specific.
+- Function/method names should encode explicit Subject-Verb-Object with trailing modifiers: `[S][V]O[adj][adv]`; callables include a verb and an explicit subject/actor when practical.
+- Use type/structure prefixes when semantically useful: `listPathFilenames`, `arraySpectrograms`, `dictionaryConcurrency`.
+- Domain compound terms are atomic: e.g. `powerSpectralDensity`, `amplitudeThreshold`, `lengthWindowingFunction`.
+- Proper nouns and referenced symbols keep canonical casing/spelling. Do not invent near-miss spellings or truncate.
+- One identifier has one meaning across scopes. Avoid reusing a name for different semantics.
+- Prohibited: single-character identifiers, bare `_`, abbreviations (`np`, `cfg`, `params`, `specs`), diminutives, empty semantics (`result`, `output`, `temp`, `data`, `thing`, `value`) unless no better domain term exists.
+- If a placeholder is truly needed, `Target` can be acceptable; do not append `Target` casually.
+- Boolean-returning callables should read as assertions with explicit subjects, e.g. `valueIs...`, `candidateIs...`, `pathIs...`.
+- Type aliases, `TypeVar`, `TypedDict`, `Protocol`, and `TypeAlias` names use initial capital and descriptive full words; no `T`, `P`, or shortened names.
+- Filesystem terms are strict:
+  - `path`: directory only.
+  - `filename`: filename only, no directory.
+  - `pathFilename`: full path including filename.
+  - `relativePath`: relative path only.
+  - Avoid `file` in identifiers.
+- Mapping/JSON/serialized keys are public labels. Do not rename them without explicit user opt-in; public serialized keys are breaking changes.
+- All caps is reserved for critical temporary emphasis such as `ERRORmessage`; `Z0Z_` is a special prefix and should not be changed casually.

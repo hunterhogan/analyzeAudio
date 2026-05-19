@@ -1,0 +1,25 @@
+# Docstring Conventions
+
+- Add/repair docstrings only when explicitly requested; otherwise let identifiers and types carry routine intent.
+- Use NumPy v1.10 style with local modifications:
+  - Replace generic `Notes` with semantic section names.
+  - Document public non-method attributes.
+  - Use Unicode math symbols, not LaTeX.
+  - Plain text plus NumPy headers; no reST roles/directives.
+  - Class `Parameters` belong in `__init__`, not class docstring.
+- Always use triple double quotes. End every prose sentence with a full stop. Avoid trailing colons in prose.
+- Summary line:
+  - Public identifiers: implied `You can ...`; start with a verb and state capability.
+  - Private identifiers: first-person maintainer role, e.g. `I use this ...`.
+  - Tie summaries to opaque signature names by stating role-bearing values.
+- New AI-created docstrings include `(AI generated docstring)` on its own line after the summary and blank line. When reformatting existing docstrings, do not add/remove this marker.
+- First body paragraph is non-technical and for non-specialists: explicit subject, purpose, acted-on value, returned/exposed value.
+- Section order: summary, AI marker, non-technical description, technical sections, `Parameters`, `Returns`/`Yields`, `Raises`, `Warns`, `Other Parameters`, `See Also`, semantic extended sections, `Examples`, `References`.
+- Parameters: exact parameter name, type annotation from signature, default after type if present, one-level-indented description, PEP 585/604 syntax.
+- Returns/Yields: meaningful return identifier plus type, not only a type.
+- Technical sections should predict content: `Mathematics`, `PyTorch`, `Shape Transformation`, etc. Never use `Notes`.
+- Mathematics sections use Unicode notation and fenced blocks when formal notation is needed.
+- Examples must come from real codebase usage discovered by search. Do not invent examples; if no usage exists, say so.
+- References section is required for external packages/APIs, subtle standard library APIs, related same-package identifiers, theoretical foundations, and standards. Verify links; cite references in first-use order.
+- Technical documentation prose: active voice, precise terms, repeated identifiers instead of pronouns, backticks for code/identifiers/keywords/types, no forced English plurality on identifiers, no idioms.
+- Never use the word `pipeline`; prefer transformation sequence, processing chain, or assembly line.

@@ -1,0 +1,22 @@
+# Code Generation Conventions
+
+- Semiotics-first: identifiers, structure, formatting, and paradigm choices are the primary semantic layer.
+- Model domain concepts directly. Use domain-canonical terms as atomic vocabulary; avoid near-synonyms.
+- Prefer functional/transformational style: pure functions, immutable transformations, explicit state changes.
+- Use established Python/library capabilities before custom algorithms: standard library, `itertools`, `more_itertools`, `toolz`, `numpy`, `pandas`, etc., when available and appropriate.
+- Loops need a reason: algorithmically essential, existential early-exit semantics, or measured performance need. Avoid `while-break`; put exit logic in the `while` condition.
+- Preserve semantic abstractions. Do not inline a named domain function/predicate just because the expression is short.
+- No superfluous bindings that only rename an existing expression used once. Use the original expression directly unless the binding carries new semantics.
+- Python-native boundaries: use `pathlib`/Python APIs for filesystem/text/data work. Use `subprocess` only for canonical external tools such as `git`, FFmpeg, or FFprobe.
+- Prefer typed Python configuration objects/modules over JSON/YAML/TOML/env vars unless the external format is a domain/tooling standard.
+- Do not create CLI apps or add `argparse`/`click`/`typer`. Prefer directly callable functions; ad-hoc script values belong in an explicit `if __name__ == '__main__':` block when needed.
+- Single return point by default. Multiple returns only for hot predicates, existential semantics, excessive restructuring cost, or clear measurable clarity.
+- Ternary expressions are rare; use explicit `if`/`else` unless constant selection is clearer.
+- Boundary validation belongs at system edges. Post-defensive internal code trusts invariants, avoids redundant guards, and lets invariant violations fail immediately.
+- Let no-op-capable operations handle empty inputs naturally. Avoid emptiness/truthiness/`None`/type checks after invariants are established.
+- Do not catch exceptions in post-defensive code unless crossing a system boundary.
+- Adding branches in hot/internal paths needs a reason: remove equivalent branch cost elsewhere or get user approval.
+- No artificial safety limits for infinite loops; fix/prove termination instead.
+- Never introduce `shutil.rmtree` in new code. Any unavoidable destructive action needs explicit rationale covering correctness need, blast radius, ownership/invariants, and safer alternatives.
+- Do not add docstrings unless explicitly requested; identifiers and types should carry most routine intent.
+- Add comments sparingly for non-obvious rationale, not to restate code.

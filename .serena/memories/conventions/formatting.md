@@ -1,0 +1,27 @@
+# Formatting Conventions
+
+- Before formatting, read `.editorconfig` and `pyproject.toml`; `.editorconfig` wins for indentation, line endings, trailing whitespace, final newline.
+- Current defaults: UTF-8, LF, tabs width 4 for code, max line 140; Markdown/TOML/YAML use 2 spaces and max line 102.
+- Foundational principle: left-to-right foreshadowing. Syntax should signal structure before readers encounter governed elements.
+- Prefer signatures on one line when possible. When wrapping, break at semantic boundaries, not arbitrary length.
+- Prefer parenthesized implicit continuation. Avoid backslash continuations.
+- Break before binary operators, preserve parallel line structure, keep related tokens together.
+- Never more than one consecutive blank line. Use one blank line between logical code paragraphs and before/after banner comments.
+- Major banners: `#======== Section Title ========================================` with one blank line before and after. Subsections use `#-------- Subsection Title -------------------------------------`.
+- Group related definitions contiguously; order alphabetically within groups unless dependency order is required.
+- Multi-line expression closing delimiter goes on its own line aligned with statement start. Import closing delimiter may share the final import line.
+- Comma semantics:
+  - Order-agnostic collections use trailing commas.
+  - Order-significant sequences and multi-line function calls use leading commas.
+  - Single-line calls use normal comma placement.
+- Import formatting is handled by isort; project says this is not hand-organized except when necessary.
+- Quotes:
+  - Docstrings: triple double quotes `"""`; raw docstrings only when backslashes require them.
+  - General strings: single quotes.
+  - f-strings: double quotes.
+  - `.format()` templates: double quotes.
+  - Multi-line strings: triple double quotes.
+  - Regex raw strings only when necessary.
+- Path literals: do not use raw strings for paths. Prefer `pathlib.Path`; convert to `str` only at interface boundaries.
+- Remove trailing whitespace; preserve final newline.
+- Preserve intentional vertical alignment in related declarations/assignments/tables. Additions to aligned blocks should maintain the alignment column.
