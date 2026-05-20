@@ -7,6 +7,7 @@ Blackdetect
 cachetools
 Chromagram
 dists
+dpkg
 ebur
 ffprobe
 framelog
@@ -19,6 +20,7 @@ pythonize
 Rmean
 rolloff
 samplerate
+showformat
 signalstats
 softprops
 SRMR

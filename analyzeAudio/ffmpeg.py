@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 
 def verifyFFmpegColab() -> None:
 	"""Upgrade FFmpeg if needed."""
@@ -12,12 +12,7 @@ def verifyFFmpegColab() -> None:
 		versionFFmpeg: str = ''
 		if Path('/usr/bin/dpkg-query').exists():
 			systemProcessLinuxFFmpegVersion: subprocess.CompletedProcess[str] = subprocess.run(
-				[
-					'/usr/bin/dpkg-query'
-					, '--show'
-					, '--showformat=${Version}'
-					, 'ffmpeg'
-				]
+				['/usr/bin/dpkg-query', '--show', '--showformat=${Version}', 'ffmpeg']
 				, check=False
 				, stdout=subprocess.PIPE
 				, stderr=subprocess.DEVNULL
@@ -28,7 +23,6 @@ def verifyFFmpegColab() -> None:
 				if ':' in versionFFmpeg:
 					_versionFFmpegEpochIgnored, versionFFmpeg = versionFFmpeg.split(':', maxsplit=1)
 		if versionFFmpeg == '':
-			# This argument list is the command: ffprobe -hide_banner -show_entries program_version=version -of csv=p=0.
 			systemProcessFFprobeVersion: subprocess.CompletedProcess[str] = subprocess.run(
 				['ffprobe', '-hide_banner', '-show_entries', 'program_version=version', '-of', 'csv=p=0']  # noqa: S607
 				, check=True
@@ -62,14 +56,7 @@ def verifyFFmpegColab() -> None:
 				, check=True
 			)
 			subprocess.run(
-				[
-					'/usr/bin/sudo'
-					, '/usr/bin/apt-get'
-					, 'remove'
-					, '-y'
-					, '--autoremove'
-					, 'ffmpeg'
-				]
+				['/usr/bin/sudo', '/usr/bin/apt-get', 'remove', '-y', '--autoremove', 'ffmpeg']
 				, check=True
 			)
 
