@@ -9,6 +9,6 @@ ffprobe -hide_banner -loglevel 0 %pFn% -of flat=s=';' -show_entries library_vers
 ffprobe -hide_banner -loglevel 0 %pFn% -of flat=s='.' -show_entries packets:frames>packets_frames.txt
 
 
-@REM Parse everthing into a data frame: the parser is static and highly predictable.
+@REM Parse everything into a data frame: the parser is static and highly predictable.
 @REM To get data, 1) build a filtergraph that is compatible with FFprobe
 @REM 2) query the data frame

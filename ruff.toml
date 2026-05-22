@@ -67,6 +67,8 @@ banned-aliases = { numpy = ["np"], pandas = ["pd"], regex = ["re"] }
 
 [lint.flake8-import-conventions.aliases]
 "accelerate.utils.dataclasses" = "accelerate_dataclasses"
+"fs.path" = "fs_path"
+"itertools.product" = "CartesianProduct"
 "torch.autograd.grad" = "torch_grad"
 "torch.nn.functional" = "F"
 "torch.nn.parallel.DistributedDataParallel" = "DDP"

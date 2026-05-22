@@ -4,14 +4,39 @@ from __future__ import annotations
 
 from analyzeAudio import cacheAudioAnalyzers, registrationAudioAspect
 from analyzeAudio.pythonator import pythonizeFFprobe
-from os import PathLike
 from statistics import mean
-from typing import Any, cast
+from typing import Any, cast, TYPE_CHECKING
 import cachetools
 import numpy
 import pathlib
 import re as regex
 import subprocess
+
+if TYPE_CHECKING:
+	from os import PathLike
+
+def _meanDB(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], filterChain: str) -> float | None:
+	regexPattern = regex.compile(rf"^\[Parsed_{filterChain}_.* (.*) dB", regex.MULTILINE)
+	commandLineFFmpeg = [
+		'ffmpeg', '-hide_banner', '-loglevel', '32',
+		'-i', f'{str(pathlib.Path(pathFilenameAlpha))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',
+		'-filter_complex', f'[0][1]{filterChain}', '-f', 'null', '-'
+	]
+	systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, check=True, stderr=subprocess.PIPE)
+
+	stderrFFmpeg: str = systemProcessFFmpeg.stderr.decode()
+
+	return mean(map(float, regexPattern.findall(stderrFFmpeg)))
+
+@registrationAudioAspect('Peak Signal-to-Noise Ratio mean')
+def getPSNRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+	filterChain: str = 'apsnr'
+	return _meanDB(pathFilenameAlpha, pathFilenameBeta, filterChain)
+
+@registrationAudioAspect('SDR mean')
+def getSDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+	filterChain: str = 'asdr'
+	return _meanDB(pathFilenameAlpha, pathFilenameBeta, filterChain)
 
 @registrationAudioAspect('SI-SDR mean')
 def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
@@ -37,19 +62,8 @@ def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str 
 		If no SI-SDR values are found in the FFmpeg output.
 
 	"""
-	commandLineFFmpeg = [
-		'ffmpeg', '-hide_banner', '-loglevel', '32',
-		'-i', f'{str(pathlib.Path(pathFilenameAlpha))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',
-		'-filter_complex', '[0][1]asisdr', '-f', 'null', '-'
-	]
-	systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, check=True, stderr=subprocess.PIPE)
-
-	stderrFFmpeg = systemProcessFFmpeg.stderr.decode()
-
-	regexSI_SDR = regex.compile(r"^\[Parsed_asisdr_.* (.*) dB", regex.MULTILINE)
-
-	listMatchesSI_SDR = regexSI_SDR.findall(stderrFFmpeg)
-	return mean(float(match) for match in listMatchesSI_SDR)
+	filterChain: str = 'asisdr'
+	return _meanDB(pathFilenameAlpha, pathFilenameBeta, filterChain)
 
 @cachetools.cached(cache=cacheAudioAnalyzers)
 def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
@@ -58,13 +72,13 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 	lavfiPathFilename = pFn.drive.replace(":", "\\\\:")+pathlib.PureWindowsPath(pFn.root,pFn.relative_to(pFn.anchor)).as_posix()
 
 	filterChain: list[str] = []
-	filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Dynamic_range:measure_overall=all"]
+	filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Zero_crossings+Dynamic_range:measure_overall=all"]
 	filterChain += ["aspectralstats"]
 	filterChain += ["ebur128=metadata=1:framelog=quiet"]
 
-	entriesFFprobe = ["frame_tags"]
+	entriesFFprobe: list[str] = ["frame_tags"]
 
-	commandLineFFprobe = [
+	commandLineFFprobe: list[str] = [
 		"ffprobe", "-hide_banner",
 		"-f", "lavfi", f"amovie={lavfiPathFilename},{','.join(filterChain)}",
 		"-show_entries", ':'.join(entriesFFprobe),
@@ -91,6 +105,10 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 			dictionaryAspectsAnalyzed[keyName.split('.')[-1]] = numpy.mean(arrayFeatureValues[..., -1:None]).astype(float)
 
 	return dictionaryAspectsAnalyzed
+
+@registrationAudioAspect('Zero crossings')
+def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> float | None:
+	return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings')
 
 @registrationAudioAspect('Zero-crossings rate')
 def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | None:
