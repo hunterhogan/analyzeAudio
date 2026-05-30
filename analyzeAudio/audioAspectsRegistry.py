@@ -1,15 +1,12 @@
 # noqa: D100
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
 from concurrent.futures import as_completed, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit, oopsieKwargsie
 from multiprocessing import set_start_method as multiprocessing_set_start_method
-from numpy.typing import NDArray
-from os import PathLike
-from typing import Any, cast, ParamSpec, TypeAlias, TypeVar
+from typing import Any, cast, ParamSpec, TYPE_CHECKING, TypeVar
 from typing_extensions import TypedDict
-from Z0Z_tools import Spectrogram, stft
+from Z0Z_tools import stft
 import cachetools
 import contextlib
 import inspect
@@ -19,6 +16,11 @@ import soundfile
 import torch
 import warnings
 
+if TYPE_CHECKING:
+	from collections.abc import Callable, Sequence
+	from numpy.typing import NDArray
+	from os import PathLike
+
 with contextlib.suppress(RuntimeError):
 	multiprocessing_set_start_method('spawn')
 
@@ -27,13 +29,11 @@ warnings.filterwarnings('ignore', category=UserWarning, module='torchmetrics', m
 parameterSpecifications = ParamSpec('parameterSpecifications')
 typeReturned = TypeVar('typeReturned')
 
-audioAspect: TypeAlias = str
-
 class analyzersAudioAspects(TypedDict):  # noqa: D101
 	analyzer: Callable[..., Any]
 	analyzerParameters: list[str]
 
-audioAspects: dict[audioAspect, analyzersAudioAspects] = {}
+audioAspects: dict[str, analyzersAudioAspects] = {}
 """A register of 1) measurable aspects of audio data, 2) analyzer functions to measure audio aspects, 3) and parameters of analyzer functions."""
 
 def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpecifications, typeReturned]], Callable[parameterSpecifications, typeReturned]]:
@@ -44,7 +44,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 	aspectName : str
 		The audio aspect that the registrar will enter into the register, `audioAspects`.
 
-	"""
+	"""  # noqa: DOC201
 
 	def registrar(registrant: Callable[parameterSpecifications, typeReturned]) -> Callable[parameterSpecifications, typeReturned]:
 		"""
@@ -59,13 +59,13 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 		----
 		`registrar` does not change the behavior of `registrant`, the analyzer function.
 
-		"""
+		"""  # noqa: DOC201
 		audioAspects[aspectName] = {
 			'analyzer': registrant,
 			'analyzerParameters': inspect.getfullargspec(registrant).args
 		}
 
-		if isinstance(registrant.__annotations__.get('return', type(None)), type) and issubclass(registrant.__annotations__.get('return', type(None)), numpy.ndarray): # maybe someday I will understand what all of this statement means
+		if isinstance(registrant.__annotations__.get('return', type(None)), type) and issubclass(registrant.__annotations__.get('return', type(None)), numpy.ndarray):  # maybe someday I will understand what all of this statement means
 			def registrationAudioAspectMean(*arguments: parameterSpecifications.args, **keywordArguments: parameterSpecifications.kwargs) -> numpy.floating[Any]:
 				"""
 				`registrar` updates the registry with a new analyzer function that calculates the mean of the analyzer's numpy.ndarray result.
@@ -77,7 +77,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 
 				"""
 				aspectValue = registrant(*arguments, **keywordArguments)
-				return numpy.mean(cast(NDArray[Any], aspectValue))
+				return numpy.mean(cast('NDArray[Any]', aspectValue))
 				# return aspectValue.mean()  # noqa: ERA001
 			audioAspects[f"{aspectName} mean"] = {
 				'analyzer': registrationAudioAspectMean,
@@ -102,8 +102,8 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 	listAspectValues : list of (str or float or NDArray)
 		A list of analyzed values in the same order as `listAspectNames`.
 
-	"""
-	pathlib.Path(pathFilename).stat() # raises FileNotFoundError if the file does not exist
+	"""  # noqa: DOC501
+	pathlib.Path(pathFilename).stat()  # raises FileNotFoundError if the file does not exist
 	dictionaryAspectsAnalyzed: dict[str, str | float | NDArray[Any]] = dict.fromkeys(listAspectNames, 'not found')
 	"""Despite returning a list, use a dictionary to preserve the order of the listAspectNames.
 	Similarly, 'not found' ensures the returned list length == len(listAspectNames)"""
@@ -117,7 +117,7 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 	tryAgain = True
 	while tryAgain:
 		try:
-			tensorAudio = torch.from_numpy(waveform)  # pyright: ignore[reportUnknownMemberType] # memory-sharing  # noqa: F841
+			tensorAudio = torch.from_numpy(waveform)  # pyright: ignore[reportUnusedVariable, reportUnknownMemberType] # memory-sharing  # noqa: F841
 			tryAgain = False
 		except RuntimeError as ERRORmessage:
 			if 'negative stride' in str(ERRORmessage):
@@ -128,9 +128,9 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: list[st
 
 	spectrogram = stft(waveform, sampleRate=sampleRate)
 	spectrogramMagnitude = numpy.absolute(spectrogram)
-	spectrogramPower = spectrogramMagnitude ** 2  # noqa: F841
+	spectrogramPower = spectrogramMagnitude ** 2  # pyright: ignore[reportUnusedVariable] # noqa: F841
 
-	pytorchOnCPU = not torch.cuda.is_available()  # False if GPU available, True if not  # noqa: F841
+	pytorchOnCPU = not torch.cuda.is_available()  # pyright: ignore[reportUnusedVariable] # False if GPU available, True if not  # noqa: F841
 
 	for aspectName in listAspectNames:
 		if aspectName in audioAspects:

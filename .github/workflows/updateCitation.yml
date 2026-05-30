@@ -24,6 +24,8 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install and run updateCitation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -e
           pip install updateCitation

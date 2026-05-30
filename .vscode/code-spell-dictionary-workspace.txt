@@ -3,11 +3,13 @@ amovie
 asisdr
 aspectralstats
 astats
+axcorrelate
 Blackdetect
 cachetools
 Chromagram
 dists
 dpkg
+drmeter
 ebur
 ffprobe
 framelog

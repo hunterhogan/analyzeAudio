@@ -106,14 +106,14 @@ of module purpose and organization.
 Contents
 --------
 Functions
-    functionAlpha
-        One-line description of functionAlpha.
+    functionAlfa
+        One-line description of functionAlfa.
     functionBeta
         One-line description of functionBeta.
 
 Classes
-    ClassAlpha
-        One-line description of ClassAlpha.
+    ClassAlfa
+        One-line description of ClassAlfa.
 
 """
 import ...
@@ -277,6 +277,29 @@ sections unless those mechanics are the main user-facing point.
 - Format: `meaningfulName : returnType`
 - For generators, use `Yields` instead of `Returns`.
 
+### See Also
+
+- Use `See Also` only when a reader could reasonably choose the referenced symbol instead of the
+    current symbol.
+- Do not use `See Also` for caller-callee relationships, implementation-detail relationships,
+    containment relationships, or dependency relationships. Use the non-technical description or
+    `References` instead.
+- Always format each `See Also` entry on two lines because formatters and IDE renderers are more
+    reliable with this layout.
+
+```text
+See Also
+--------
+`alternativeSymbol`
+        One-line description.
+`package.other_module.AlternativeClass`
+        One-line description.
+```
+
+- When the referenced symbol is in the same module, use the local symbol name in backticks.
+- When the referenced symbol is in another module of the same package, use the full package path in
+    backticks.
+
 ### Make Section Names Predict Their Contents
 
 When additional information is needed beyond the standard sections, choose a section name that lets
@@ -427,7 +450,7 @@ def exampleFunction(data: list[int]) -> int:
         Seminumerical Algorithms (3rd ed.). Addison-Wesley.
     [3] gmpy2 - Context7
         https://gmpy2.readthedocs.io/en/latest/
-    [4] mapFolding.basecamp.countFolds
+    [4] `mapFolding.basecamp.countFolds`
     """
 ```
 
@@ -437,10 +460,15 @@ def exampleFunction(data: list[int]) -> int:
 - Cite references in the text using `[1]`, `[2]`, etc., immediately after the relevant term or concept.
 - Multiple references for one concept: `[1, 2]` or `[1][2]` (be consistent within a docstring).
 - List references in order of first citation.
+- For same-package references, enclose the referenced module path or symbol name in backticks.
+- When the referenced symbol is in the same module, use only the local symbol name in backticks.
+- When the referenced symbol is in another module of the same package, use the full package path in
+    backticks.
+- Leave one blank line after each same-package reference entry because some IDE renderers collapse
+    consecutive one-line entries.
 - Include both title/description and URL for web resources.
 - For packages: prefer Context7 links when available.
 - For academic papers: include full citation (author, year, title, publication).
-- For internal package references: use the module path only. No additional annotation is needed, but so IDEs render the section properly, put a blank line where the annotation would go.
 
 **Prefer these documentation URLs when referencing these packages.** Add other packages as needed using the same pattern (Context7 when available, official documentation otherwise).
 

@@ -3,6 +3,7 @@ extend = "pyproject.toml"
 line-length = 140
 
 [lint]
+preview = true
 allowed-confusables = [
   "′",
   "×",
@@ -11,6 +12,7 @@ allowed-confusables = [
   "∪",
   "⊗",
   "ℓ",
+  "–",
   "ℒ",
   "ℝ",
   "α",
@@ -41,6 +43,7 @@ ignore = [
   "PLR0912",
   "PLR0913",
   "PLR0915",
+  "PLR1702",
   "PLR2004",
   "PLW0120",
   "PLW2901",
@@ -58,6 +61,17 @@ ignore = [
   "TD",
   "W191",
   "W292",
+  # preview rules
+  "CPY001",
+  "D420",
+  "DOC102",
+  "E265",
+  "E302",
+  "E303",
+  "E305",
+  "PLR0914",
+  "PLR0917",
+  "S403",
 ]
 select = ["ALL"]
 task-tags = ["DEVELOPMENT", "NOTE", "SEMIOTICS", "TODO"]

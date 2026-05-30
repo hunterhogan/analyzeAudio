@@ -10,7 +10,7 @@ import cachetools
 import numpy
 import pathlib
 import re as regex
-import subprocess
+import subprocess  # noqa: S404
 
 if TYPE_CHECKING:
 	from os import PathLike
@@ -53,14 +53,6 @@ def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str 
 	-------
 	SI_SDRmean : float | None
 		The mean SI-SDR value in decibels (dB).
-
-	Raises
-	------
-	subprocess.CalledProcessError
-		If the FFmpeg command fails.
-	ValueError
-		If no SI-SDR values are found in the FFmpeg output.
-
 	"""
 	filterChain: str = 'asisdr'
 	return _meanDB(pathFilenameAlpha, pathFilenameBeta, filterChain)
@@ -69,7 +61,7 @@ def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str 
 def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
 	# for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
 	pFn = pathlib.PureWindowsPath(pathFilename)
-	lavfiPathFilename = pFn.drive.replace(":", "\\\\:")+pathlib.PureWindowsPath(pFn.root,pFn.relative_to(pFn.anchor)).as_posix()
+	lavfiPathFilename = pFn.drive.replace(":", "\\\\:") + pathlib.PureWindowsPath(pFn.root, pFn.relative_to(pFn.anchor)).as_posix()
 
 	filterChain: list[str] = []
 	filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Zero_crossings+Dynamic_range:measure_overall=all"]
