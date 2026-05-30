@@ -10,12 +10,12 @@ authors:
   family-names: Hogan
   email: HunterHogan@pm.me
 cff-version: 1.2.0
-commit: b916fc8730c15765f58534710d82884bf4fee60b
+commit: 02192600d5800f9db89f2acf1d57d05c29e34eb4
 date-released: '2026-05-30'
 identifiers:
 - type: url
-  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.1.0
-  description: The URL for analyzeAudio 0.1.0.
+  value: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.1.1
+  description: The URL for analyzeAudio 0.1.1.
 keywords:
 - FFmpeg
 - FFprobe
@@ -36,8 +36,8 @@ keywords:
 license: CC-BY-NC-4.0
 message: Cite this software with the metadata in this file.
 repository: https://github.com/hunterhogan/analyzeAudio.git
-repository-artifact: https://pypi.org/project/analyzeaudio/0.1.0/
-repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.1.0
+repository-artifact: https://pypi.org/project/analyzeaudio/0.1.1/
+repository-code: https://github.com/hunterhogan/analyzeAudio/releases/tag/0.1.1
 title: analyzeAudio
 url: https://github.com/hunterhogan/analyzeAudio
-version: 0.1.0
+version: 0.1.1
