@@ -3,7 +3,7 @@ name = "analyzeAudio"
 version = "0.0.20"
 description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = "CC-BY-NC-4.0"
 license-files = ["LICEN[CS]E*"]
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
@@ -49,16 +49,11 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "Z0Z_tools",
-  "hunterMakesPy",
   "librosa",
   "numpy",
-  "standard-aifc;python_version>='3.13'",
-  "standard-sunau;python_version>='3.13'",
   "torch",
   "torchmetrics[audio]",
   "tqdm",
-  "typing_extensions",
 ]
 optional-dependencies = { testing = [
   "pytest",

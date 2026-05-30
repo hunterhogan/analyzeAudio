@@ -18,7 +18,7 @@ allowed-confusables = [
   "α",
   "γ",
   "ρ",
-  "σ",
+  "σ","ℱ",
 ]
 ignore = [
   "ANN401",
