@@ -50,7 +50,6 @@ classifiers = [
 ]
 dependencies = [
   "Z0Z_tools",
-  "cachetools",
   "hunterMakesPy",
   "librosa",
   "numpy",

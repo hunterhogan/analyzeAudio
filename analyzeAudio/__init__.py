@@ -1,17 +1,17 @@
+# noqa: D104
 # pyright: reportUnusedImport=false
-"""Docstring?! Ain't nobody got time for that!."""
 from __future__ import annotations
 
-from analyzeAudio.audioAspectsRegistry import (
-	analyzeAudioFile as analyzeAudioFile, analyzeAudioListPathFilenames as analyzeAudioListPathFilenames, audioAspects as audioAspects,
-	cacheAudioAnalyzers, getListAvailableAudioAspects as getListAvailableAudioAspects, registrationAudioAspect)
-
-__all__ = [
-	'analyzeAudioFile',
-	'analyzeAudioListPathFilenames',
-	'audioAspects',
-	'getListAvailableAudioAspects',
-]
+# isort: split
+from analyzeAudio._theTypes import (
+	analyzersAudioAspects as analyzersAudioAspects, parameterSpecifications as parameterSpecifications, typeReturned as typeReturned)
 
 # isort: split
-from . import analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform
+from analyzeAudio.audioAspectsRegistry import (
+	audioAspects as audioAspects, getListAvailableAudioAspects as getListAvailableAudioAspects, registrationAudioAspect)
+
+# isort: split
+from analyzeAudio import analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform
+
+# isort: split
+from analyzeAudio.analyze import analyzeAudioFile as analyzeAudioFile, analyzeAudioListPathFilenames as analyzeAudioListPathFilenames

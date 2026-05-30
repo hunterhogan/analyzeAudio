@@ -2,11 +2,10 @@
 # ruff: noqa: D103
 from __future__ import annotations
 
-from analyzeAudio import cacheAudioAnalyzers, registrationAudioAspect
+from analyzeAudio import registrationAudioAspect
 from analyzeAudio.pythonator import pythonizeFFprobe
 from statistics import mean
 from typing import Any, cast, TYPE_CHECKING
-import cachetools
 import numpy
 import pathlib
 import re as regex
@@ -15,11 +14,11 @@ import subprocess  # noqa: S404
 if TYPE_CHECKING:
 	from os import PathLike
 
-def _meanDB(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], filterChain: str) -> float | None:
+def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], filterChain: str) -> float | None:
 	regexPattern = regex.compile(rf"^\[Parsed_{filterChain}_.* (.*) dB", regex.MULTILINE)
 	commandLineFFmpeg = [
 		'ffmpeg', '-hide_banner', '-loglevel', '32',
-		'-i', f'{str(pathlib.Path(pathFilenameAlpha))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',
+		'-i', f'{str(pathlib.Path(pathFilenameAlfa))}', '-i', f'{str(pathlib.Path(pathFilenameBeta))}',
 		'-filter_complex', f'[0][1]{filterChain}', '-f', 'null', '-'
 	]
 	systemProcessFFmpeg = subprocess.run(commandLineFFmpeg, check=True, stderr=subprocess.PIPE)
@@ -29,22 +28,22 @@ def _meanDB(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | Path
 	return mean(map(float, regexPattern.findall(stderrFFmpeg)))
 
 @registrationAudioAspect('Peak Signal-to-Noise Ratio mean')
-def getPSNRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+def getPSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	filterChain: str = 'apsnr'
-	return _meanDB(pathFilenameAlpha, pathFilenameBeta, filterChain)
+	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
 @registrationAudioAspect('SDR mean')
-def getSDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+def getSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	filterChain: str = 'asdr'
-	return _meanDB(pathFilenameAlpha, pathFilenameBeta, filterChain)
+	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
 @registrationAudioAspect('SI-SDR mean')
-def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+def getSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	"""Calculate the mean Scale-Invariant Signal-to-Distortion Ratio (SI-SDR) between two audio files.
 
 	Parameters
 	----------
-	pathFilenameAlpha : str | PathLike[Any]
+	pathFilenameAlfa : str | PathLike[Any]
 		Path to the first audio file.
 	pathFilenameBeta : str | PathLike[Any]
 		Path to the second audio file.
@@ -55,9 +54,8 @@ def getSI_SDRmean(pathFilenameAlpha: str | PathLike[Any], pathFilenameBeta: str 
 		The mean SI-SDR value in decibels (dB).
 	"""
 	filterChain: str = 'asisdr'
-	return _meanDB(pathFilenameAlpha, pathFilenameBeta, filterChain)
+	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
-@cachetools.cached(cache=cacheAudioAnalyzers)
 def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
 	# for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
 	pFn = pathlib.PureWindowsPath(pathFilename)
@@ -154,55 +152,55 @@ def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> float | None:
 def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('LRA.high')
 
-@registrationAudioAspect('Power spectral density')
+@registrationAudioAspect('Power spectral density mean')
 def analyzeMean(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('mean')
 
-@registrationAudioAspect('Spectral variance')
+@registrationAudioAspect('Spectral variance mean')
 def analyzeVariance(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('variance')
 
-@registrationAudioAspect('Spectral centroid')
+@registrationAudioAspect('Spectral centroid mean')
 def analyzeCentroid(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('centroid')
 
-@registrationAudioAspect('Spectral spread')
+@registrationAudioAspect('Spectral spread mean')
 def analyzeSpread(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('spread')
 
-@registrationAudioAspect('Spectral skewness')
+@registrationAudioAspect('Spectral skewness mean')
 def analyzeSkewness(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('skewness')
 
-@registrationAudioAspect('Spectral kurtosis')
+@registrationAudioAspect('Spectral kurtosis mean')
 def analyzeKurtosis(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('kurtosis')
 
-@registrationAudioAspect('Spectral entropy')
+@registrationAudioAspect('Spectral entropy mean')
 def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('entropy')
 
-@registrationAudioAspect('Spectral flatness')
+@registrationAudioAspect('Spectral flatness mean')
 def analyzeFlatness(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('flatness')
 
-@registrationAudioAspect('Spectral crest')
+@registrationAudioAspect('Spectral crest mean')
 def analyzeCrest(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('crest')
 
-@registrationAudioAspect('Spectral flux')
+@registrationAudioAspect('Spectral flux mean')
 def analyzeFlux(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('flux')
 
-@registrationAudioAspect('Spectral slope')
+@registrationAudioAspect('Spectral slope mean')
 def analyzeSlope(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('slope')
 
-@registrationAudioAspect('Spectral decrease')
+@registrationAudioAspect('Spectral decrease mean')
 def analyzeDecrease(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('decrease')
 
-@registrationAudioAspect('Spectral rolloff')
+@registrationAudioAspect('Spectral rolloff mean')
 def analyzeRolloff(pathFilename: str | PathLike[Any]) -> float | None:
 	return ffprobeShotgunAndCache(pathFilename).get('rolloff')
 

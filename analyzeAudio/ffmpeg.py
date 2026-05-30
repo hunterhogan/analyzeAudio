@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-import subprocess
+import subprocess  # noqa: S404
 import sys
 
 def verifyFFmpegColab() -> None:
@@ -22,7 +22,7 @@ def verifyFFmpegColab() -> None:
 				versionFFmpeg = systemProcessLinuxFFmpegVersion.stdout.strip()
 				if ':' in versionFFmpeg:
 					_versionFFmpegEpochIgnored, versionFFmpeg = versionFFmpeg.split(':', maxsplit=1)
-		if versionFFmpeg == '':
+		if not versionFFmpeg:
 			systemProcessFFprobeVersion: subprocess.CompletedProcess[str] = subprocess.run(
 				['ffprobe', '-hide_banner', '-show_entries', 'program_version=version', '-of', 'csv=p=0']  # noqa: S607
 				, check=True
@@ -59,4 +59,3 @@ def verifyFFmpegColab() -> None:
 				['/usr/bin/sudo', '/usr/bin/apt-get', 'remove', '-y', '--autoremove', 'ffmpeg']
 				, check=True
 			)
-
