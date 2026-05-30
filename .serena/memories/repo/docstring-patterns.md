@@ -1,0 +1,2 @@
+- In `analyzeAudio` analyzer modules, main public analyzer functions can carry full NumPy-style docstrings with `Mathematics` and `References` sections.
+- Registered `*Mean` analyzer wrappers should stay short, mention the registered `aspectName`, and point readers to the main analyzer with `See Also` instead of repeating the full theory.

@@ -15,6 +15,7 @@ ffprobe
 framelog
 fricken
 lavfi
+libturd
 LUFS
 optype
 pythonator

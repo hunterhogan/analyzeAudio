@@ -1,5 +1,7 @@
+"""Zero-configuration conftest for src-layout projects."""
+from __future__ import annotations
+
 import pathlib
-import pytest
 
 pathDataSamples = pathlib.Path(__file__).parent / "dataSamples"
 
