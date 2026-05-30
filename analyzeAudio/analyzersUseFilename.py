@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
 from analyzeAudio.pythonator import pythonizeFFprobe
+from functools import cache
+from operator import getitem
 from statistics import mean
 from typing import Any, cast, TYPE_CHECKING
 import numpy
@@ -212,8 +214,9 @@ def getSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str |
 	filterChain: str = 'asisdr'
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
+@cache
 def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
-	"""I use this shared extractor to collect many scalar audio aspects from one analysis pass.
+	"""I use this shared extractor to collect scalar audio aspects from one analysis pass.
 
 	(AI generated docstring)
 
@@ -232,6 +235,12 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 		Dictionary mapping aspect identifiers to scalar numeric values.
 	"""
 	# for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
+	# TODO Investigate, why `PureWindowsPath`?
+	# `as_posix` because using lavfi bypasses the CLI sanitation/standardization functions, AND lavfi
+	# either never works with NT paths or doesn't always work with NT paths, but POSIX is always safe
+	# IF escaped properly. Does this work in POSIX filesystems? IDK. The "contest" aspects, like
+	# SI-SDR use a different FFmpeg call that treats the filenames with
+	# `str(pathlib.Path(pathFilenameBeta))`.
 	pFn = pathlib.PureWindowsPath(pathFilename)
 	lavfiPathFilename = pFn.drive.replace(":", "\\\\:") + pathlib.PureWindowsPath(pFn.root, pFn.relative_to(pFn.anchor)).as_posix()
 
@@ -243,15 +252,20 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 	entriesFFprobe: list[str] = ["frame_tags"]
 
 	commandLineFFprobe: list[str] = [
-		"ffprobe", "-hide_banner",
-		"-f", "lavfi", f"amovie={lavfiPathFilename},{','.join(filterChain)}",
-		"-show_entries", ':'.join(entriesFFprobe),
-		"-output_format", "json=compact=1",
+		"ffprobe"
+		, "-hide_banner"
+		, "-f"
+		, "lavfi"
+		, f"amovie={lavfiPathFilename},{','.join(filterChain)}"
+		, "-show_entries"
+		, ':'.join(entriesFFprobe)
+		, "-output_format"
+		, "json=compact=1"
 	]
 
 	systemProcessFFprobe = subprocess.Popen(commandLineFFprobe, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdoutFFprobe, _DISCARDstderr = systemProcessFFprobe.communicate()
-	FFprobeStructured = pythonizeFFprobe(stdoutFFprobe.decode('utf-8'))[-1]
+	FFprobeStructured = getitem(pythonizeFFprobe(stdoutFFprobe.decode('utf-8')), -1)
 
 	dictionaryAspectsAnalyzed: dict[str, float] = {}
 	if 'aspectralstats' in FFprobeStructured:

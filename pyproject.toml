@@ -1,6 +1,6 @@
 [project]
 name = "analyzeAudio"
-version = "0.1.0"
+version = "0.1.1"
 description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -47,11 +47,14 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+  "auraloss",
   "librosa",
   "numpy",
   "torch",
+  "torch_l1_snr",
+  "torch_log_wmse",
   "torchmetrics[audio]",
-  "tqdm",
+  "tqdm"
 ]
 optional-dependencies = { testing = [
   "pytest",
@@ -86,7 +89,6 @@ run = { branch = true, concurrency = [
 ], parallel = true, source = [
   ".",
 ] }
-xml = { output = "tests/coverage/coverage.xml" }
 
 [tool.pytest]
 addopts = ["--color=auto", "-n 4"]
