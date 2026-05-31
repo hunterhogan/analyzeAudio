@@ -281,6 +281,81 @@ This prints the same sorted registry names returned by `getListAvailableAudioAsp
 - DOI: [10.2478/ijasitels-2023-0006](https://doi.org/10.2478/ijasitels-2023-0006)
 - Open access article: [Reference Global](https://reference-global.com/fr/article/10.2478/ijasitels-2023-0006)
 
+### Perceptual Loss Function for Neural Modelling of Audio Systems
+
+- Common names: ESR loss, DC loss
+- Used by: `analyzeESRLoss`, `analyzeDCLoss`
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/wright2019perceptualloss.bib)
+- arXiv abstract: [1911.08922](https://arxiv.org/abs/1911.08922)
+- TeX source with formulas for AI agents: [arXiv source](https://arxiv.org/src/1911.08922)
+- PDF: [arXiv PDF](https://arxiv.org/pdf/1911.08922)
+
+### Log Hyperbolic Cosine Loss Improves Variational Auto-Encoder
+
+- Common name: log-cosh loss
+- Used by: `analyzeLogCoshLoss`
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/chen2019logcosh.bib)
+- OpenReview page: [rkglvsC9Ym](https://openreview.net/forum?id=rkglvsC9Ym)
+- PDF: [OpenReview PDF](https://openreview.net/pdf?id=rkglvsC9Ym)
+
+### Fast Spectrogram Inversion using Multi-head Convolutional Neural Networks
+
+- Common names: spectral convergence, STFT magnitude loss terms
+- Used by: `analyzeSpectralConvergenceLoss`, `analyzeSTFTMagnitudeLoss`, `analyzeSTFTLoss`
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/arik2018fastspectrogram.bib)
+- DOI: [10.48550/arXiv.1808.06719](https://doi.org/10.48550/arXiv.1808.06719)
+- arXiv abstract: [1808.06719](https://arxiv.org/abs/1808.06719)
+- TeX source with formulas for AI agents: [arXiv source](https://arxiv.org/src/1808.06719)
+
+### Probability density distillation with generative adversarial networks for high-quality parallel waveform generation
+
+- Used by: `analyzeSTFTLoss`
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/yamamoto2019pdd.bib)
+- DOI: [10.48550/arXiv.1904.04472](https://doi.org/10.48550/arXiv.1904.04472)
+- arXiv abstract: [1904.04472](https://arxiv.org/abs/1904.04472)
+- TeX source with formulas for AI agents: [arXiv source](https://arxiv.org/src/1904.04472)
+
+### Parallel WaveGAN: A fast waveform generation model based on generative adversarial networks with multi-resolution spectrogram
+
+- Common name: multi-resolution STFT
+- Used by: `analyzeMultiResolutionSTFTLoss`
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/yamamoto2019parallelwavegan.bib)
+- DOI: [10.48550/arXiv.1910.11480](https://doi.org/10.48550/arXiv.1910.11480)
+- arXiv abstract: [1910.11480](https://arxiv.org/abs/1910.11480)
+- TeX source with formulas for AI agents: [arXiv source](https://arxiv.org/src/1910.11480)
+
+### auraloss: Audio focused loss functions in PyTorch
+
+- Common names: random-resolution STFT loss implementation source
+- Used by: `analyzeRandomResolutionSTFTLoss`
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/steinmetz2020auraloss.bib)
+- Workshop paper PDF: [DMRN+15 PDF](https://www.christiansteinmetz.com/s/DMRN15__auraloss__Audio_focused_loss_functions_in_PyTorch.pdf)
+
+### Automatic multitrack mixing with a differentiable mixing console of neural audio effects
+
+- Common names: sum-and-difference STFT loss in neural mixing
+- Used by: `analyzeSumAndDifferenceSTFTLoss`
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/steinmetz2020multitrackmixing.bib)
+- DOI: [10.48550/arXiv.2010.10291](https://doi.org/10.48550/arXiv.2010.10291)
+- arXiv abstract: [2010.10291](https://arxiv.org/abs/2010.10291)
+- TeX source with formulas for AI agents: [arXiv source](https://arxiv.org/src/2010.10291)
+
+### Neural source-filter waveform models for statistical parametric speech synthesis
+
+- Related in auraloss docs for multi-resolution spectral training context
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/wang2019neuralsourcefilter.bib)
+- DOI: [10.48550/arXiv.1904.12088](https://doi.org/10.48550/arXiv.1904.12088)
+- arXiv abstract: [1904.12088](https://arxiv.org/abs/1904.12088)
+- TeX source with formulas for AI agents: [arXiv source](https://arxiv.org/src/1904.12088)
+
+### DDSP: Differentiable Digital Signal Processing
+
+- Related in auraloss docs for STFT-magnitude formulation context
+- [BibTeX citation.](https://github.com/hunterhogan/analyzeAudio/blob/main/citations/engel2020ddsp.bib)
+- DOI: [10.48550/arXiv.2001.04643](https://doi.org/10.48550/arXiv.2001.04643)
+- arXiv abstract: [2001.04643](https://arxiv.org/abs/2001.04643)
+- TeX source with formulas for AI agents: [arXiv source](https://arxiv.org/src/2001.04643)
+
 ### Packages and documentation
 
 - [FFmpeg documentation](https://ffmpeg.org/documentation.html)

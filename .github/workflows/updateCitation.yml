@@ -6,11 +6,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
-
-defaults:
-  run:
-    shell: bash
 
 jobs:
   updateCitation:
@@ -19,14 +14,9 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
-          python-version: '>=3.13'
-          cache: pip
-          cache-dependency-path: pyproject.toml
+          python-version: '3.13'
 
-      - name: Install and run updateCitation
+      - name: Run updateCitation
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -e
-          pip install updateCitation
-          python -c "import updateCitation; updateCitation.here()"
+        run: pipx run updateCitation
