@@ -13,7 +13,8 @@ from analyzeAudio.audioAspectsRegistry import audioAspects as audioAspects, getL
 
 # isort: split
 # NOTE Importing the modules triggers the registration of analyzer functions.
-from analyzeAudio import analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform
+from analyzeAudio import (
+	analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseTensorSpectrogram, analyzersUseWaveform)
 
 # isort: split
 from analyzeAudio.analyze import analyzeAudioFile as analyzeAudioFile, analyzeAudioListPathFilenames as analyzeAudioListPathFilenames

@@ -5,6 +5,7 @@ aspectralstats
 astats
 axcorrelate
 Blackdetect
+bleedless
 cachetools
 Chromagram
 dists
@@ -17,6 +18,10 @@ fricken
 lavfi
 libturd
 LUFS
+mels
+mrstft
+MRSTFT
+numel
 optype
 pythonator
 pythonize
@@ -27,6 +32,8 @@ showformat
 signalstats
 softprops
 SRMR
+stype
 sunau
 Tempogram
 torchmetrics
+unsqueeze

@@ -1,49 +1,46 @@
-"""Analyze audio tensors with registered torch-based metrics.
-
-This module adapts tensor-domain audio metrics into registered analyzer
-functions. The functions in this module accept waveform `torch.Tensor` values,
-reshape tensors for the upstream metric implementations, and expose scalar
-scores or tensor-valued SRMR measurements through the `analyzeAudio`
-registration system.
-
-Contents
---------
-Functions
-	analyzeL1SNRDBMean
-		Compute the registered `L1SNRDB mean` score from reference and estimate tensors.
-	analyzeL1SNRMean
-		Compute the registered `L1SNR mean` score from reference and estimate tensors.
-	analyzeLogWMSEMean
-		Compute the registered `LogWMSE mean` score from reference, estimate, and mixture tensors.
-	analyzeMultiL1SNRDBMean
-		Compute the registered `MultiL1SNRDB mean` score by combining time and STFT objectives.
-	analyzeSRMR
-		Compute SRMR values from waveform tensors.
-	analyzeSRMRMean
-		Compute the registered `SRMR mean` score from waveform tensors.
-	analyzeSTFTL1SNRDBMean
-		Compute the registered `STFTL1SNRDB mean` score in the spectrogram domain.
-"""
-
+# ruff: noqa: D100
 from __future__ import annotations
 
+from analyzeAudio.analyzersUseSpectrogram import analyzeChromagram
 from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
+from torch import nn, tensor
+from torch._tensor import Tensor
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
-from typing import Any, TYPE_CHECKING
+from typing import Any, cast, Protocol, TYPE_CHECKING
+import auraloss
+import numpy
 import torch_l1_snr
 import torch_log_wmse
 
 if TYPE_CHECKING:
-	import torch
+	from analyzeAudio._theTypes import SpectrogramPower
+	from torch import device, Tensor
 
-def analyzeSRMR(tensorAudio: torch.Tensor, sampleRate: int, *, pytorchOnCPU: bool | None, **keywordArguments: Any) -> torch.Tensor:
+	# NOTE This is necessary because the original package thinks that type annotations and discipline are for pussies.
+	class _AuralossChromaSTFTLoss(Protocol):
+		fft_size: int
+		window: Tensor
+		device: device | None
+		scale: str
+		n_bins: int
+		fb: Tensor
+
+		def __call__(self, tensorInput: Tensor, tensorTarget: Tensor) -> Tensor: ...
+
+dictionaryDefaultSumAndDifferenceSTFTLossKeywordArguments: dict[str, list[int]] = {
+	'fft_sizes': [1024, 2048, 8192],
+	'hop_sizes': [256, 512, 2048],
+	'win_lengths': [1024, 2048, 8192],
+}
+
+def analyzeSRMR(tensorAudio: Tensor, sampleRate: int, *, pytorchOnCPU: bool | None, **keywordArguments: Any) -> Tensor:
 	"""Compute speech-to-reverberation modulation energy ratio values from `tensorAudio`.
 
 	(AI generated docstring)
 
 	You can use this function to estimate speech-to-reverberation modulation energy
 	ratio (SRMR) values from waveform data stored in `tensorAudio` [1]. The
-	function analyzes `tensorAudio` at `sampleRate` and returns a `torch.Tensor`
+	function analyzes `tensorAudio` at `sampleRate` and returns a `Tensor`
 	of SRMR values. Use `analyzeSRMRMean` [2] when you need one scalar summary
 	instead of the full result.
 
@@ -61,7 +58,7 @@ def analyzeSRMR(tensorAudio: torch.Tensor, sampleRate: int, *, pytorchOnCPU: boo
 			fₖ ≜ center frequency of modulation band k
 			b₉₀ ≜ lowest acoustic band accounting for 90% of total modulation energy
 			K* ≜ max{k : fₖ ≤ BW(b₉₀)}
-			s ≜ returned `torch.Tensor`
+			s ≜ returned `Tensor`
 
 		3 Hz ≲ f₁…f₄ ≲ 20 Hz
 		20 Hz ≲ f₅…f₈ ≲ 160 Hz
@@ -73,7 +70,7 @@ def analyzeSRMR(tensorAudio: torch.Tensor, sampleRate: int, *, pytorchOnCPU: boo
 
 	Parameters
 	----------
-	tensorAudio : torch.Tensor
+	tensorAudio : Tensor
 		Audio waveform data to analyze.
 	sampleRate : int
 		Sampling frequency of `tensorAudio` in hertz.
@@ -102,7 +99,7 @@ def analyzeSRMR(tensorAudio: torch.Tensor, sampleRate: int, *, pytorchOnCPU: boo
 
 	Returns
 	-------
-	tensorSRMR : torch.Tensor
+	tensorSRMR : Tensor
 		SRMR values computed from `tensorAudio`.
 
 	See Also
@@ -127,7 +124,7 @@ def analyzeSRMR(tensorAudio: torch.Tensor, sampleRate: int, *, pytorchOnCPU: boo
 
 aspectName: str = 'SRMR mean'
 @registrationAudioAspect(aspectName)
-def analyzeSRMRMean(tensorAudio: torch.Tensor, sampleRate: int, pytorchOnCPU: bool | None, **keywordArguments: Any) -> float:  # noqa: FBT001
+def analyzeSRMRMean(tensorAudio: Tensor, sampleRate: int, pytorchOnCPU: bool | None, **keywordArguments: Any) -> float:  # noqa: FBT001
 	"""Compute the mean SRMR value for `tensorAudio`.
 
 	(AI generated docstring)
@@ -154,23 +151,17 @@ def analyzeSRMRMean(tensorAudio: torch.Tensor, sampleRate: int, pytorchOnCPU: bo
 
 #======== Contests ========================================
 
-def _alignTensorAudioLengths(*tupleTensorAudio: torch.Tensor) -> tuple[torch.Tensor, ...]:
+def _alignTensorAudioLengths(*tupleTensorAudio: Tensor) -> tuple[Tensor, ...]:
 	"""I use this to trim multiple audio tensors to a shared sample length.
-
-	(AI generated docstring)
-
-	I use this function before metric calls that require aligned trailing sample
-	axes. The function finds the shortest `tensorAudio.shape[-1]` among
-	`tupleTensorAudio` and returns truncated views with that shared length.
 
 	Parameters
 	----------
-	tupleTensorAudio : torch.Tensor
+	tupleTensorAudio : Tensor
 		Variadic collection of waveform tensors whose last axis stores samples.
 
 	Returns
 	-------
-	tupleTensorAudioAligned : tuple[torch.Tensor, ...]
+	tupleTensorAudioAligned : tuple[Tensor, ...]
 		Tuple of tensors truncated to the minimum trailing sample length.
 
 	Shape Transformation
@@ -185,135 +176,51 @@ def _alignTensorAudioLengths(*tupleTensorAudio: torch.Tensor) -> tuple[torch.Ten
 	intSharedLength = min(tensorAudio.shape[-1] for tensorAudio in tupleTensorAudio)
 	return tuple(tensorAudio[..., :intSharedLength] for tensorAudio in tupleTensorAudio)
 
-def _formatTensorAudioForBatchFirstLoss(tensorAudio: torch.Tensor) -> torch.Tensor:
-	"""I use this to add a batch axis for batch-first tensor losses.
-
-	(AI generated docstring)
-
-	I use this function before the local `torch_l1_snr` metric calls. The function
-	converts 1D, 2D, and 3D waveform tensors to batch-first layout by inserting one
-	leading singleton axis and leaves 4D tensors unchanged.
-
-	Parameters
-	----------
-	tensorAudio : torch.Tensor
-		Waveform tensor whose last axis stores samples.
-
-	Returns
-	-------
-	tensorAudioBatchFirst : torch.Tensor
-		Tensor formatted for a batch-first loss implementation.
-
-	Shape Transformation
-	--------------------
-	insert leading batch axis : transformation
-	```
-		If `tensorAudio`.ndim < 4,  `tensorAudio` ↦ `tensorAudio`.unsqueeze(0)
-		If `tensorAudio`.ndim ≥ 4,  `tensorAudio` ↦ `tensorAudio`
-	```
-	"""
+def _formatTensorAudioForBatchFirstLoss(tensorAudio: Tensor) -> Tensor:
 	if tensorAudio.ndim < 4:
 		return tensorAudio.unsqueeze(0)
 	return tensorAudio
 
-def _formatTensorAudioForLogWMSEUnprocessed(tensorAudio: torch.Tensor) -> torch.Tensor:
-	"""I use this to reshape unprocessed audio for the local logWMSE call.
+def _formatTensorAudio(tensorAudio: Tensor, *, processed: bool = False) -> Tensor:
+	if not processed:
+		if tensorAudio.ndim == 1:
+			tensorFormatted: Tensor = tensorAudio.unsqueeze(0).unsqueeze(0)
+		elif tensorAudio.ndim == 2:
+			tensorFormatted = tensorAudio.unsqueeze(0)
+		else:
+			tensorFormatted = tensorAudio
+	elif tensorAudio.ndim == 1:
+		tensorFormatted = tensorAudio.unsqueeze(0).unsqueeze(0).unsqueeze(2)
+	elif tensorAudio.ndim == 2:
+		tensorFormatted = tensorAudio.unsqueeze(0).unsqueeze(2)
+	elif tensorAudio.ndim == 3:
+		tensorFormatted = tensorAudio.unsqueeze(0)
+	else:
+		tensorFormatted = tensorAudio
+	return tensorFormatted
 
-	(AI generated docstring)
-
-	I use this function for the unprocessed mixture argument of the local logWMSE
-	metric call. The function inserts singleton axes until `tensorAudio` matches
-	the unprocessed-audio layout expected by that metric.
-
-	Parameters
-	----------
-	tensorAudio : torch.Tensor
-		Waveform tensor whose last axis stores samples.
-
-	Returns
-	-------
-	tensorAudioLogWMSEUnprocessed : torch.Tensor
-		Tensor formatted like unprocessed audio for the logWMSE metric.
-
-	Shape Transformation
-	--------------------
-	unprocessed layout cases : transformation
-	```
-		1D  : [sample]              ↦ [1, 1, sample]
-		2D  : [channel, sample]     ↦ [1, channel, sample]
-		3D+ : unchanged
-	```
-	"""
-	if tensorAudio.ndim == 1:
-		return tensorAudio.unsqueeze(0).unsqueeze(0)
-	if tensorAudio.ndim == 2:
-		return tensorAudio.unsqueeze(0)
-	if tensorAudio.ndim == 3:
-		return tensorAudio
-	return tensorAudio
-
-def _formatTensorAudioForLogWMSEProcessed(tensorAudio: torch.Tensor) -> torch.Tensor:
-	"""I use this to reshape processed audio for the local logWMSE call.
-
-	(AI generated docstring)
-
-	I use this function for the estimate and reference arguments of the local
-	logWMSE metric call. The function inserts singleton batch and stem axes for 1D
-	and 2D inputs, inserts a singleton batch axis for 3D input, and leaves 4D
-	inputs unchanged.
-
-	Parameters
-	----------
-	tensorAudio : torch.Tensor
-		Waveform tensor whose last axis stores samples.
-
-	Returns
-	-------
-	tensorAudioLogWMSEProcessed : torch.Tensor
-		Tensor formatted like processed audio for the logWMSE metric.
-
-	Shape Transformation
-	--------------------
-	processed layout cases : transformation
-	```
-		1D  : [sample]              ↦ [1, 1, 1, sample]
-		2D  : [channel, sample]     ↦ [1, channel, 1, sample]
-		3D  : [channel, stem, sample] ↦ [1, channel, stem, sample]
-		4D+ : unchanged
-	```
-	"""
-	if tensorAudio.ndim == 1:
-		return tensorAudio.unsqueeze(0).unsqueeze(0).unsqueeze(2)
-	if tensorAudio.ndim == 2:
-		return tensorAudio.unsqueeze(0).unsqueeze(2)
-	if tensorAudio.ndim == 3:
-		return tensorAudio.unsqueeze(0)
-	if tensorAudio.ndim == 4:
-		return tensorAudio
-	return tensorAudio
-
-aspectName = 'LogWMSE mean'
+aspectName = 'LogWMSE'
 @registrationAudioAspect(aspectName)
 def analyzeLogWMSEMean(
-	tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Tensor, tensorAudioGamma: torch.Tensor, sampleRate: int, **keywordArguments: Any
+	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, tensorAudioCharlie: Tensor, sampleRate: int, **keywordArguments: Any
 ) -> float:
-	"""Score `tensorAudioBeta` against `tensorAudioAlfa` and `tensorAudioGamma` with logWMSE.
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` and `tensorAudioCharlie` with logWMSE.
 
 	(AI generated docstring)
 
-	You can use this function to compute the registered `LogWMSE mean` audio
+	You can use this function to compute the registered `LogWMSE` audio
 	aspect from a reference source `tensorAudioAlfa`, an estimated source
-	`tensorAudioBeta`, and an unprocessed mixture `tensorAudioGamma`. The function
+	`tensorAudioBeta`, and an unprocessed mixture `tensorAudioCharlie`. The function
 	trims all three tensors to a shared sample length, reshapes the tensors for
 	the upstream logWMSE implementation [1][2], and returns one scalar score.
 
 	Parameters
 	----------
-	tensorAudioAlfa : torch.Tensor
+	tensorAudioAlfa : Tensor
 		Reference target audio.
-	tensorAudioBeta : torch.Tensor
+	tensorAudioBeta : Tensor
 		Estimated processed audio.
-	tensorAudioGamma : torch.Tensor
+	tensorAudioCharlie : Tensor
 		Unprocessed mixture or noisy input audio.
 	sampleRate : int
 		Sampling frequency of all three tensors in hertz.
@@ -328,7 +235,7 @@ def analyzeLogWMSEMean(
 	-----------
 	frequency-weighted error score : equation
 	```
-		Let x ≜ `tensorAudioGamma`,  y^ ≜ `tensorAudioBeta`,  y ≜ `tensorAudioAlfa`
+		Let x ≜ `tensorAudioCharlie`,  y^ ≜ `tensorAudioBeta`,  y ≜ `tensorAudioAlfa`
 			F(·) ≜ human-hearing weighting filter
 			ρ(·) ≜ RMS
 			α ≜ 1 / (ρ(F(x)) + ε_rms)
@@ -347,10 +254,10 @@ def analyzeLogWMSEMean(
 		Let N ≜ min(
 			`tensorAudioAlfa`.shape[-1],
 			`tensorAudioBeta`.shape[-1],
-			`tensorAudioGamma`.shape[-1],
+			`tensorAudioCharlie`.shape[-1],
 		)
 
-		`tensorAudioGamma`[..., :N]  ↦ [1, 1, sample], [1, channel, sample], or unchanged 3D+ shape
+		`tensorAudioCharlie`[..., :N]  ↦ [1, 1, sample], [1, channel, sample], or unchanged 3D+ shape
 		`tensorAudioBeta`[..., :N]   ↦ [1, 1, 1, sample], [1, channel, 1, sample],
 			[1, channel, stem, sample], or unchanged 4D+ shape
 		`tensorAudioAlfa`[..., :N]   ↦ [1, 1, 1, sample], [1, channel, 1, sample],
@@ -359,13 +266,13 @@ def analyzeLogWMSEMean(
 
 	Other Parameters
 	----------------
-	impulse_response : torch.Tensor | None = None
+	impulse_response : Tensor | None = None
 		Optional finite impulse response filter for custom frequency weighting [2].
 	impulse_response_sample_rate : int = 44100
 		Sampling rate of `impulse_response` in hertz [2].
 	return_as_loss : bool = False
 		Whether the upstream implementation should return a negative loss instead of
-		a positive metric. This wrapper sets `False` by default, but a caller-provided
+		a positive loss. This wrapper sets `False` by default, but a caller-provided
 		value overrides that default [2].
 	bypass_filter : bool = False
 		Whether the upstream implementation should skip frequency weighting [2].
@@ -379,33 +286,30 @@ def analyzeLogWMSEMean(
 	[2] Landschoot, C. `crlandsc/torch-log-wmse`.
 		https://github.com/crlandsc/torch-log-wmse
 	"""
-	tensorAudioReference: torch.Tensor = tensorAudioAlfa
-	tensorAudioEstimate: torch.Tensor = tensorAudioBeta
-	tensorAudioMixture: torch.Tensor = tensorAudioGamma
-	tensorAudioReference, tensorAudioEstimate, tensorAudioMixture = _alignTensorAudioLengths(
-		tensorAudioReference, tensorAudioEstimate, tensorAudioMixture
+	tensorAudioAlfa, tensorAudioBeta, tensorAudioCharlie = _alignTensorAudioLengths(
+		tensorAudioAlfa, tensorAudioBeta, tensorAudioCharlie
 	)
-	dictionaryMetricKeywordArguments: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
-	metric = torch_log_wmse.LogWMSE(
-		audio_length=tensorAudioMixture.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryMetricKeywordArguments
+	dictionaryKeywordArguments: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
+	aspect = torch_log_wmse.LogWMSE(
+		audio_length=tensorAudioCharlie.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryKeywordArguments
 	)
 	return float(
-		metric(
-			_formatTensorAudioForLogWMSEUnprocessed(tensorAudioMixture),
-			_formatTensorAudioForLogWMSEProcessed(tensorAudioEstimate),
-			_formatTensorAudioForLogWMSEProcessed(tensorAudioReference),
+		aspect(
+			_formatTensorAudio(tensorAudioCharlie)
+			, _formatTensorAudio(tensorAudioBeta, processed=True)
+			, _formatTensorAudio(tensorAudioAlfa, processed=True)
 		).item()
 	)
 
 name: str = 'L1SNR'
-aspectName = f'{name} mean'
+aspectName = name
 @registrationAudioAspect(aspectName)
-def analyzeL1SNRMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Tensor, **keywordArguments: Any) -> float:
+def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with L1SNR.
 
 	(AI generated docstring)
 
-	You can use this function to compute the registered `L1SNR mean` audio aspect
+	You can use this function to compute the registered `L1SNR` audio aspect
 	from a reference tensor `tensorAudioAlfa` and an estimate tensor
 	`tensorAudioBeta`. The function trims both tensors to a shared sample length,
 	reshapes the tensors for the upstream `torch_l1_snr.L1SNRLoss`
@@ -414,9 +318,9 @@ def analyzeL1SNRMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Tenso
 
 	Parameters
 	----------
-	tensorAudioAlfa : torch.Tensor
+	tensorAudioAlfa : Tensor
 		Reference target audio.
-	tensorAudioBeta : torch.Tensor
+	tensorAudioBeta : Tensor
 		Estimated audio to be scored against `tensorAudioAlfa`.
 
 	Returns
@@ -478,23 +382,21 @@ def analyzeL1SNRMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Tenso
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioReference: torch.Tensor = tensorAudioAlfa
-	tensorAudioEstimate: torch.Tensor = tensorAudioBeta
-	tensorAudioReference, tensorAudioEstimate = _alignTensorAudioLengths(tensorAudioReference, tensorAudioEstimate)
-	metric = torch_l1_snr.L1SNRLoss(name, **keywordArguments)
+	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
+	aspect = torch_l1_snr.L1SNRLoss(name, **keywordArguments)
 	return -float(
-		metric(_formatTensorAudioForBatchFirstLoss(tensorAudioEstimate), _formatTensorAudioForBatchFirstLoss(tensorAudioReference)).item()
+		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
 	)
 
 name = 'L1SNRDB'
-aspectName = f'{name} mean'
+aspectName = name
 @registrationAudioAspect(aspectName)
-def analyzeL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Tensor, **keywordArguments: Any) -> float:
+def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with regularized L1SNR.
 
 	(AI generated docstring)
 
-	You can use this function to compute the registered `L1SNRDB mean` audio
+	You can use this function to compute the registered `L1SNRDB` audio
 	aspect from a reference tensor `tensorAudioAlfa` and an estimate tensor
 	`tensorAudioBeta`. The function trims both tensors to a shared sample length,
 	reshapes the tensors for the upstream `torch_l1_snr.L1SNRDBLoss`
@@ -503,9 +405,9 @@ def analyzeL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Ten
 
 	Parameters
 	----------
-	tensorAudioAlfa : torch.Tensor
+	tensorAudioAlfa : Tensor
 		Reference target audio.
-	tensorAudioBeta : torch.Tensor
+	tensorAudioBeta : Tensor
 		Estimated audio to be scored against `tensorAudioAlfa`.
 
 	Returns
@@ -581,24 +483,22 @@ def analyzeL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Ten
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioReference: torch.Tensor = tensorAudioAlfa
-	tensorAudioEstimate: torch.Tensor = tensorAudioBeta
-	tensorAudioReference, tensorAudioEstimate = _alignTensorAudioLengths(tensorAudioReference, tensorAudioEstimate)
-	metric = torch_l1_snr.L1SNRDBLoss(name, **keywordArguments)
+	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
+	aspect = torch_l1_snr.L1SNRDBLoss(name, **keywordArguments)
 	return -float(
-		metric(_formatTensorAudioForBatchFirstLoss(tensorAudioEstimate), _formatTensorAudioForBatchFirstLoss(tensorAudioReference)).item()
+		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
 	)
 
 name = 'MultiL1SNRDB'
-aspectName = f'{name} mean'
+aspectName = name
 @registrationAudioAspect(aspectName)
-def analyzeMultiL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Tensor, **keywordArguments: Any) -> float:
+def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with combined time and STFT L1SNRDB.
 
 	(AI generated docstring)
 
-	You can use this function to compute the registered `MultiL1SNRDB mean`
-	audio aspect from a reference tensor `tensorAudioAlfa` and an estimate tensor
+	You can use this function to compute the registered `MultiL1SNRDB` audio
+	aspect from a reference tensor `tensorAudioAlfa` and an estimate tensor
 	`tensorAudioBeta`. The function trims both tensors to a shared sample length,
 	reshapes the tensors for the upstream `torch_l1_snr.MultiL1SNRDBLoss`
 	implementation [1][2][3], negates the upstream loss value, and returns a
@@ -606,14 +506,14 @@ def analyzeMultiL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torc
 
 	Parameters
 	----------
-	tensorAudioAlfa : torch.Tensor
+	tensorAudioAlfa : Tensor
 		Reference target audio.
-	tensorAudioBeta : torch.Tensor
+	tensorAudioBeta : Tensor
 		Estimated audio to be scored against `tensorAudioAlfa`.
 
 	Returns
 	-------
-	multiL1snrdbMean : float
+	multiL1snrdb : float
 		Positive score equal to the negative of the upstream combined loss.
 
 	Mathematics
@@ -625,7 +525,7 @@ def analyzeMultiL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torc
 			ω ≜ `spec_weight`
 
 		J_multi = (1 - ω) J_time + ω J_spec
-		multiL1snrdbMean = -J_multi
+		multiL1snrdb = -J_multi
 	```
 
 	Shape Transformation
@@ -691,23 +591,21 @@ def analyzeMultiL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torc
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioReference: torch.Tensor = tensorAudioAlfa
-	tensorAudioEstimate: torch.Tensor = tensorAudioBeta
-	tensorAudioReference, tensorAudioEstimate = _alignTensorAudioLengths(tensorAudioReference, tensorAudioEstimate)
-	metric = torch_l1_snr.MultiL1SNRDBLoss(name, **keywordArguments)
+	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
+	aspect = torch_l1_snr.MultiL1SNRDBLoss(name, **keywordArguments)
 	return -float(
-		metric(_formatTensorAudioForBatchFirstLoss(tensorAudioEstimate), _formatTensorAudioForBatchFirstLoss(tensorAudioReference)).item()
+		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
 	)
 
 name = 'STFTL1SNRDB'
-aspectName = f'{name} mean'
+aspectName = name
 @registrationAudioAspect(aspectName)
-def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch.Tensor, **keywordArguments: Any) -> float:
+def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with spectrogram-domain L1SNRDB.
 
 	(AI generated docstring)
 
-	You can use this function to compute the registered `STFTL1SNRDB mean`
+	You can use this function to compute the registered `STFTL1SNRDB`
 	audio aspect from a reference tensor `tensorAudioAlfa` and an estimate tensor
 	`tensorAudioBeta`. The function trims both tensors to a shared sample length,
 	reshapes the tensors for the upstream `torch_l1_snr.STFTL1SNRDBLoss`
@@ -716,14 +614,14 @@ def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch
 
 	Parameters
 	----------
-	tensorAudioAlfa : torch.Tensor
+	tensorAudioAlfa : Tensor
 		Reference target audio.
-	tensorAudioBeta : torch.Tensor
+	tensorAudioBeta : Tensor
 		Estimated audio to be scored against `tensorAudioAlfa`.
 
 	Returns
 	-------
-	stftL1snrdbMean : float
+	stftL1snrdb : float
 		Positive score equal to the negative of the upstream spectrogram-domain loss.
 
 	Mathematics
@@ -739,7 +637,7 @@ def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch
 		D_Re,ᵦ = 10 log₁₀((e_Re,ᵦ + ε) / (r_Re,ᵦ + ε))
 		D_Im,ᵦ = 10 log₁₀((e_Im,ᵦ + ε) / (r_Im,ᵦ + ε))
 		J_spec,ᵦ = D_Re,ᵦ + D_Im,ᵦ
-		stftL1snrdbMean = -(1 / B) ∑_(b = 1)^B J_spec,ᵦ
+		stftL1snrdb = -(1 / B) ∑_(b = 1)^B J_spec,ᵦ
 	```
 
 	Shape Transformation
@@ -808,10 +706,479 @@ def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: torch.Tensor, tensorAudioBeta: torch
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioReference: torch.Tensor = tensorAudioAlfa
-	tensorAudioEstimate: torch.Tensor = tensorAudioBeta
-	tensorAudioReference, tensorAudioEstimate = _alignTensorAudioLengths(tensorAudioReference, tensorAudioEstimate)
-	metric = torch_l1_snr.STFTL1SNRDBLoss(name, **keywordArguments)
+	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
+	aspect = torch_l1_snr.STFTL1SNRDBLoss(name, **keywordArguments)
 	return -float(
-		metric(_formatTensorAudioForBatchFirstLoss(tensorAudioEstimate), _formatTensorAudioForBatchFirstLoss(tensorAudioReference)).item()
+		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
 	)
+
+def _analyzeAuralossWaveformLoss(aspect: nn.Module, tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor) -> float:
+	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
+	return float(aspect(_formatTensorAudio(tensorAudioBeta), _formatTensorAudio(tensorAudioAlfa)).item())
+
+aspectName = 'DCLoss'
+@registrationAudioAspect(aspectName)
+def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with direct-current offset loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `DCLoss` audio aspect for a
+	reference waveform `tensorAudioAlfa` and an estimated waveform `tensorAudioBeta`
+	using the upstream `auraloss.time.DCLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	dcLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.time.DCLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.time.DCLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'ESRLoss'
+@registrationAudioAspect(aspectName)
+def analyzeESRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with error-to-signal ratio loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `ESRLoss` audio aspect for
+	`tensorAudioAlfa` and `tensorAudioBeta` using the upstream
+	`auraloss.time.ESRLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	esrLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.time.ESRLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.time.ESRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'LogCoshLoss'
+@registrationAudioAspect(aspectName)
+def analyzeLogCoshLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with log-cosh waveform loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `LogCoshLoss` audio aspect
+	for `tensorAudioAlfa` and `tensorAudioBeta` using the upstream
+	`auraloss.time.LogCoshLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	logCoshLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.time.LogCoshLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.time.LogCoshLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'SNRLoss'
+@registrationAudioAspect(aspectName)
+def analyzeSNRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with signal-to-noise ratio loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `SNRLoss` audio aspect for
+	`tensorAudioAlfa` and `tensorAudioBeta` using the upstream
+	`auraloss.time.SNRLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	snrLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.time.SNRLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.time.SNRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'SISDRLoss'
+@registrationAudioAspect(aspectName)
+def analyzeSISDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with scale-invariant SDR loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `SISDRLoss` audio aspect
+	for `tensorAudioAlfa` and `tensorAudioBeta` using the upstream
+	`auraloss.time.SISDRLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	siSdrLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.time.SISDRLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.time.SISDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'SDSDRLoss'
+@registrationAudioAspect(aspectName)
+def analyzeSDSDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with scale-dependent SDR loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `SDSDRLoss` audio aspect
+	for `tensorAudioAlfa` and `tensorAudioBeta` using the upstream
+	`auraloss.time.SDSDRLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	sdSdrLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.time.SDSDRLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.time.SDSDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'STFTLoss'
+@registrationAudioAspect(aspectName)
+def analyzeSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with STFT-domain loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `STFTLoss` audio aspect for
+	`tensorAudioAlfa` and `tensorAudioBeta` using the upstream
+	`auraloss.freq.STFTLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	stftLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.freq.STFTLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.freq.STFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'MelSTFTLoss'
+@registrationAudioAspect(aspectName)
+def analyzeMelSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with mel-scaled STFT loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `MelSTFTLoss` audio aspect
+	for `tensorAudioAlfa` and `tensorAudioBeta` at `sampleRate` with the upstream
+	`auraloss.freq.MelSTFTLoss` implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+	sampleRate : int
+		Sampling frequency used to configure the mel filterbank in hertz.
+
+	Returns
+	-------
+	melStftLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.freq.MelSTFTLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	dictionaryKeywordArguments: dict[str, Any] = {'sample_rate': sampleRate, **keywordArguments}
+	return _analyzeAuralossWaveformLoss(auraloss.freq.MelSTFTLoss(**dictionaryKeywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'ChromaSTFTLoss'
+@registrationAudioAspect(aspectName)
+def analyzeChromaSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with chroma-weighted STFT loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `ChromaSTFTLoss` audio
+	aspect for `tensorAudioAlfa` and `tensorAudioBeta` at `sampleRate`. This
+	function configures `auraloss.freq.STFTLoss` to `scale='chroma'` and replaces
+	the frequency basis with a chromagram transform from `analyzeChromagram` [1, 2].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+	sampleRate : int
+		Sampling frequency used to compute the chroma basis in hertz.
+
+	Returns
+	-------
+	chromaStftLoss : float
+		Loss value produced by the configured chroma-domain objective.
+
+	Other Parameters
+	----------------
+	n_chroma : int = 12
+		Number of chroma bins used to build the chroma basis.
+	n_bins : int = 12
+		Alias of `n_chroma`. This function prioritizes `n_chroma` when both values are present.
+	keywordArguments : Any
+		Additional keyword argument mapping forwarded to `auraloss.freq.STFTLoss` [1],
+		except `scale`, which this function overrides to `chroma`.
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	[2] `analyzeChromagram`
+	"""
+	dictionaryKeywordArguments: dict[str, Any] = {'sample_rate': sampleRate, **keywordArguments}
+	integerChromaBins: int = int(dictionaryKeywordArguments.pop('n_chroma', dictionaryKeywordArguments.pop('n_bins', 12)))
+	dictionaryKeywordArguments.pop('scale', None)
+	aspect = cast('_AuralossChromaSTFTLoss', auraloss.freq.STFTLoss(**dictionaryKeywordArguments))
+	aspect.scale = 'chroma'
+	aspect.n_bins = integerChromaBins
+	integerFrequencyBins: int = (aspect.fft_size // 2) + 1
+	arrayIdentityFrequencyPower: numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float32]] = numpy.identity(
+		integerFrequencyBins
+		, dtype=numpy.float32
+	)
+	aspect.fb = tensor(
+		analyzeChromagram(
+			cast('SpectrogramPower', arrayIdentityFrequencyPower)
+			, sampleRate
+			, n_fft=aspect.fft_size
+			, n_chroma=integerChromaBins
+			, norm=None
+		)
+		, dtype=aspect.window.dtype
+	).unsqueeze(0)
+	if aspect.device is not None:
+		aspect.fb = aspect.fb.to(aspect.device)
+	return _analyzeAuralossWaveformLoss(cast('nn.Module', aspect), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'MultiResolutionSTFTLoss'
+@registrationAudioAspect(aspectName)
+def analyzeMultiResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with multi-resolution STFT loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered
+	`MultiResolutionSTFTLoss` audio aspect for `tensorAudioAlfa` and
+	`tensorAudioBeta` using the upstream `auraloss.freq.MultiResolutionSTFTLoss`
+	implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	multiResolutionStftLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.freq.MultiResolutionSTFTLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.freq.MultiResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'RandomResolutionSTFTLoss'
+@registrationAudioAspect(aspectName)
+def analyzeRandomResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with random-resolution STFT loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered
+	`RandomResolutionSTFTLoss` audio aspect for `tensorAudioAlfa` and
+	`tensorAudioBeta` using the upstream `auraloss.freq.RandomResolutionSTFTLoss`
+	implementation [1].
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	randomResolutionStftLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	keywordArguments : Any
+		Keyword argument mapping forwarded to `auraloss.freq.RandomResolutionSTFTLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	return _analyzeAuralossWaveformLoss(auraloss.freq.RandomResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+
+aspectName = 'SumAndDifferenceSTFTLoss'
+@registrationAudioAspect(aspectName)
+def analyzeSumAndDifferenceSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with sum-and-difference STFT loss.
+
+	(AI generated docstring)
+
+	You can use this function to compute the registered `SumAndDifferenceSTFTLoss`
+	audio aspect for `tensorAudioAlfa` and `tensorAudioBeta` using the upstream
+	`auraloss.freq.SumAndDifferenceSTFTLoss` implementation [1]. This function
+	starts from `dictionaryDefaultSumAndDifferenceSTFTLossKeywordArguments` and
+	then applies caller-provided overrides.
+
+	Parameters
+	----------
+	tensorAudioAlfa : Tensor
+		Reference target audio.
+	tensorAudioBeta : Tensor
+		Estimated audio to score against `tensorAudioAlfa`.
+
+	Returns
+	-------
+	sumAndDifferenceStftLoss : float
+		Loss value produced by the upstream `auraloss` implementation [1].
+
+	Other Parameters
+	----------------
+	fft_sizes : list[int] = [1024, 2048, 8192]
+		FFT size list used by the upstream loss object when not overridden.
+	hop_sizes : list[int] = [256, 512, 2048]
+		Hop size list used by the upstream loss object when not overridden.
+	win_lengths : list[int] = [1024, 2048, 8192]
+		Window length list used by the upstream loss object when not overridden.
+	keywordArguments : Any
+		Additional keyword argument mapping forwarded to
+		`auraloss.freq.SumAndDifferenceSTFTLoss` [1].
+
+	References
+	----------
+	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
+		https://github.com/csteinmetz1/auraloss
+	"""
+	dictionaryKeywordArguments: dict[str, Any] = {**dictionaryDefaultSumAndDifferenceSTFTLossKeywordArguments, **keywordArguments}
+	return _analyzeAuralossWaveformLoss(auraloss.freq.SumAndDifferenceSTFTLoss(**dictionaryKeywordArguments), tensorAudioAlfa, tensorAudioBeta)

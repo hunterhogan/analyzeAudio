@@ -50,15 +50,18 @@ dependencies = [
   "auraloss",
   "librosa",
   "numpy",
+  "scipy",
   "torch",
   "torch_l1_snr",
   "torch_log_wmse",
   "torchmetrics[audio]",
   "tqdm"
 ]
-optional-dependencies = { testing = [
-  "pytest",
+optional-dependencies = { development = [
   "pytest-cov",
+  "scipy-stubs",
+], testing = [
+  "pytest",
   "pytest-xdist",
 ] }
 
