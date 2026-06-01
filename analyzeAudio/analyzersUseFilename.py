@@ -288,550 +288,6 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 	return dictionaryAspectsAnalyzed
 
 #-------- aspectralstats ----------------------------------
-#-------- astats ------------------------------------------
-#-------- ebur128 -----------------------------------------
-
-aspectName = 'Zero crossings'
-@registrationAudioAspect(aspectName)
-def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean number of zero crossings in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how often the waveform changes sign across analyzed
-	frames of one audio file. The registered audio aspect name is `Zero crossings` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	zeroCrossings : float | None
-		Mean number of sign changes per analyzed frame.
-
-	Mathematics
-	-----------
-	framewise zero-crossing count : equation
-	```
-		Let xᵢ[n] ≜ sample n of frame i
-			sgn(x) = 1,  x ≥ 0
-			sgn(x) = −1, x < 0
-
-		ZCᵢ = (1/2) ∑_(n = 1)^(Nᵢ - 1) |sgn(xᵢ[n]) - sgn(xᵢ[n - 1])|
-	```
-
-	mean aggregation : equation
-	```
-		Let T ≜ number of analyzed frames
-
-		ZeroCrossings = (1/T) ∑_(i = 1)^T ZCᵢ
-	```
-
-	References
-	----------
-	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
-		method. Microsoft Research Technical Report MSR-TR-2001-79.
-		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings')
-
-aspectName = 'Zero-crossings rate'
-@registrationAudioAspect(aspectName)
-def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean zero-crossing rate of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how densely sign changes occur within analyzed frames of
-	one audio file. The registered audio aspect name is `Zero-crossings rate` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	zeroCrossingsRate : float | None
-		Mean normalized zero-crossing count per analyzed frame.
-
-	Mathematics
-	-----------
-	framewise zero-crossing rate : equation
-	```
-		Let xᵢ[n] ≜ sample n of frame i
-			sgn(x) = 1,  x ≥ 0
-			sgn(x) = −1, x < 0
-
-		ZCRᵢ = (1/(2Nᵢ)) ∑_(n = 1)^(Nᵢ - 1) |sgn(xᵢ[n]) - sgn(xᵢ[n - 1])|
-	```
-
-	mean aggregation : equation
-	```
-		Let T ≜ number of analyzed frames
-
-		ZeroCrossingsRate = (1/T) ∑_(i = 1)^T ZCRᵢ
-	```
-
-	References
-	----------
-	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
-		method. Microsoft Research Technical Report MSR-TR-2001-79.
-		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings_rate')
-
-aspectName = 'DC offset'
-@registrationAudioAspect(aspectName)
-def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the DC offset of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to measure the mean sample amplitude across all samples in an audio
-	file. A DC offset of zero indicates no bias toward positive or negative values. The registered
-	audio aspect name is `DC offset`.
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	DCoffset : float | None
-		Mean sample value as a proportion of the full-scale range.
-
-	Mathematics
-	-----------
-	DC offset : equation
-	```
-		Let x[n] ≜ sample n of the audio signal
-			N ≜ number of samples
-
-		DCoffset = (1/N) ∑_(n = 0)^(N - 1) x[n]
-	```
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('DC_offset')
-
-aspectName = 'Dynamic range'
-@registrationAudioAspect(aspectName)
-def analyzeDynamicRange(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the dynamic range of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to measure the difference between the peak level and the noise floor
-	of an audio file. The registered audio aspect name is `Dynamic range`.
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	dynamicRange : float | None
-		Difference between peak level and noise floor in decibels.
-
-	Mathematics
-	-----------
-	dynamic range : equation
-	```
-		Let Peak_level ≜ peak amplitude in dB
-			Noise_floor ≜ estimated noise floor in dB
-
-		DynamicRange = Peak_level − Noise_floor
-	```
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Dynamic_range')
-
-aspectName = 'Signal entropy'
-@registrationAudioAspect(aspectName)
-def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the signal entropy of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how uniformly distributed the sample amplitudes of an
-	audio file are. A higher value indicates a more uniform amplitude distribution. The registered
-	audio aspect name is `Signal entropy` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	signalEntropy : float | None
-		Shannon entropy of the sample amplitude distribution.
-
-	Mathematics
-	-----------
-	Shannon entropy : equation
-	```
-		Let x[n] ≜ sample n of the audio signal
-			p(x) ≜ normalized amplitude probability distribution
-
-		Entropy = −∑ₓ p(x) log₂(p(x))
-	```
-
-	References
-	----------
-	[1] Shen, J.-L., Hung, J.-W., & Lee, L.-S. (1998). Robust entropy-based endpoint detection
-		for speech recognition in noisy environments.
-		https://www.ee.columbia.edu/~dpwe/papers/ShenHL98-endpoint.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Entropy')
-
-aspectName = 'Duration-samples'
-@registrationAudioAspect(aspectName)
-def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the total number of samples in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain the total sample count of an audio file. The registered
-	audio aspect name is `Duration-samples`.
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	numberOfSamples : float | None
-		Total number of audio samples.
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Number_of_samples')
-
-aspectName = 'Peak dB'
-@registrationAudioAspect(aspectName)
-def analyzePeak_level(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the peak amplitude of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the maximum absolute sample value in an audio file, expressed
-	as a decibel ratio relative to full scale. The registered audio aspect name is `Peak dB` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	peakDB : float | None
-		Peak amplitude in decibels relative to full scale.
-
-	Mathematics
-	-----------
-	peak level : equation
-	```
-		Let x[n] ≜ sample n of the audio signal
-			N ≜ number of samples
-
-		Peak_level = 20 log₁₀(max_(n ∈ {0, …, N − 1}) |x[n]|)
-	```
-
-	References
-	----------
-	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
-		method. Microsoft Research Technical Report MSR-TR-2001-79.
-		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Peak_level')
-
-aspectName = 'RMS total'
-@registrationAudioAspect(aspectName)
-def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the overall RMS level of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the average power of an audio file as a single decibel
-	value computed over all samples. The registered audio aspect name is `RMS total` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	RMSlevel : float | None
-		Overall RMS level in decibels relative to full scale.
-
-	Mathematics
-	-----------
-	root mean square : equation
-	```
-		Let x[n] ≜ sample n of the audio signal
-			N ≜ number of samples
-
-		RMS = √((1/N) ∑_(n = 0)^(N - 1) x[n]²)
-		RMS_level = 20 log₁₀(RMS)
-	```
-
-	References
-	----------
-	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
-		method. Microsoft Research Technical Report MSR-TR-2001-79.
-		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('RMS_level')
-
-aspectName = 'Crest factor'
-@registrationAudioAspect(aspectName)
-def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the crest factor of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to compare the peak amplitude to the RMS level of an audio file.
-	A higher crest factor indicates greater amplitude variation between peaks and average power.
-	The registered audio aspect name is `Crest factor` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	crestFactor : float | None
-		Ratio of peak amplitude to RMS level.
-
-	Mathematics
-	-----------
-	crest factor : equation
-	```
-		Let x[n] ≜ sample n of the audio signal
-			N ≜ number of samples
-
-		Peak = max_(n ∈ {0, …, N − 1}) |x[n]|
-		RMS = √((1/N) ∑_(n = 0)^(N - 1) x[n]²)
-		CrestFactor = Peak / RMS
-	```
-
-	References
-	----------
-	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
-		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
-		Acoustical Society of America, 130(5), 2902–2916.
-		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Crest_factor')
-
-aspectName = 'RMS peak'
-@registrationAudioAspect(aspectName)
-def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the peak short-term RMS level of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the highest short-term RMS level across all analysis blocks
-	of an audio file. The registered audio aspect name is `RMS peak`.
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	RMSpeak : float | None
-		Highest short-term RMS level in decibels relative to full scale.
-
-	Mathematics
-	-----------
-	block RMS peak : equation
-	```
-		Let xᵢ[n] ≜ sample n of analysis block i
-			Nᵢ ≜ number of samples in block i
-			T ≜ number of analysis blocks
-
-		RMSᵢ = √((1/Nᵢ) ∑_(n = 0)^(Nᵢ − 1) xᵢ[n]²)
-		RMS_peak = 20 log₁₀(max_(i ∈ {1, …, T}) RMSᵢ)
-	```
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('RMS_peak')
-
-aspectName = 'LUFS integrated'
-@registrationAudioAspect(aspectName)
-def analyzeLUFSintegrated(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the integrated programme loudness of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain one gated, K-weighted loudness value for a complete audio
-	file. The registered audio aspect name is `LUFS integrated` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	integratedLoudness : float | None
-		Integrated loudness in LUFS.
-
-	Mathematics
-	-----------
-	gating-block loudness : equation
-	```
-		Let zᵢⱼ ≜ mean square of K-weighted channel i in gating block j
-			Gᵢ ≜ channel weight
-			lⱼ ≜ loudness of gating block j
-
-		lⱼ = −0.691 + 10 log₁₀(∑ᵢ Gᵢ zᵢⱼ)
-	```
-
-	integrated loudness : equation
-	```
-		Let Γₐ = −70 LUFS
-			Γᵣ ≜ absolute-gated loudness − 10 LU
-			J_g = {j : lⱼ > Γₐ and lⱼ > Γᵣ}
-
-		L_K = −0.691 + 10 log₁₀((1/|J_g|) ∑_(j ∈ J_g) ∑ᵢ Gᵢ zᵢⱼ)
-	```
-
-	References
-	----------
-	[1] ITU-R BS.1770-5. (2023). Algorithms to measure audio programme loudness and
-		true-peak audio level.
-		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('I')
-
-aspectName = 'LUFS loudness range'
-@registrationAudioAspect(aspectName)
-def analyzeLRA(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the loudness range of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the macroscopic spread of time-varying loudness in one
-	audio file. The registered audio aspect name is `LUFS loudness range` [1][2].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	loudnessRange : float | None
-		Loudness range in loudness units.
-
-	Mathematics
-	-----------
-	cascaded gating : equation
-	```
-		Let {Lⱼ} ≜ 3-second loudness values
-			Γₐ = −70 LUFS
-			Γᵣ = L_abs − 20 LU
-
-		Keep only loudness values above Γₐ and Γᵣ.
-	```
-
-	percentile range : equation
-	```
-		L_low = Q₀.₁₀({Lⱼ})
-		L_high = Q₀.₉₅({Lⱼ})
-		LRA = L_high - L_low
-	```
-
-	References
-	----------
-	[1] EBU Tech 3342. (2023). Loudness range: A measure to supplement EBU R 128 loudness
-		normalisation.
-		https://tech.ebu.ch/docs/tech/tech3342.pdf
-	[2] ITU-R BS.1770-5. (2023). Algorithms to measure audio programme loudness and
-		true-peak audio level.
-		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('LRA')
-
-aspectName = 'LUFS low'
-@registrationAudioAspect(aspectName)
-def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the lower loudness bound used in loudness-range measurement.
-
-	(AI generated docstring)
-
-	You can use this function to obtain the lower percentile boundary used when loudness range is
-	computed for one audio file. The registered audio aspect name is `LUFS low` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	loudnessLow : float | None
-		Lower loudness bound in LUFS.
-
-	Mathematics
-	-----------
-	lower percentile bound : equation
-	```
-		Let {Lⱼ} ≜ gated loudness values used for loudness-range computation
-
-		LUFS_low = Q₀.₁₀({Lⱼ})
-	```
-
-	References
-	----------
-	[1] EBU Tech 3342. (2023). Loudness range: A measure to supplement EBU R 128 loudness
-		normalisation.
-		https://tech.ebu.ch/docs/tech/tech3342.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('LRA.low')
-
-aspectName = 'LUFS high'
-@registrationAudioAspect(aspectName)
-def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the upper loudness bound used in loudness-range measurement.
-
-	(AI generated docstring)
-
-	You can use this function to obtain the upper percentile boundary used when loudness range is
-	computed for one audio file. The registered audio aspect name is `LUFS high` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	loudnessHigh : float | None
-		Upper loudness bound in LUFS.
-
-	Mathematics
-	-----------
-	upper percentile bound : equation
-	```
-		Let {Lⱼ} ≜ gated loudness values used for loudness-range computation
-
-		LUFS_high = Q₀.₉₅({Lⱼ})
-	```
-
-	References
-	----------
-	[1] EBU Tech 3342. (2023). Loudness range: A measure to supplement EBU R 128 loudness
-		normalisation.
-		https://tech.ebu.ch/docs/tech/tech3342.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('LRA.high')
 
 aspectName = 'Power spectral density mean'
 @registrationAudioAspect(aspectName)
@@ -1310,6 +766,379 @@ def analyzeRolloff(pathFilename: str | PathLike[Any]) -> float | None:
 	"""
 	return ffprobeShotgunAndCache(pathFilename).get('rolloff')
 
+#-------- astats ------------------------------------------
+
+aspectName = 'Zero crossings'
+@registrationAudioAspect(aspectName)
+def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean number of zero crossings in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize how often the waveform changes sign across analyzed
+	frames of one audio file. The registered audio aspect name is `Zero crossings` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	zeroCrossings : float | None
+		Mean number of sign changes per analyzed frame.
+
+	Mathematics
+	-----------
+	framewise zero-crossing count : equation
+	```
+		Let xᵢ[n] ≜ sample n of frame i
+			sgn(x) = 1,  x ≥ 0
+			sgn(x) = −1, x < 0
+
+		ZCᵢ = (1/2) ∑_(n = 1)^(Nᵢ - 1) |sgn(xᵢ[n]) - sgn(xᵢ[n - 1])|
+	```
+
+	mean aggregation : equation
+	```
+		Let T ≜ number of analyzed frames
+
+		ZeroCrossings = (1/T) ∑_(i = 1)^T ZCᵢ
+	```
+
+	References
+	----------
+	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
+		method. Microsoft Research Technical Report MSR-TR-2001-79.
+		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings')
+
+aspectName = 'Zero-crossings rate'
+@registrationAudioAspect(aspectName)
+def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean zero-crossing rate of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize how densely sign changes occur within analyzed frames of
+	one audio file. The registered audio aspect name is `Zero-crossings rate` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	zeroCrossingsRate : float | None
+		Mean normalized zero-crossing count per analyzed frame.
+
+	Mathematics
+	-----------
+	framewise zero-crossing rate : equation
+	```
+		Let xᵢ[n] ≜ sample n of frame i
+			sgn(x) = 1,  x ≥ 0
+			sgn(x) = −1, x < 0
+
+		ZCRᵢ = (1/(2Nᵢ)) ∑_(n = 1)^(Nᵢ - 1) |sgn(xᵢ[n]) - sgn(xᵢ[n - 1])|
+	```
+
+	mean aggregation : equation
+	```
+		Let T ≜ number of analyzed frames
+
+		ZeroCrossingsRate = (1/T) ∑_(i = 1)^T ZCRᵢ
+	```
+
+	References
+	----------
+	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
+		method. Microsoft Research Technical Report MSR-TR-2001-79.
+		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings_rate')
+
+aspectName = 'DC offset'
+@registrationAudioAspect(aspectName)
+def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the DC offset of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to measure the mean sample amplitude across all samples in an audio
+	file. A DC offset of zero indicates no bias toward positive or negative values. The registered
+	audio aspect name is `DC offset`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	DCoffset : float | None
+		Mean sample value as a proportion of the full-scale range.
+
+	Mathematics
+	-----------
+	DC offset : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		DCoffset = (1/N) ∑_(n = 0)^(N - 1) x[n]
+	```
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('DC_offset')
+
+aspectName = 'Dynamic range'
+@registrationAudioAspect(aspectName)
+def analyzeDynamicRange(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the dynamic range of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to measure the difference between the peak level and the noise floor
+	of an audio file. The registered audio aspect name is `Dynamic range`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	dynamicRange : float | None
+		Difference between peak level and noise floor in decibels.
+
+	Mathematics
+	-----------
+	dynamic range : equation
+	```
+		Let Peak_level ≜ peak amplitude in dB
+			Noise_floor ≜ estimated noise floor in dB
+
+		DynamicRange = Peak_level − Noise_floor
+	```
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('Dynamic_range')
+
+aspectName = 'Signal entropy'
+@registrationAudioAspect(aspectName)
+def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the signal entropy of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize how uniformly distributed the sample amplitudes of an
+	audio file are. A higher value indicates a more uniform amplitude distribution. The registered
+	audio aspect name is `Signal entropy` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	signalEntropy : float | None
+		Shannon entropy of the sample amplitude distribution.
+
+	Mathematics
+	-----------
+	Shannon entropy : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			p(x) ≜ normalized amplitude probability distribution
+
+		Entropy = −∑ₓ p(x) log₂(p(x))
+	```
+
+	References
+	----------
+	[1] Shen, J.-L., Hung, J.-W., & Lee, L.-S. (1998). Robust entropy-based endpoint detection
+		for speech recognition in noisy environments.
+		https://www.ee.columbia.edu/~dpwe/papers/ShenHL98-endpoint.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('Entropy')
+
+aspectName = 'Duration-samples'
+@registrationAudioAspect(aspectName)
+def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the total number of samples in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the total sample count of an audio file. The registered
+	audio aspect name is `Duration-samples`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	numberOfSamples : float | None
+		Total number of audio samples.
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('Number_of_samples')
+
+aspectName = 'Peak dB'
+@registrationAudioAspect(aspectName)
+def analyzePeak_level(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the peak amplitude of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the maximum absolute sample value in an audio file, expressed
+	as a decibel ratio relative to full scale. The registered audio aspect name is `Peak dB` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	peakDB : float | None
+		Peak amplitude in decibels relative to full scale.
+
+	Mathematics
+	-----------
+	peak level : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		Peak_level = 20 log₁₀(max_(n ∈ {0, …, N − 1}) |x[n]|)
+	```
+
+	References
+	----------
+	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
+		method. Microsoft Research Technical Report MSR-TR-2001-79.
+		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('Peak_level')
+
+aspectName = 'RMS total'
+@registrationAudioAspect(aspectName)
+def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall RMS level of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the average power of an audio file as a single decibel
+	value computed over all samples. The registered audio aspect name is `RMS total` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSlevel : float | None
+		Overall RMS level in decibels relative to full scale.
+
+	Mathematics
+	-----------
+	root mean square : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		RMS = √((1/N) ∑_(n = 0)^(N - 1) x[n]²)
+		RMS_level = 20 log₁₀(RMS)
+	```
+
+	References
+	----------
+	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
+		method. Microsoft Research Technical Report MSR-TR-2001-79.
+		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('RMS_level')
+
+aspectName = 'Crest factor'
+@registrationAudioAspect(aspectName)
+def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the crest factor of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to compare the peak amplitude to the RMS level of an audio file.
+	A higher crest factor indicates greater amplitude variation between peaks and average power.
+	The registered audio aspect name is `Crest factor` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	crestFactor : float | None
+		Ratio of peak amplitude to RMS level.
+
+	Mathematics
+	-----------
+	crest factor : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		Peak = max_(n ∈ {0, …, N − 1}) |x[n]|
+		RMS = √((1/N) ∑_(n = 0)^(N - 1) x[n]²)
+		CrestFactor = Peak / RMS
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('Crest_factor')
+
+aspectName = 'RMS peak'
+@registrationAudioAspect(aspectName)
+def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the peak short-term RMS level of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the highest short-term RMS level across all analysis blocks
+	of an audio file. The registered audio aspect name is `RMS peak`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSpeak : float | None
+		Highest short-term RMS level in decibels relative to full scale.
+
+	Mathematics
+	-----------
+	block RMS peak : equation
+	```
+		Let xᵢ[n] ≜ sample n of analysis block i
+			Nᵢ ≜ number of samples in block i
+			T ≜ number of analysis blocks
+
+		RMSᵢ = √((1/Nᵢ) ∑_(n = 0)^(Nᵢ − 1) xᵢ[n]²)
+		RMS_peak = 20 log₁₀(max_(i ∈ {1, …, T}) RMSᵢ)
+	```
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('RMS_peak')
+
 aspectName = 'Abs_Peak_count'
 @registrationAudioAspect(aspectName)
 def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> float | None:
@@ -1595,3 +1424,176 @@ def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> float | None:
 		Lowest short-term RMS level in decibels relative to full scale.
 	"""
 	return ffprobeShotgunAndCache(pathFilename).get('RMS_trough')
+
+#-------- ebur128 -----------------------------------------
+
+aspectName = 'LUFS integrated'
+@registrationAudioAspect(aspectName)
+def analyzeLUFSintegrated(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the integrated programme loudness of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to obtain one gated, K-weighted loudness value for a complete audio
+	file. The registered audio aspect name is `LUFS integrated` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	integratedLoudness : float | None
+		Integrated loudness in LUFS.
+
+	Mathematics
+	-----------
+	gating-block loudness : equation
+	```
+		Let zᵢⱼ ≜ mean square of K-weighted channel i in gating block j
+			Gᵢ ≜ channel weight
+			lⱼ ≜ loudness of gating block j
+
+		lⱼ = −0.691 + 10 log₁₀(∑ᵢ Gᵢ zᵢⱼ)
+	```
+
+	integrated loudness : equation
+	```
+		Let Γₐ = −70 LUFS
+			Γᵣ ≜ absolute-gated loudness − 10 LU
+			J_g = {j : lⱼ > Γₐ and lⱼ > Γᵣ}
+
+		L_K = −0.691 + 10 log₁₀((1/|J_g|) ∑_(j ∈ J_g) ∑ᵢ Gᵢ zᵢⱼ)
+	```
+
+	References
+	----------
+	[1] ITU-R BS.1770-5. (2023). Algorithms to measure audio programme loudness and
+		true-peak audio level.
+		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('I')
+
+aspectName = 'LUFS loudness range'
+@registrationAudioAspect(aspectName)
+def analyzeLRA(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the loudness range of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the macroscopic spread of time-varying loudness in one
+	audio file. The registered audio aspect name is `LUFS loudness range` [1][2].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	loudnessRange : float | None
+		Loudness range in loudness units.
+
+	Mathematics
+	-----------
+	cascaded gating : equation
+	```
+		Let {Lⱼ} ≜ 3-second loudness values
+			Γₐ = −70 LUFS
+			Γᵣ = L_abs − 20 LU
+
+		Keep only loudness values above Γₐ and Γᵣ.
+	```
+
+	percentile range : equation
+	```
+		L_low = Q₀.₁₀({Lⱼ})
+		L_high = Q₀.₉₅({Lⱼ})
+		LRA = L_high - L_low
+	```
+
+	References
+	----------
+	[1] EBU Tech 3342. (2023). Loudness range: A measure to supplement EBU R 128 loudness
+		normalisation.
+		https://tech.ebu.ch/docs/tech/tech3342.pdf
+	[2] ITU-R BS.1770-5. (2023). Algorithms to measure audio programme loudness and
+		true-peak audio level.
+		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('LRA')
+
+aspectName = 'LUFS low'
+@registrationAudioAspect(aspectName)
+def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the lower loudness bound used in loudness-range measurement.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the lower percentile boundary used when loudness range is
+	computed for one audio file. The registered audio aspect name is `LUFS low` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	loudnessLow : float | None
+		Lower loudness bound in LUFS.
+
+	Mathematics
+	-----------
+	lower percentile bound : equation
+	```
+		Let {Lⱼ} ≜ gated loudness values used for loudness-range computation
+
+		LUFS_low = Q₀.₁₀({Lⱼ})
+	```
+
+	References
+	----------
+	[1] EBU Tech 3342. (2023). Loudness range: A measure to supplement EBU R 128 loudness
+		normalisation.
+		https://tech.ebu.ch/docs/tech/tech3342.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('LRA.low')
+
+aspectName = 'LUFS high'
+@registrationAudioAspect(aspectName)
+def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the upper loudness bound used in loudness-range measurement.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the upper percentile boundary used when loudness range is
+	computed for one audio file. The registered audio aspect name is `LUFS high` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	loudnessHigh : float | None
+		Upper loudness bound in LUFS.
+
+	Mathematics
+	-----------
+	upper percentile bound : equation
+	```
+		Let {Lⱼ} ≜ gated loudness values used for loudness-range computation
+
+		LUFS_high = Q₀.₉₅({Lⱼ})
+	```
+
+	References
+	----------
+	[1] EBU Tech 3342. (2023). Loudness range: A measure to supplement EBU R 128 loudness
+		normalisation.
+		https://tech.ebu.ch/docs/tech/tech3342.pdf
+	"""
+	return ffprobeShotgunAndCache(pathFilename).get('LRA.high')
