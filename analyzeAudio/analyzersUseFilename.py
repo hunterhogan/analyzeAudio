@@ -1,3 +1,6 @@
+# ty:ignore[invalid-return-type]
+# pyright: reportReturnType=false
+# ruff: noqa: ERA001
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
@@ -6,14 +9,20 @@ from analyzeAudio.pythonator import pythonizeFFprobe
 from functools import cache
 from operator import getitem
 from statistics import mean
-from typing import Any, cast, TYPE_CHECKING
+from typing import Any, cast, TYPE_CHECKING, TypeAlias
 import numpy
 import pathlib
 import re as regex
 import subprocess  # noqa: S404
 
 if TYPE_CHECKING:
+	from collections.abc import Callable
 	from os import PathLike
+
+arrayAspectData: TypeAlias = numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]
+arrayAspectDataEmpty: arrayAspectData = numpy.array([], dtype=numpy.float64).reshape(0, 0)
+arrayLUFSData: TypeAlias = numpy.ndarray[tuple[int], numpy.dtype[numpy.float64]]
+arrayLUFSDataEmpty: arrayLUFSData = numpy.array([], dtype=numpy.float64).reshape(0)
 
 #======== FFmpeg ==============================================================
 
@@ -51,15 +60,14 @@ def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathL
 
 	return mean(map(float, regexPattern.findall(stderrFFmpeg)))
 
-aspectName = 'Peak Signal-to-Noise Ratio mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Peak Signal-to-Noise Ratio mean')
 def getPSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	"""Compute the mean peak signal-to-noise ratio between two audio files.
 
 	(AI generated docstring)
 
 	You can use this function to summarize how closely two audio files match with a peak-referenced
-	decibel ratio. The registered audio aspect name is `Peak Signal-to-Noise Ratio mean` [1].
+	decibel ratio. The registered audio aspect name is "Peak Signal-to-Noise Ratio mean" [1].
 
 	Parameters
 	----------
@@ -99,21 +107,19 @@ def getPSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | P
 	[1] Hiary, H., Abu Dalhoum, A. L., Madain, A., Ortega, A., & Alfonseca, M. (2016).
 		Blind audio watermarking technique based on two dimensional cellular automata.
 		International Journal of Security and Its Applications, 10(9), 175–184.
-		http://dx.doi.org/10.14257/ijsia.2016.10.9.18
+		https://doi.org/10.14257/ijsia.2016.10.9.18
 	"""
 	filterChain: str = 'apsnr'
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
-aspectName = 'SDR mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('SDR mean')
 def getSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	"""Compute the mean signal-to-distortion ratio between two audio files.
 
 	(AI generated docstring)
 
 	You can use this function to summarize the ratio between a target component and the remaining
-	distortion energy when two audio files are compared. The registered audio aspect name is
-	`SDR mean` [1].
+	distortion energy when two audio files are compared. The registered audio aspect name is "SDR mean" [1].
 
 	Parameters
 	----------
@@ -159,13 +165,12 @@ def getSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | Pa
 	filterChain: str = 'asdr'
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
-aspectName = 'SI-SDR mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('SI-SDR mean')
 def getSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	"""Compute the mean scale-invariant signal-to-distortion ratio between two audio files.
 
 	You can use this function to compare two audio files while forgiving only a single global scaling
-	factor between them. The registered audio aspect name is `SI-SDR mean` [1].
+	factor between them. The registered audio aspect name is "SI-SDR mean" [1].
 
 	Parameters
 	----------
@@ -218,7 +223,7 @@ def getSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str |
 #======== FFprobe =============================================================
 
 @cache
-def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
+def _ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float | arrayAspectData | arrayLUFSData]:
 	"""I use this shared extractor to collect scalar audio aspects from one analysis pass.
 
 	(AI generated docstring)
@@ -249,8 +254,8 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 
 	filterChain: list[str] = []
 	filterChain += ["aspectralstats"]
-	filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Zero_crossings+Dynamic_range:measure_overall=all"]
-	filterChain += ["ebur128=metadata=1:framelog=quiet"]
+	filterChain += ["astats=metadata=1:length=0.1:measure_perchannel=Crest_factor+Zero_crossings_rate+Zero_crossings+Dynamic_range:measure_overall=all"]
+	filterChain += ["ebur128=metadata=1:dualmono=true:framelog=verbose:peak=true"]
 
 	entriesFFprobe: list[str] = ["frame_tags"]
 
@@ -270,35 +275,40 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 	stdoutFFprobe, _DISCARDstderr = systemProcessFFprobe.communicate()
 	FFprobeStructured = getitem(pythonizeFFprobe(stdoutFFprobe.decode('utf-8')), -1)
 
-	dictionaryAspectsAnalyzed: dict[str, float] = {}
+	dictionaryAspectsAnalyzed: dict[str, float | arrayAspectData | arrayLUFSData] = {}
 	if 'aspectralstats' in FFprobeStructured:
-		for keyName in FFprobeStructured['aspectralstats']:
-			"""No matter how many channels, each keyName is `numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]`
-			where `tuple[int, int]` is (channel, frame)
-			NOTE (as of this writing) `registrar` can only understand the generic class `numpy.ndarray` and not more specific typing
-			dictionaryAspectsAnalyzed[keyName] = FFprobeStructured['aspectralstats'][keyName]"""
-			dictionaryAspectsAnalyzed[keyName] = numpy.mean(FFprobeStructured['aspectralstats'][keyName]).astype(float)
+		"""No matter how many channels, each keyName is `numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]`
+		where `tuple[int, int]` is (channel, frame)
+		"""
+		dictionaryAspectsAnalyzed.update(FFprobeStructured['aspectralstats'])
 	if 'r128' in FFprobeStructured:
-		for keyName in FFprobeStructured['r128']:
-			dictionaryAspectsAnalyzed[keyName] = FFprobeStructured['r128'][keyName][-1]
+		dictionaryAspectsAnalyzed.update(FFprobeStructured['r128'])
+		# print(FFprobeStructured['r128'].keys())
+		# dict_keys(['M', 'S', 'I', 'LRA', 'LRA.low', 'LRA.high', 'true_peaks_ch0', 'true_peak'])
+		# Frames are fixed at 100ms.
+		# I think all values are per frame.
+		# index -1 is the cumulative value for LUFS I, low, and high and peak; plus, the array has 3 significant digits instead of the summary's 1.
+		# Mean values don't necessarily make sense for all of these aspects, so think about how to handle that.
+		# Note that ebur can measure true peak, which no other app or filter yet measures.
 	if 'astats' in FFprobeStructured:
 		for keyName, arrayFeatureValues in cast('dict[str, numpy.ndarray[Any, Any]]', FFprobeStructured['astats']).items():
+			# return an array for all keys, but what is the shape of the array?
+			# by default length=0.05, 50ms. Set to 0.1, 100ms to match ebur128.
+			# for the keys that have cumulative instead of per-frame values, use this trick for now `numpy.mean(arrayFeatureValues[..., -1:None]).astype(float)`.
+			# If I ran two passes of the filter, I could force per-frame values for all aspects with `reset=1`. astats is pretty fast because there are no transformations.
 			dictionaryAspectsAnalyzed[keyName.split('.')[-1]] = numpy.mean(arrayFeatureValues[..., -1:None]).astype(float)
 
 	return dictionaryAspectsAnalyzed
 
 #-------- aspectralstats ----------------------------------
 
-aspectName = 'Power spectral density mean'
-@registrationAudioAspect(aspectName)
-def analyzeMean(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean power spectral density of an audio file.
+def analyzeSpectralCentroid(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral centroid trajectory of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to summarize the average spectral power across all frequency bins
-	and analyzed frames of an audio file. The registered audio aspect name is
-	`Power spectral density mean`.
+	You can use this function to inspect where spectral energy is centered in each analyzed frame
+	of one audio file [1].
 
 	Parameters
 	----------
@@ -307,53 +317,17 @@ def analyzeMean(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	powerSpectralDensityMean : float | None
-		Mean power spectral density across all frequency bins and analyzed frames.
+	spectralCentroid : arrayAspectData
+		Framewise spectral-centroid values across analyzed frames.
 
 	Mathematics
 	-----------
-	mean PSD : equation
+	centroid : equation
 	```
-		Let Pᵢ(k) ≜ power spectral density at frequency bin k of frame i
-			K ≜ number of frequency bins
-			T ≜ number of analyzed frames
+		Let Xᵢ(k) ≜ spectral magnitude at frequency bin k of frame i
+			f_k ≜ frequency at bin k
 
-		PSD_mean = (1/(KT)) ∑_(i = 1)^T ∑_(k = 1)^K Pᵢ(k)
-	```
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('mean')
-
-aspectName = 'Spectral variance mean'
-@registrationAudioAspect(aspectName)
-def analyzeVariance(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral variance of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the dispersion of spectral power around the mean in
-	analyzed frames of an audio file. The registered audio aspect name is `Spectral variance mean`
-	[1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	spectralVarianceMean : float | None
-		Mean spectral variance across analyzed frames.
-
-	Mathematics
-	-----------
-	framewise spectral variance : equation
-	```
-		Let Pᵢ(k) ≜ power spectral density at frequency bin k of frame i
-			μᵢ ≜ mean PSD of frame i
-			K ≜ number of frequency bins
-
-		Varianceᵢ = (1/K) ∑_(k = 1)^K (Pᵢ(k) − μᵢ)²
-		SpectralVarianceMean = (1/T) ∑_(i = 1)^T Varianceᵢ
+		Centroidᵢ = (∑ₖ f_k Xᵢ(k)) / (∑ₖ Xᵢ(k))
 	```
 
 	References
@@ -363,61 +337,35 @@ def analyzeVariance(pathFilename: str | PathLike[Any]) -> float | None:
 		Acoustical Society of America, 130(5), 2902–2916.
 		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('variance')
+	return _ffprobeShotgunAndCache(pathFilename).get('centroid', arrayAspectDataEmpty)
 
-aspectName = 'Spectral centroid mean'
-@registrationAudioAspect(aspectName)
-def analyzeCentroid(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral centroid of an audio file.
+@registrationAudioAspect('Spectral centroid mean')
+def analyzeSpectralCentroidMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the "Spectral centroid mean" aspect of an audio file.
 
-	(AI generated docstring)
-
-	You can use this function to obtain one scalar summary of framewise spectral centroid from an
-	audio file. The registered audio aspect name is `Spectral centroid mean`.
+	You can use this function to return one scalar summary for the aspect name
+	"Spectral centroid mean".
 
 	Returns
 	-------
-	spectralCentroidMean : float | None
+	spectralCentroidMean : float
 		Mean value of the framewise spectral centroid.
 
 	See Also
 	--------
-	`analyzeAudio.analyzersUseSpectrogram.analyzeSpectralCentroid`
-		Compute the full spectral-centroid trajectory and describe the center-of-mass formula.
+	`analyzeSpectralCentroid`
+		Compute the framewise spectral-centroid trajectory.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('centroid')
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralCentroid
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-aspectName = 'Spectral spread mean'
-@registrationAudioAspect(aspectName)
-def analyzeSpread(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral spread of an audio file.
+def analyzeSpectralCrest(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral crest of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to obtain one scalar summary of framewise spectral spread from an audio
-	file. The registered audio aspect name is `Spectral spread mean`.
-
-	Returns
-	-------
-	spectralSpreadMean : float | None
-		Mean value of the framewise spectral spread.
-
-	See Also
-	--------
-	`analyzeAudio.analyzersUseSpectrogram.analyzeSpectralBandwidth`
-		Compute the full spectral-spread trajectory and describe the p-order definition.
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('spread')
-
-aspectName = 'Spectral skewness mean'
-@registrationAudioAspect(aspectName)
-def analyzeSkewness(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral skewness of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the asymmetry of the framewise spectral distribution of one
-	audio file. The registered audio aspect name is `Spectral skewness mean` [1].
+	You can use this function to analyze how strongly one spectral peak dominates the average
+	spectral magnitude in analyzed frames. [1].
 
 	Parameters
 	----------
@@ -426,164 +374,8 @@ def analyzeSkewness(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	spectralSkewnessMean : float | None
-		Mean spectral skewness across analyzed frames.
-
-	Mathematics
-	-----------
-	normalized spectral weights : equation
-	```
-		Let Xᵢ(k) ≜ spectral magnitude at frequency bin k of frame i
-			pᵢ(k) = Xᵢ(k) / ∑ⱼ Xᵢ(j)
-			cᵢ ≜ spectral centroid of frame i
-			σᵢ ≜ spectral spread of frame i
-	```
-
-	skewness : equation
-	```
-		Skewnessᵢ = ∑ₖ ((f_k - cᵢ) / σᵢ)³ pᵢ(k)
-		SpectralSkewnessMean = (1/T) ∑_(i = 1)^T Skewnessᵢ
-	```
-
-	References
-	----------
-	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
-		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
-		Acoustical Society of America, 130(5), 2902–2916.
-		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('skewness')
-
-aspectName = 'Spectral kurtosis mean'
-@registrationAudioAspect(aspectName)
-def analyzeKurtosis(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral kurtosis of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how peaked the framewise spectral distribution is for one
-	audio file. The registered audio aspect name is `Spectral kurtosis mean` [1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	spectralKurtosisMean : float | None
-		Mean spectral kurtosis across analyzed frames.
-
-	Mathematics
-	-----------
-	normalized spectral weights : equation
-	```
-		Let Xᵢ(k) ≜ spectral magnitude at frequency bin k of frame i
-			pᵢ(k) = Xᵢ(k) / ∑ⱼ Xᵢ(j)
-			cᵢ ≜ spectral centroid of frame i
-			σᵢ ≜ spectral spread of frame i
-	```
-
-	kurtosis : equation
-	```
-		Kurtosisᵢ = ∑ₖ ((f_k - cᵢ) / σᵢ)⁴ pᵢ(k)
-		SpectralKurtosisMean = (1/T) ∑_(i = 1)^T Kurtosisᵢ
-	```
-
-	References
-	----------
-	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
-		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
-		Acoustical Society of America, 130(5), 2902–2916.
-		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('kurtosis')
-
-aspectName = 'Spectral entropy mean'
-@registrationAudioAspect(aspectName)
-def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral entropy of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how concentrated or diffuse the framewise spectral energy
-	distribution is for one audio file. The registered audio aspect name is `Spectral entropy mean`
-	[1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	spectralEntropyMean : float | None
-		Mean spectral entropy across analyzed frames.
-
-	Mathematics
-	-----------
-	spectral probabilities : equation
-	```
-		Let Eᵢ(k) ≜ spectral energy at subband k of frame i
-			pᵢ(k) = Eᵢ(k) / ∑ⱼ Eᵢ(j)
-	```
-
-	entropy : equation
-	```
-		Hᵢ = −∑ₖ pᵢ(k) log(pᵢ(k))
-		SpectralEntropyMean = (1/T) ∑_(i = 1)^T Hᵢ
-	```
-
-	References
-	----------
-	[1] Shen, J.-L., Hung, J.-W., & Lee, L.-S. (1998). Robust entropy-based endpoint detection
-		for speech recognition in noisy environments.
-		https://www.ee.columbia.edu/~dpwe/papers/ShenHL98-endpoint.pdf
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('entropy')
-
-aspectName = 'Spectral flatness mean'
-@registrationAudioAspect(aspectName)
-def analyzeFlatness(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral flatness of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain one scalar summary of framewise spectral flatness from an
-	audio file. The registered audio aspect name is `Spectral flatness mean`.
-
-	Returns
-	-------
-	spectralFlatnessMean : float | None
-		Mean value of the framewise spectral flatness.
-
-	See Also
-	--------
-	`analyzeAudio.analyzersUseSpectrogram.analyzeSpectralFlatness`
-		Compute the full spectral-flatness trajectory and describe the geometric-to-arithmetic ratio.
-	"""
-	return ffprobeShotgunAndCache(pathFilename).get('flatness')
-
-aspectName = 'Spectral crest mean'
-@registrationAudioAspect(aspectName)
-def analyzeCrest(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral crest of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how strongly one spectral peak dominates the average
-	spectral magnitude in analyzed frames. The registered audio aspect name is `Spectral crest mean`
-	[1].
-
-	Parameters
-	----------
-	pathFilename : str | PathLike[Any]
-		Path of the audio file to analyze.
-
-	Returns
-	-------
-	spectralCrestMean : float | None
-		Mean spectral crest across analyzed frames.
+	spectralCrest : arrayAspectData
+		Spectral crest across analyzed frames.
 
 	Mathematics
 	-----------
@@ -603,17 +395,35 @@ def analyzeCrest(pathFilename: str | PathLike[Any]) -> float | None:
 		Acoustical Society of America, 130(5), 2902–2916.
 		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('crest')
+	return _ffprobeShotgunAndCache(pathFilename).get('crest', arrayAspectDataEmpty)
 
-aspectName = 'Spectral flux mean'
-@registrationAudioAspect(aspectName)
-def analyzeFlux(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral flux of an audio file.
+@registrationAudioAspect('Spectral crest mean')
+def analyzeSpectralCrestMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the "Spectral crest mean" aspect of an audio file.
+
+	You can use this function to return one scalar summary for the aspect name
+	"Spectral crest mean".
+
+	Returns
+	-------
+	spectralCrestMean : float
+		Mean value of the framewise spectral crest.
+
+	See Also
+	--------
+	`analyzeSpectralCrest`
+		Compute the framewise spectral-crest trajectory.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralCrest
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralDecrease(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral decrease trajectory of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to summarize how strongly the spectrum changes from one frame to the
-	next in one audio file. The registered audio aspect name is `Spectral flux mean` [1].
+	You can use this function to inspect how strongly spectrum levels tend to drop from lower
+	frequency bins toward higher frequency bins in each analyzed frame [1].
 
 	Parameters
 	----------
@@ -622,8 +432,182 @@ def analyzeFlux(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	spectralFluxMean : float | None
-		Mean spectral flux across analyzed frames.
+	spectralDecrease : arrayAspectData
+		Framewise spectral-decrease values across analyzed frames.
+
+	Mathematics
+	-----------
+	spectral decrease : equation
+	```
+		Let Xᵢ(k) ≜ spectral magnitude at frequency bin k of frame i
+			K ≜ number of frequency bins
+
+		Decreaseᵢ = (∑_(k = 2)^K (Xᵢ(k) - Xᵢ(1)) / (k - 1)) / ∑_(k = 2)^K Xᵢ(k)
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('decrease', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Spectral decrease mean')
+def analyzeSpectralDecreaseMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral decrease of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize how fast spectral magnitude tends to fall after the first
+	bins of each analyzed frame. The aspect name is "Spectral decrease mean".
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralDecreaseMean : float
+		Mean spectral decrease across analyzed frames.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralDecrease
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral entropy trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect framewise spectral uncertainty for one audio file [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralEntropy : arrayAspectData
+		Framewise spectral-entropy values across analyzed frames.
+
+	Mathematics
+	-----------
+	entropy : equation
+	```
+		Let Eᵢ(k) ≜ spectral energy at subband k of frame i
+			pᵢ(k) = Eᵢ(k) / ∑ⱼ Eᵢ(j)
+
+		Hᵢ = −∑ₖ pᵢ(k) log(pᵢ(k))
+	```
+
+	References
+	----------
+	[1] Shen, J.-L., Hung, J.-W., & Lee, L.-S. (1998). Robust entropy-based endpoint detection
+		for speech recognition in noisy environments.
+		https://www.ee.columbia.edu/~dpwe/papers/ShenHL98-endpoint.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('entropy', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Spectral entropy mean')
+def analyzeSpectralEntropyMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral entropy of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize how concentrated or diffuse the framewise spectral energy
+	distribution is for one audio file. The aspect name is "Spectral entropy mean".
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralEntropyMean : float
+		Mean spectral entropy across analyzed frames.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralEntropy
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralFlatness(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral flatness trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect how noise-like or tone-like each analyzed frame is by
+	comparing geometric and arithmetic spectral means [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralFlatness : arrayAspectData
+		Framewise spectral-flatness values across analyzed frames.
+
+	Mathematics
+	-----------
+	spectral flatness : equation
+	```
+		Let Xᵢ(k) > 0 ≜ spectral magnitude at frequency bin k of frame i
+			K ≜ number of frequency bins
+
+		Flatnessᵢ = (∏_(k = 1)^K Xᵢ(k))^(1/K) / ((1/K) ∑_(k = 1)^K Xᵢ(k))
+	```
+
+	References
+	----------
+	[1] Gray, A. H., & Markel, J. D. (1974). Distance measures for speech processing.
+		IEEE Transactions on Acoustics, Speech, and Signal Processing, 24(5), 380–391.
+		https://ieeexplore.ieee.org/document/1162647
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('flatness', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Spectral flatness mean')
+def analyzeSpectralFlatnessMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral flatness of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to obtain one scalar summary of framewise spectral flatness from an
+	audio file. The aspect name is "Spectral flatness mean".
+
+	Returns
+	-------
+	spectralFlatnessMean : float
+		Mean value of the framewise spectral flatness.
+
+	See Also
+	--------
+	`analyzeAudio.analyzersUseSpectrogram.analyzeSpectralFlatness`
+		Compute the full spectral-flatness trajectory and describe the geometric-to-arithmetic ratio.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralFlatness
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralFlux(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral flux trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect how strongly the spectrum changes from frame to frame in
+	one audio file [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralFlux : arrayAspectData
+		Framewise spectral-flux values across analyzed frames.
 
 	Mathematics
 	-----------
@@ -633,7 +617,6 @@ def analyzeFlux(pathFilename: str | PathLike[Any]) -> float | None:
 			δ ≜ small positive constant
 
 		Fluxᵢ = (1/K) ∑ₖ [log(A(i, k) + δ) - log(A(i - 1, k) + δ)]²
-		SpectralFluxMean = (1/T) ∑_(i = 1)^T Fluxᵢ
 	```
 
 	References
@@ -642,17 +625,16 @@ def analyzeFlux(pathFilename: str | PathLike[Any]) -> float | None:
 		method. Microsoft Research Technical Report MSR-TR-2001-79.
 		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('flux')
+	return _ffprobeShotgunAndCache(pathFilename).get('flux', arrayAspectDataEmpty)
 
-aspectName = 'Spectral slope mean'
-@registrationAudioAspect(aspectName)
-def analyzeSlope(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral slope of an audio file.
+@registrationAudioAspect('Spectral flux mean')
+def analyzeSpectralFluxMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral flux of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to summarize the linear trend of spectral magnitude over frequency in
-	analyzed frames. The registered audio aspect name is `Spectral slope mean` [1].
+	You can use this function to summarize how strongly the spectrum changes from one frame to the
+	next in one audio file. The aspect name is "Spectral flux mean".
 
 	Parameters
 	----------
@@ -661,8 +643,261 @@ def analyzeSlope(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	spectralSlopeMean : float | None
-		Mean spectral slope across analyzed frames.
+	spectralFluxMean : float
+		Mean spectral flux across analyzed frames.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralFlux
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralKurtosis(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral kurtosis trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect framewise peakedness of the spectral distribution for one
+	audio file [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralKurtosis : arrayAspectData
+		Framewise spectral-kurtosis values across analyzed frames.
+
+	Mathematics
+	-----------
+	kurtosis : equation
+	```
+		Let Xᵢ(k) ≜ spectral magnitude at frequency bin k of frame i
+			pᵢ(k) = Xᵢ(k) / ∑ⱼ Xᵢ(j)
+			cᵢ ≜ spectral centroid of frame i
+			σᵢ ≜ spectral spread of frame i
+
+		Kurtosisᵢ = ∑ₖ ((f_k - cᵢ) / σᵢ)⁴ pᵢ(k)
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('kurtosis', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Spectral kurtosis mean')
+def analyzeSpectralKurtosisMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral kurtosis of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize how peaked the framewise spectral distribution is for one
+	audio file. The aspect name is "Spectral kurtosis mean".
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralKurtosisMean : float
+		Mean spectral kurtosis across analyzed frames.
+
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralKurtosis
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralMean(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the power spectral density trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect framewise mean power-spectral values for one audio file.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	powerSpectralDensity : arrayAspectData
+		Framewise power-spectral-density values across analyzed frames.
+
+	Mathematics
+	-----------
+	mean PSD : equation
+	```
+		Let Pᵢ(k) ≜ power spectral density at frequency bin k of frame i
+			K ≜ number of frequency bins
+
+		PSDᵢ = (1/K) ∑_(k = 1)^K Pᵢ(k)
+	```
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('mean', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Power spectral density mean')
+def analyzeSpectralMeanMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean power spectral density of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the average spectral power across all frequency bins
+	and analyzed frames of an audio file. The aspect name is "Power spectral density mean".
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	powerSpectralDensityMean : float
+		Mean power spectral density across all frequency bins and analyzed frames.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralMean
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralRolloff(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral rolloff trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect the framewise rolloff boundary where cumulative spectral
+	energy reaches a configured proportion [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralRolloff : arrayAspectData
+		Framewise spectral-rolloff values across analyzed frames.
+
+	Mathematics
+	-----------
+	rolloff frequency : equation
+	```
+		Let Xᵢ(k) ≜ spectral magnitude or energy at frequency bin k of frame i
+			η ∈ (0, 1) ≜ cumulative-energy proportion
+
+		f_rolloff,ᵢ = min { f_m : ∑_(k = 1)^m Xᵢ(k) ≥ η ∑_(k = 1)^K Xᵢ(k) }
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('rolloff', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Spectral rolloff mean')
+def analyzeSpectralRolloffMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral rolloff frequency of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the frequency below which a chosen proportion of spectral
+	energy is concentrated in analyzed frames. The aspect name is "Spectral rolloff mean".
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralRolloffMean : float
+		Mean spectral rolloff frequency across analyzed frames.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralRolloff
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralSkewness(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral skewness trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect framewise spectral asymmetry for one audio file [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralSkewness : arrayAspectData
+		Framewise spectral-skewness values across analyzed frames.
+
+	Mathematics
+	-----------
+	skewness : equation
+	```
+		Let Xᵢ(k) ≜ spectral magnitude at frequency bin k of frame i
+			pᵢ(k) = Xᵢ(k) / ∑ⱼ Xᵢ(j)
+			cᵢ ≜ spectral centroid of frame i
+			σᵢ ≜ spectral spread of frame i
+
+		Skewnessᵢ = ∑ₖ ((f_k - cᵢ) / σᵢ)³ pᵢ(k)
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('skewness', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Spectral skewness mean')
+def analyzeSpectralSkewnessMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral skewness of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the asymmetry of the framewise spectral distribution of one
+	audio file. The aspect name is "Spectral skewness mean".
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralSkewnessMean : float
+		Mean spectral skewness across analyzed frames.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralSkewness
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralSlope(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral slope trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect the framewise linear trend of spectrum level over
+	frequency [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralSlope : arrayAspectData
+		Framewise spectral-slope values across analyzed frames.
 
 	Mathematics
 	-----------
@@ -673,7 +908,6 @@ def analyzeSlope(pathFilename: str | PathLike[Any]) -> float | None:
 
 		Slopeᵢ = (K ∑ₖ f_k Xᵢ(k) - (∑ₖ f_k)(∑ₖ Xᵢ(k))) /
 				(K ∑ₖ f_k² - (∑ₖ f_k)²)
-		SpectralSlopeMean = (1/T) ∑_(i = 1)^T Slopeᵢ
 	```
 
 	References
@@ -683,17 +917,16 @@ def analyzeSlope(pathFilename: str | PathLike[Any]) -> float | None:
 		Acoustical Society of America, 130(5), 2902–2916.
 		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('slope')
+	return _ffprobeShotgunAndCache(pathFilename).get('slope', arrayAspectDataEmpty)
 
-aspectName = 'Spectral decrease mean'
-@registrationAudioAspect(aspectName)
-def analyzeDecrease(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral decrease of an audio file.
+@registrationAudioAspect('Spectral slope mean')
+def analyzeSpectralSlopeMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral slope of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to summarize how fast spectral magnitude tends to fall after the first
-	bins of each analyzed frame. The registered audio aspect name is `Spectral decrease mean` [1].
+	You can use this function to summarize the linear trend of spectral magnitude over frequency in
+	analyzed frames. The aspect name is "Spectral slope mean".
 
 	Parameters
 	----------
@@ -702,18 +935,98 @@ def analyzeDecrease(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	spectralDecreaseMean : float | None
-		Mean spectral decrease across analyzed frames.
+	spectralSlopeMean : float
+		Mean spectral slope across analyzed frames.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralSlope
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralSpread(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral spread trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect framewise bandwidth around the spectral centroid [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralSpread : arrayAspectData
+		Framewise spectral-spread values across analyzed frames.
 
 	Mathematics
 	-----------
-	spectral decrease : equation
+	spectral spread : equation
 	```
-		Let Xᵢ(k) ≜ spectral magnitude at frequency bin k of frame i
+		Let Xᵢ(k) ≜ spectral magnitude at frequency f_k of frame i
+			pᵢ(k) = Xᵢ(k) / ∑ⱼ Xᵢ(j)
+			cᵢ ≜ spectral centroid of frame i
+
+		Spreadᵢ = √(∑ₖ (f_k - cᵢ)² pᵢ(k))
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('spread', arrayAspectDataEmpty)
+
+@registrationAudioAspect('Spectral spread mean')
+def analyzeSpectralSpreadMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral spread of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to obtain one scalar summary of framewise spectral spread from an audio
+	file. The aspect name is "Spectral spread mean".
+
+	Returns
+	-------
+	spectralSpreadMean : float
+		Mean value of the framewise spectral spread.
+
+	See Also
+	--------
+	`analyzeAudio.analyzersUseSpectrogram.analyzeSpectralBandwidth`
+		Compute the full spectral-spread trajectory and describe the p-order definition.
+	"""
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralSpread
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
+
+def analyzeSpectralVariance(pathFilename: str | PathLike[Any]) -> arrayAspectData:
+	"""Compute the spectral variance trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect framewise dispersion of spectral power around each frame's
+	mean spectral value [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralVariance : arrayAspectData
+		Framewise spectral-variance values across analyzed frames.
+
+	Mathematics
+	-----------
+	framewise spectral variance : equation
+	```
+		Let Pᵢ(k) ≜ power spectral density at frequency bin k of frame i
+			μᵢ ≜ mean PSD of frame i
 			K ≜ number of frequency bins
 
-		Decreaseᵢ = (∑_(k = 2)^K (Xᵢ(k) - Xᵢ(1)) / (k - 1)) / ∑_(k = 2)^K Xᵢ(k)
-		SpectralDecreaseMean = (1/T) ∑_(i = 1)^T Decreaseᵢ
+		Varianceᵢ = (1/K) ∑_(k = 1)^K (Pᵢ(k) − μᵢ)²
 	```
 
 	References
@@ -723,18 +1036,16 @@ def analyzeDecrease(pathFilename: str | PathLike[Any]) -> float | None:
 		Acoustical Society of America, 130(5), 2902–2916.
 		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('decrease')
+	return _ffprobeShotgunAndCache(pathFilename).get('variance', arrayAspectDataEmpty)
 
-aspectName = 'Spectral rolloff mean'
-@registrationAudioAspect(aspectName)
-def analyzeRolloff(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean spectral rolloff frequency of an audio file.
+@registrationAudioAspect('Spectral variance mean')
+def analyzeSpectralVarianceMean(pathFilename: str | PathLike[Any]) -> float:
+	"""Compute the mean spectral variance of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to summarize the frequency below which a chosen proportion of spectral
-	energy is concentrated in analyzed frames. The registered audio aspect name is
-	`Spectral rolloff mean` [1].
+	You can use this function to summarize the dispersion of spectral power around the mean in
+	analyzed frames of an audio file. The aspect name is "Spectral variance mean".
 
 	Parameters
 	----------
@@ -743,40 +1054,22 @@ def analyzeRolloff(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	spectralRolloffMean : float | None
-		Mean spectral rolloff frequency across analyzed frames.
-
-	Mathematics
-	-----------
-	rolloff frequency : equation
-	```
-		Let Xᵢ(k) ≜ spectral magnitude or energy at frequency bin k of frame i
-			η ∈ (0, 1) ≜ cumulative-energy proportion
-
-		f_rolloff,ᵢ = min { f_m : ∑_(k = 1)^m Xᵢ(k) ≥ η ∑_(k = 1)^K Xᵢ(k) }
-		SpectralRolloffMean = (1/T) ∑_(i = 1)^T f_rolloff,ᵢ
-	```
-
-	References
-	----------
-	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
-		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
-		Acoustical Society of America, 130(5), 2902–2916.
-		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	spectralVarianceMean : float
+		Mean spectral variance across analyzed frames.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('rolloff')
+	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralVariance
+	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
 #-------- astats ------------------------------------------
 
-aspectName = 'Zero crossings'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Zero crossings')
 def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the mean number of zero crossings in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to summarize how often the waveform changes sign across analyzed
-	frames of one audio file. The registered audio aspect name is `Zero crossings` [1].
+	frames of one audio file. The registered audio aspect name is "Zero crossings" [1].
 
 	Parameters
 	----------
@@ -812,17 +1105,16 @@ def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> float | None:
 		method. Microsoft Research Technical Report MSR-TR-2001-79.
 		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings')
+	return _ffprobeShotgunAndCache(pathFilename).get('Zero_crossings')
 
-aspectName = 'Zero-crossings rate'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Zero-crossings rate')
 def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the mean zero-crossing rate of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to summarize how densely sign changes occur within analyzed frames of
-	one audio file. The registered audio aspect name is `Zero-crossings rate` [1].
+	one audio file. The registered audio aspect name is "Zero-crossings rate" [1].
 
 	Parameters
 	----------
@@ -858,10 +1150,9 @@ def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | Non
 		method. Microsoft Research Technical Report MSR-TR-2001-79.
 		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Zero_crossings_rate')
+	return _ffprobeShotgunAndCache(pathFilename).get('Zero_crossings_rate')
 
-aspectName = 'DC offset'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('DC offset')
 def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the DC offset of an audio file.
 
@@ -869,7 +1160,7 @@ def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
 
 	You can use this function to measure the mean sample amplitude across all samples in an audio
 	file. A DC offset of zero indicates no bias toward positive or negative values. The registered
-	audio aspect name is `DC offset`.
+	audio aspect name is "DC offset".
 
 	Parameters
 	----------
@@ -891,17 +1182,16 @@ def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
 		DCoffset = (1/N) ∑_(n = 0)^(N - 1) x[n]
 	```
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('DC_offset')
+	return _ffprobeShotgunAndCache(pathFilename).get('DC_offset')
 
-aspectName = 'Dynamic range'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Dynamic range')
 def analyzeDynamicRange(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the dynamic range of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to measure the difference between the peak level and the noise floor
-	of an audio file. The registered audio aspect name is `Dynamic range`.
+	of an audio file. The registered audio aspect name is "Dynamic range".
 
 	Parameters
 	----------
@@ -923,10 +1213,9 @@ def analyzeDynamicRange(pathFilename: str | PathLike[Any]) -> float | None:
 		DynamicRange = Peak_level − Noise_floor
 	```
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Dynamic_range')
+	return _ffprobeShotgunAndCache(pathFilename).get('Dynamic_range')
 
-aspectName = 'Signal entropy'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Signal entropy')
 def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the signal entropy of an audio file.
 
@@ -934,7 +1223,7 @@ def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
 
 	You can use this function to summarize how uniformly distributed the sample amplitudes of an
 	audio file are. A higher value indicates a more uniform amplitude distribution. The registered
-	audio aspect name is `Signal entropy` [1].
+	audio aspect name is "Signal entropy" [1].
 
 	Parameters
 	----------
@@ -962,17 +1251,16 @@ def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
 		for speech recognition in noisy environments.
 		https://www.ee.columbia.edu/~dpwe/papers/ShenHL98-endpoint.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Entropy')
+	return _ffprobeShotgunAndCache(pathFilename).get('Entropy')
 
-aspectName = 'Duration-samples'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Duration-samples')
 def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the total number of samples in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to obtain the total sample count of an audio file. The registered
-	audio aspect name is `Duration-samples`.
+	audio aspect name is "Duration-samples".
 
 	Parameters
 	----------
@@ -984,17 +1272,16 @@ def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> float | None:
 	numberOfSamples : float | None
 		Total number of audio samples.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Number_of_samples')
+	return _ffprobeShotgunAndCache(pathFilename).get('Number_of_samples')
 
-aspectName = 'Peak dB'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Peak dB')
 def analyzePeak_level(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the peak amplitude of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to find the maximum absolute sample value in an audio file, expressed
-	as a decibel ratio relative to full scale. The registered audio aspect name is `Peak dB` [1].
+	as a decibel ratio relative to full scale. The registered audio aspect name is "Peak dB" [1].
 
 	Parameters
 	----------
@@ -1022,17 +1309,16 @@ def analyzePeak_level(pathFilename: str | PathLike[Any]) -> float | None:
 		method. Microsoft Research Technical Report MSR-TR-2001-79.
 		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Peak_level')
+	return _ffprobeShotgunAndCache(pathFilename).get('Peak_level')
 
-aspectName = 'RMS total'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('RMS total')
 def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the overall RMS level of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to summarize the average power of an audio file as a single decibel
-	value computed over all samples. The registered audio aspect name is `RMS total` [1].
+	value computed over all samples. The registered audio aspect name is "RMS total" [1].
 
 	Parameters
 	----------
@@ -1061,10 +1347,9 @@ def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> float | None:
 		method. Microsoft Research Technical Report MSR-TR-2001-79.
 		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('RMS_level')
+	return _ffprobeShotgunAndCache(pathFilename).get('RMS_level')
 
-aspectName = 'Crest factor'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Crest factor')
 def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the crest factor of an audio file.
 
@@ -1072,7 +1357,7 @@ def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
 
 	You can use this function to compare the peak amplitude to the RMS level of an audio file.
 	A higher crest factor indicates greater amplitude variation between peaks and average power.
-	The registered audio aspect name is `Crest factor` [1].
+	The registered audio aspect name is "Crest factor" [1].
 
 	Parameters
 	----------
@@ -1103,17 +1388,16 @@ def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
 		Acoustical Society of America, 130(5), 2902–2916.
 		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Crest_factor')
+	return _ffprobeShotgunAndCache(pathFilename).get('Crest_factor')
 
-aspectName = 'RMS peak'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('RMS peak')
 def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the peak short-term RMS level of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to find the highest short-term RMS level across all analysis blocks
-	of an audio file. The registered audio aspect name is `RMS peak`.
+	of an audio file. The registered audio aspect name is "RMS peak".
 
 	Parameters
 	----------
@@ -1137,17 +1421,16 @@ def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> float | None:
 		RMS_peak = 20 log₁₀(max_(i ∈ {1, …, T}) RMSᵢ)
 	```
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('RMS_peak')
+	return _ffprobeShotgunAndCache(pathFilename).get('RMS_peak')
 
-aspectName = 'Abs_Peak_count'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Abs_Peak_count')
 def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the number of samples at the absolute peak amplitude in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to count how many samples reach the absolute maximum amplitude of
-	an audio file. The registered audio aspect name is `Abs_Peak_count`.
+	an audio file. The registered audio aspect name is "Abs_Peak_count".
 
 	Parameters
 	----------
@@ -1159,17 +1442,16 @@ def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> float | None:
 	absPeakCount : float | None
 		Number of samples at the absolute peak amplitude.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Abs_Peak_count')
+	return _ffprobeShotgunAndCache(pathFilename).get('Abs_Peak_count')
 
-aspectName = 'Bit_depth'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Bit_depth')
 def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the bit depth of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to obtain the number of bits used to encode each sample in an audio
-	file. The registered audio aspect name is `Bit_depth`.
+	file. The registered audio aspect name is "Bit_depth".
 
 	Parameters
 	----------
@@ -1181,17 +1463,16 @@ def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> float | None:
 	bitDepth : float | None
 		Number of bits per sample.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Bit_depth')
+	return _ffprobeShotgunAndCache(pathFilename).get('Bit_depth')
 
-aspectName = 'Flat_factor'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Flat_factor')
 def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the flat factor of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to summarize the proportion of analysis frames that contain
-	identical consecutive samples. The registered audio aspect name is `Flat_factor`.
+	identical consecutive samples. The registered audio aspect name is "Flat_factor".
 
 	Parameters
 	----------
@@ -1203,17 +1484,16 @@ def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> float | None:
 	flatFactor : float | None
 		Mean proportion of flat (identical consecutive) samples across analysis frames.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Flat_factor')
+	return _ffprobeShotgunAndCache(pathFilename).get('Flat_factor')
 
-aspectName = 'Max_difference'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Max_difference')
 def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the maximum absolute difference between consecutive samples in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to find the largest single-sample amplitude change across all
-	consecutive sample pairs in an audio file. The registered audio aspect name is `Max_difference`.
+	consecutive sample pairs in an audio file. The registered audio aspect name is "Max_difference".
 
 	Parameters
 	----------
@@ -1225,17 +1505,16 @@ def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	maxDifference : float | None
 		Maximum absolute difference between consecutive samples.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Max_difference')
+	return _ffprobeShotgunAndCache(pathFilename).get('Max_difference')
 
-aspectName = 'Max_level'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Max_level')
 def analyzeMax_level(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the maximum sample value in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to find the highest sample value in an audio file. The registered
-	audio aspect name is `Max_level`.
+	audio aspect name is "Max_level".
 
 	Parameters
 	----------
@@ -1247,17 +1526,16 @@ def analyzeMax_level(pathFilename: str | PathLike[Any]) -> float | None:
 	maxLevel : float | None
 		Maximum sample value.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Max_level')
+	return _ffprobeShotgunAndCache(pathFilename).get('Max_level')
 
-aspectName = 'Mean_difference'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Mean_difference')
 def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the mean absolute difference between consecutive samples in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to summarize the average amplitude change between consecutive samples
-	in an audio file. The registered audio aspect name is `Mean_difference`.
+	in an audio file. The registered audio aspect name is "Mean_difference".
 
 	Parameters
 	----------
@@ -1269,17 +1547,16 @@ def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	meanDifference : float | None
 		Mean absolute difference between consecutive samples.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Mean_difference')
+	return _ffprobeShotgunAndCache(pathFilename).get('Mean_difference')
 
-aspectName = 'Min_difference'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Min_difference')
 def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the minimum absolute difference between consecutive samples in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to find the smallest single-sample amplitude change across all
-	consecutive sample pairs in an audio file. The registered audio aspect name is `Min_difference`.
+	consecutive sample pairs in an audio file. The registered audio aspect name is "Min_difference".
 
 	Parameters
 	----------
@@ -1291,17 +1568,16 @@ def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	minDifference : float | None
 		Minimum absolute difference between consecutive samples.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Min_difference')
+	return _ffprobeShotgunAndCache(pathFilename).get('Min_difference')
 
-aspectName = 'Min_level'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Min_level')
 def analyzeMin_level(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the minimum sample value in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to find the lowest sample value in an audio file. The registered
-	audio aspect name is `Min_level`.
+	audio aspect name is "Min_level".
 
 	Parameters
 	----------
@@ -1313,17 +1589,16 @@ def analyzeMin_level(pathFilename: str | PathLike[Any]) -> float | None:
 	minLevel : float | None
 		Minimum sample value.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Min_level')
+	return _ffprobeShotgunAndCache(pathFilename).get('Min_level')
 
-aspectName = 'Noise_floor'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Noise_floor')
 def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the noise floor level of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to estimate the minimum signal level that represents the background
-	noise of an audio file. The registered audio aspect name is `Noise_floor`.
+	noise of an audio file. The registered audio aspect name is "Noise_floor".
 
 	Parameters
 	----------
@@ -1335,17 +1610,16 @@ def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> float | None:
 	noiseFloor : float | None
 		Estimated noise floor level in decibels relative to full scale.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Noise_floor')
+	return _ffprobeShotgunAndCache(pathFilename).get('Noise_floor')
 
-aspectName = 'Noise_floor_count'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Noise_floor_count')
 def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the number of samples at or below the noise floor of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to count how many samples fall at or below the estimated noise floor
-	level of an audio file. The registered audio aspect name is `Noise_floor_count`.
+	level of an audio file. The registered audio aspect name is "Noise_floor_count".
 
 	Parameters
 	----------
@@ -1357,17 +1631,16 @@ def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> float | None:
 	noiseFloorCount : float | None
 		Number of samples at or below the noise floor level.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Noise_floor_count')
+	return _ffprobeShotgunAndCache(pathFilename).get('Noise_floor_count')
 
-aspectName = 'Peak_count'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Peak_count')
 def analyzePeak_count(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the number of samples at or above the peak level of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to count how many samples reach or exceed the peak amplitude level
-	of an audio file. The registered audio aspect name is `Peak_count`.
+	of an audio file. The registered audio aspect name is "Peak_count".
 
 	Parameters
 	----------
@@ -1379,17 +1652,16 @@ def analyzePeak_count(pathFilename: str | PathLike[Any]) -> float | None:
 	peakCount : float | None
 		Number of samples at or above the peak level.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('Peak_count')
+	return _ffprobeShotgunAndCache(pathFilename).get('Peak_count')
 
-aspectName = 'RMS_difference'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('RMS_difference')
 def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the RMS of differences between consecutive samples in an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to summarize the root mean square of all sample-to-sample amplitude
-	changes in an audio file. The registered audio aspect name is `RMS_difference`.
+	changes in an audio file. The registered audio aspect name is "RMS_difference".
 
 	Parameters
 	----------
@@ -1401,17 +1673,16 @@ def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> float | None:
 	RMSdifference : float | None
 		RMS of differences between consecutive samples.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('RMS_difference')
+	return _ffprobeShotgunAndCache(pathFilename).get('RMS_difference')
 
-aspectName = 'RMS_trough'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('RMS_trough')
 def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> float | None:
 	"""Compute the trough short-term RMS level of an audio file.
 
 	(AI generated docstring)
 
 	You can use this function to find the lowest short-term RMS level across all analysis blocks
-	of an audio file. The registered audio aspect name is `RMS_trough`.
+	of an audio file. The registered audio aspect name is "RMS_trough".
 
 	Parameters
 	----------
@@ -1423,19 +1694,19 @@ def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> float | None:
 	RMStrough : float | None
 		Lowest short-term RMS level in decibels relative to full scale.
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('RMS_trough')
+	return _ffprobeShotgunAndCache(pathFilename).get('RMS_trough')
 
 #-------- ebur128 -----------------------------------------
 
-aspectName = 'LUFS integrated'
-@registrationAudioAspect(aspectName)
-def analyzeLUFSintegrated(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the integrated programme loudness of an audio file.
+# TODO 'true_peaks_ch0', 'true_peaks_ch1', etc.
+# TODO one function ro return one array with all LUFS aspects.
+
+def analyzeTruePeak(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
+	"""Compute the true-peak trajectory of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to obtain one gated, K-weighted loudness value for a complete audio
-	file. The registered audio aspect name is `LUFS integrated` [1].
+	You can use this function to inspect framewise true-peak levels of one audio file [1].
 
 	Parameters
 	----------
@@ -1444,8 +1715,161 @@ def analyzeLUFSintegrated(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	integratedLoudness : float | None
-		Integrated loudness in LUFS.
+	truePeak : arrayLUFSData
+		Framewise true-peak values in dBTP.
+
+	References
+	----------
+	[1] ITU-R BS.1770-5. (2023). Algorithms to measure audio programme loudness and
+		true-peak audio level.
+		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('true_peak', arrayLUFSDataEmpty)
+
+@registrationAudioAspect('true_peak maximum')
+def analyzeTruePeakOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the "true_peak maximum" aspect of an audio file.
+
+	You can use this function to return one scalar summary for the aspect name
+	"true_peak maximum".
+
+	Returns
+	-------
+	truePeakMaximum : float | None
+		Maximum value of the framewise true-peak trajectory.
+
+	See Also
+	--------
+	`analyzeTruePeak`
+		Compute the framewise true-peak trajectory.
+	"""
+	arrayAspect = analyzeTruePeak(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect.max()
+	else:
+		aspect = None
+	return aspect
+
+def analyzeLUFSMomentary(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
+	"""Compute the LUFS momentary trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect short-window loudness values of one audio file [1][2].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	LUFSmomentary : arrayLUFSData
+		Framewise momentary loudness values in LUFS.
+
+	References
+	----------
+	[1] EBU Tech 3341. (2023). Loudness Metering: EBU Mode.
+		https://tech.ebu.ch/docs/tech/tech3341.pdf
+	[2] ITU-R BS.1770-5. (2023). Algorithms to measure audio programme loudness and
+		true-peak audio level.
+		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('M', arrayLUFSDataEmpty)
+
+@registrationAudioAspect('LUFS momentary maximum')
+def analyzeLUFSMomentaryOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the "LUFS momentary maximum" aspect of an audio file.
+
+	You can use this function to return one scalar summary for the aspect name
+	"LUFS momentary maximum".
+
+	Returns
+	-------
+	LUFSmomentaryMaximum : float | None
+		Maximum value of the framewise momentary-loudness trajectory.
+
+	See Also
+	--------
+	`analyzeLUFSMomentary`
+		Compute the framewise LUFS-momentary trajectory.
+	"""
+	arrayAspect = analyzeLUFSMomentary(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect.max()
+	else:
+		aspect = None
+	return aspect
+
+def analyzeLUFSShortTerm(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
+	"""Compute the LUFS short-term trajectory of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to inspect 3-second loudness values of one audio file [1][2].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	LUFSshortTerm : arrayLUFSData
+		Framewise short-term loudness values in LUFS.
+
+	References
+	----------
+	[1] EBU Tech 3342. (2023). Loudness range: A measure to supplement EBU R 128 loudness
+		normalisation.
+		https://tech.ebu.ch/docs/tech/tech3342.pdf
+	[2] ITU-R BS.1770-5. (2023). Algorithms to measure audio programme loudness and
+		true-peak audio level.
+		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
+	"""
+	return _ffprobeShotgunAndCache(pathFilename).get('S', arrayLUFSDataEmpty)
+
+@registrationAudioAspect('LUFS short-term maximum')
+def analyzeLUFSShortTermOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the "LUFS short-term maximum" aspect of an audio file.
+
+	You can use this function to return one scalar summary for the aspect name
+	"LUFS short-term maximum".
+
+	Returns
+	-------
+	LUFSshortTermMaximum : float | None
+		Maximum value of the framewise short-term-loudness trajectory.
+
+	See Also
+	--------
+	`analyzeLUFSShortTerm`
+		Compute the framewise LUFS-short-term trajectory.
+	"""
+	arrayAspect = analyzeLUFSShortTerm(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect.max()
+	else:
+		aspect = None
+	return aspect
+
+def analyzeLUFSIntegrated(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
+	"""Compute the integrated programme loudness of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to obtain one gated, K-weighted loudness value for a complete audio
+	file. The aspect name is "LUFS integrated" [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	integratedLoudness : arrayLUFSData
+		Framewise and cumulative integrated-loudness values in LUFS.
 
 	Mathematics
 	-----------
@@ -1473,17 +1897,16 @@ def analyzeLUFSintegrated(pathFilename: str | PathLike[Any]) -> float | None:
 		true-peak audio level.
 		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('I')
+	return _ffprobeShotgunAndCache(pathFilename).get('I', arrayLUFSDataEmpty)
 
-aspectName = 'LUFS loudness range'
-@registrationAudioAspect(aspectName)
-def analyzeLRA(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the loudness range of an audio file.
+@registrationAudioAspect('LUFS integrated')
+def analyzeLUFSIntegratedOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the integrated programme loudness of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to summarize the macroscopic spread of time-varying loudness in one
-	audio file. The registered audio aspect name is `LUFS loudness range` [1][2].
+	You can use this function to obtain one gated, K-weighted loudness value for a complete audio
+	file. The aspect name is "LUFS integrated" [1].
 
 	Parameters
 	----------
@@ -1492,8 +1915,33 @@ def analyzeLRA(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	loudnessRange : float | None
-		Loudness range in loudness units.
+	integratedLoudness : float | None
+		Integrated loudness in LUFS.
+	"""
+	arrayAspect = analyzeLUFSIntegrated(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect[-1]
+	else:
+		aspect = None
+	return aspect
+
+def analyzeLRA(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
+	"""Compute the loudness range of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the macroscopic spread of time-varying loudness in one
+	audio file. The aspect name is "LUFS loudness range" [1][2].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	loudnessRange : arrayLUFSData
+		Framewise and cumulative loudness-range values in loudness units.
 
 	Mathematics
 	-----------
@@ -1522,17 +1970,16 @@ def analyzeLRA(pathFilename: str | PathLike[Any]) -> float | None:
 		true-peak audio level.
 		https://www.itu.int/dms_pubrec/itu-r/rec/bs/R-REC-BS.1770-5-202311-I!!PDF-E.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('LRA')
+	return _ffprobeShotgunAndCache(pathFilename).get('LRA', arrayLUFSDataEmpty)
 
-aspectName = 'LUFS low'
-@registrationAudioAspect(aspectName)
-def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the lower loudness bound used in loudness-range measurement.
+@registrationAudioAspect('LUFS loudness range')
+def analyzeLRAOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the loudness range of an audio file.
 
 	(AI generated docstring)
 
-	You can use this function to obtain the lower percentile boundary used when loudness range is
-	computed for one audio file. The registered audio aspect name is `LUFS low` [1].
+	You can use this function to summarize the macroscopic spread of time-varying loudness in one
+	audio file. The aspect name is "LUFS loudness range" [1][2].
 
 	Parameters
 	----------
@@ -1541,8 +1988,33 @@ def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	loudnessLow : float | None
-		Lower loudness bound in LUFS.
+	loudnessRange : float | None
+		Loudness range in loudness units.
+	"""
+	arrayAspect = analyzeLRA(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect[-1]
+	else:
+		aspect = None
+	return aspect
+
+def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
+	"""Compute the lower loudness bound used in loudness-range measurement.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the lower percentile boundary used when loudness range is
+	computed for one audio file. The aspect name is "LUFS low" [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	loudnessLow : arrayLUFSData
+		Framewise and cumulative lower-bound loudness values in LUFS.
 
 	Mathematics
 	-----------
@@ -1559,17 +2031,16 @@ def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> float | None:
 		normalisation.
 		https://tech.ebu.ch/docs/tech/tech3342.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('LRA.low')
+	return _ffprobeShotgunAndCache(pathFilename).get('LRA.low', arrayLUFSDataEmpty)
 
-aspectName = 'LUFS high'
-@registrationAudioAspect(aspectName)
-def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the upper loudness bound used in loudness-range measurement.
+@registrationAudioAspect('LUFS low')
+def analyzeLUFSlowOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the lower loudness bound used in loudness-range measurement.
 
 	(AI generated docstring)
 
-	You can use this function to obtain the upper percentile boundary used when loudness range is
-	computed for one audio file. The registered audio aspect name is `LUFS high` [1].
+	You can use this function to obtain the lower percentile boundary used when loudness range is
+	computed for one audio file. The aspect name is "LUFS low" [1].
 
 	Parameters
 	----------
@@ -1578,8 +2049,33 @@ def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
 
 	Returns
 	-------
-	loudnessHigh : float | None
-		Upper loudness bound in LUFS.
+	loudnessLow : float | None
+		Lower loudness bound in LUFS.
+	"""
+	arrayAspect = analyzeLUFSlow(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect[-1]
+	else:
+		aspect = None
+	return aspect
+
+def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
+	"""Compute the upper loudness bound used in loudness-range measurement.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the upper percentile boundary used when loudness range is
+	computed for one audio file. The aspect name is "LUFS high" [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	loudnessHigh : arrayLUFSData
+		Framewise and cumulative upper-bound loudness values in LUFS.
 
 	Mathematics
 	-----------
@@ -1596,4 +2092,30 @@ def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
 		normalisation.
 		https://tech.ebu.ch/docs/tech/tech3342.pdf
 	"""
-	return ffprobeShotgunAndCache(pathFilename).get('LRA.high')
+	return _ffprobeShotgunAndCache(pathFilename).get('LRA.high', arrayLUFSDataEmpty)
+
+@registrationAudioAspect('LUFS high')
+def analyzeLUFShighOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the upper loudness bound used in loudness-range measurement.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the upper percentile boundary used when loudness range is
+	computed for one audio file. The aspect name is "LUFS high" [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	loudnessHigh : float | None
+		Upper loudness bound in LUFS.
+	"""
+	arrayAspect = analyzeLUFShigh(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect[-1]
+	else:
+		aspect = None
+	return aspect

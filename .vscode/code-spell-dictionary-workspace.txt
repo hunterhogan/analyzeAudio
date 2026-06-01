@@ -8,9 +8,11 @@ Blackdetect
 bleedless
 cachetools
 Chromagram
+denormals
 dists
 dpkg
 drmeter
+dualmono
 ebur
 ffprobe
 framelog
@@ -22,6 +24,7 @@ mels
 mrstft
 MRSTFT
 numel
+OJSP
 optype
 pythonator
 pythonize
@@ -37,3 +40,4 @@ sunau
 Tempogram
 torchmetrics
 unsqueeze
+Xplore
