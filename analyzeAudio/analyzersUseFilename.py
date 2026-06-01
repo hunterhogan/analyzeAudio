@@ -1,5 +1,4 @@
 """Analyzers that use the filename of an audio file to analyze its audio data."""
-# ruff: noqa: D103
 from __future__ import annotations
 
 from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
@@ -15,6 +14,8 @@ import subprocess  # noqa: S404
 
 if TYPE_CHECKING:
 	from os import PathLike
+
+#======== FFmpeg ==============================================================
 
 def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], filterChain: str) -> float | None:
 	"""I use this shared comparison helper to average one decibel-valued aspect across analysis frames.
@@ -214,6 +215,8 @@ def getSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str |
 	filterChain: str = 'asisdr'
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
+#======== FFprobe =============================================================
+
 @cache
 def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float]:
 	"""I use this shared extractor to collect scalar audio aspects from one analysis pass.
@@ -245,8 +248,8 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 	lavfiPathFilename = pFn.drive.replace(":", "\\\\:") + pathlib.PureWindowsPath(pFn.root, pFn.relative_to(pFn.anchor)).as_posix()
 
 	filterChain: list[str] = []
-	filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Zero_crossings+Dynamic_range:measure_overall=all"]
 	filterChain += ["aspectralstats"]
+	filterChain += ["astats=metadata=1:measure_perchannel=Crest_factor+Zero_crossings_rate+Zero_crossings+Dynamic_range:measure_overall=all"]
 	filterChain += ["ebur128=metadata=1:framelog=quiet"]
 
 	entriesFFprobe: list[str] = ["frame_tags"]
@@ -283,6 +286,10 @@ def ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, float
 			dictionaryAspectsAnalyzed[keyName.split('.')[-1]] = numpy.mean(arrayFeatureValues[..., -1:None]).astype(float)
 
 	return dictionaryAspectsAnalyzed
+
+#-------- aspectralstats ----------------------------------
+#-------- astats ------------------------------------------
+#-------- ebur128 -----------------------------------------
 
 aspectName = 'Zero crossings'
 @registrationAudioAspect(aspectName)
@@ -379,41 +386,280 @@ def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | Non
 aspectName = 'DC offset'
 @registrationAudioAspect(aspectName)
 def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the DC offset of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to measure the mean sample amplitude across all samples in an audio
+	file. A DC offset of zero indicates no bias toward positive or negative values. The registered
+	audio aspect name is `DC offset`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	DCoffset : float | None
+		Mean sample value as a proportion of the full-scale range.
+
+	Mathematics
+	-----------
+	DC offset : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		DCoffset = (1/N) ∑_(n = 0)^(N - 1) x[n]
+	```
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('DC_offset')
 
 aspectName = 'Dynamic range'
 @registrationAudioAspect(aspectName)
 def analyzeDynamicRange(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the dynamic range of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to measure the difference between the peak level and the noise floor
+	of an audio file. The registered audio aspect name is `Dynamic range`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	dynamicRange : float | None
+		Difference between peak level and noise floor in decibels.
+
+	Mathematics
+	-----------
+	dynamic range : equation
+	```
+		Let Peak_level ≜ peak amplitude in dB
+			Noise_floor ≜ estimated noise floor in dB
+
+		DynamicRange = Peak_level − Noise_floor
+	```
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Dynamic_range')
 
 aspectName = 'Signal entropy'
 @registrationAudioAspect(aspectName)
 def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the signal entropy of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize how uniformly distributed the sample amplitudes of an
+	audio file are. A higher value indicates a more uniform amplitude distribution. The registered
+	audio aspect name is `Signal entropy` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	signalEntropy : float | None
+		Shannon entropy of the sample amplitude distribution.
+
+	Mathematics
+	-----------
+	Shannon entropy : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			p(x) ≜ normalized amplitude probability distribution
+
+		Entropy = −∑ₓ p(x) log₂(p(x))
+	```
+
+	References
+	----------
+	[1] Shen, J.-L., Hung, J.-W., & Lee, L.-S. (1998). Robust entropy-based endpoint detection
+		for speech recognition in noisy environments.
+		https://www.ee.columbia.edu/~dpwe/papers/ShenHL98-endpoint.pdf
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Entropy')
 
 aspectName = 'Duration-samples'
 @registrationAudioAspect(aspectName)
 def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the total number of samples in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the total sample count of an audio file. The registered
+	audio aspect name is `Duration-samples`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	numberOfSamples : float | None
+		Total number of audio samples.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Number_of_samples')
 
 aspectName = 'Peak dB'
 @registrationAudioAspect(aspectName)
 def analyzePeak_level(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the peak amplitude of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the maximum absolute sample value in an audio file, expressed
+	as a decibel ratio relative to full scale. The registered audio aspect name is `Peak dB` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	peakDB : float | None
+		Peak amplitude in decibels relative to full scale.
+
+	Mathematics
+	-----------
+	peak level : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		Peak_level = 20 log₁₀(max_(n ∈ {0, …, N − 1}) |x[n]|)
+	```
+
+	References
+	----------
+	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
+		method. Microsoft Research Technical Report MSR-TR-2001-79.
+		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Peak_level')
 
 aspectName = 'RMS total'
 @registrationAudioAspect(aspectName)
 def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall RMS level of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the average power of an audio file as a single decibel
+	value computed over all samples. The registered audio aspect name is `RMS total` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSlevel : float | None
+		Overall RMS level in decibels relative to full scale.
+
+	Mathematics
+	-----------
+	root mean square : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		RMS = √((1/N) ∑_(n = 0)^(N - 1) x[n]²)
+		RMS_level = 20 log₁₀(RMS)
+	```
+
+	References
+	----------
+	[1] Lu, L., Jiang, H., & Zhang, H. J. (2001). A robust audio classification and segmentation
+		method. Microsoft Research Technical Report MSR-TR-2001-79.
+		https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-2001-79.pdf
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('RMS_level')
 
 aspectName = 'Crest factor'
 @registrationAudioAspect(aspectName)
 def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the crest factor of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to compare the peak amplitude to the RMS level of an audio file.
+	A higher crest factor indicates greater amplitude variation between peaks and average power.
+	The registered audio aspect name is `Crest factor` [1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	crestFactor : float | None
+		Ratio of peak amplitude to RMS level.
+
+	Mathematics
+	-----------
+	crest factor : equation
+	```
+		Let x[n] ≜ sample n of the audio signal
+			N ≜ number of samples
+
+		Peak = max_(n ∈ {0, …, N − 1}) |x[n]|
+		RMS = √((1/N) ∑_(n = 0)^(N - 1) x[n]²)
+		CrestFactor = Peak / RMS
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Crest_factor')
 
 aspectName = 'RMS peak'
 @registrationAudioAspect(aspectName)
 def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the peak short-term RMS level of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the highest short-term RMS level across all analysis blocks
+	of an audio file. The registered audio aspect name is `RMS peak`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSpeak : float | None
+		Highest short-term RMS level in decibels relative to full scale.
+
+	Mathematics
+	-----------
+	block RMS peak : equation
+	```
+		Let xᵢ[n] ≜ sample n of analysis block i
+			Nᵢ ≜ number of samples in block i
+			T ≜ number of analysis blocks
+
+		RMSᵢ = √((1/Nᵢ) ∑_(n = 0)^(Nᵢ − 1) xᵢ[n]²)
+		RMS_peak = 20 log₁₀(max_(i ∈ {1, …, T}) RMSᵢ)
+	```
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('RMS_peak')
 
 aspectName = 'LUFS integrated'
@@ -590,11 +836,77 @@ def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> float | None:
 aspectName = 'Power spectral density mean'
 @registrationAudioAspect(aspectName)
 def analyzeMean(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean power spectral density of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the average spectral power across all frequency bins
+	and analyzed frames of an audio file. The registered audio aspect name is
+	`Power spectral density mean`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	powerSpectralDensityMean : float | None
+		Mean power spectral density across all frequency bins and analyzed frames.
+
+	Mathematics
+	-----------
+	mean PSD : equation
+	```
+		Let Pᵢ(k) ≜ power spectral density at frequency bin k of frame i
+			K ≜ number of frequency bins
+			T ≜ number of analyzed frames
+
+		PSD_mean = (1/(KT)) ∑_(i = 1)^T ∑_(k = 1)^K Pᵢ(k)
+	```
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('mean')
 
 aspectName = 'Spectral variance mean'
 @registrationAudioAspect(aspectName)
 def analyzeVariance(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean spectral variance of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the dispersion of spectral power around the mean in
+	analyzed frames of an audio file. The registered audio aspect name is `Spectral variance mean`
+	[1].
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	spectralVarianceMean : float | None
+		Mean spectral variance across analyzed frames.
+
+	Mathematics
+	-----------
+	framewise spectral variance : equation
+	```
+		Let Pᵢ(k) ≜ power spectral density at frequency bin k of frame i
+			μᵢ ≜ mean PSD of frame i
+			K ≜ number of frequency bins
+
+		Varianceᵢ = (1/K) ∑_(k = 1)^K (Pᵢ(k) − μᵢ)²
+		SpectralVarianceMean = (1/T) ∑_(i = 1)^T Varianceᵢ
+	```
+
+	References
+	----------
+	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S. (2011).
+		The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
+		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('variance')
 
 aspectName = 'Spectral centroid mean'
@@ -1001,64 +1313,285 @@ def analyzeRolloff(pathFilename: str | PathLike[Any]) -> float | None:
 aspectName = 'Abs_Peak_count'
 @registrationAudioAspect(aspectName)
 def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the number of samples at the absolute peak amplitude in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to count how many samples reach the absolute maximum amplitude of
+	an audio file. The registered audio aspect name is `Abs_Peak_count`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	absPeakCount : float | None
+		Number of samples at the absolute peak amplitude.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Abs_Peak_count')
 
 aspectName = 'Bit_depth'
 @registrationAudioAspect(aspectName)
 def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the bit depth of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to obtain the number of bits used to encode each sample in an audio
+	file. The registered audio aspect name is `Bit_depth`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	bitDepth : float | None
+		Number of bits per sample.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Bit_depth')
 
 aspectName = 'Flat_factor'
 @registrationAudioAspect(aspectName)
 def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the flat factor of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the proportion of analysis frames that contain
+	identical consecutive samples. The registered audio aspect name is `Flat_factor`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	flatFactor : float | None
+		Mean proportion of flat (identical consecutive) samples across analysis frames.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Flat_factor')
 
 aspectName = 'Max_difference'
 @registrationAudioAspect(aspectName)
 def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the maximum absolute difference between consecutive samples in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the largest single-sample amplitude change across all
+	consecutive sample pairs in an audio file. The registered audio aspect name is `Max_difference`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	maxDifference : float | None
+		Maximum absolute difference between consecutive samples.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Max_difference')
 
 aspectName = 'Max_level'
 @registrationAudioAspect(aspectName)
 def analyzeMax_level(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the maximum sample value in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the highest sample value in an audio file. The registered
+	audio aspect name is `Max_level`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	maxLevel : float | None
+		Maximum sample value.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Max_level')
 
 aspectName = 'Mean_difference'
 @registrationAudioAspect(aspectName)
 def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean absolute difference between consecutive samples in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the average amplitude change between consecutive samples
+	in an audio file. The registered audio aspect name is `Mean_difference`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	meanDifference : float | None
+		Mean absolute difference between consecutive samples.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Mean_difference')
 
 aspectName = 'Min_difference'
 @registrationAudioAspect(aspectName)
 def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the minimum absolute difference between consecutive samples in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the smallest single-sample amplitude change across all
+	consecutive sample pairs in an audio file. The registered audio aspect name is `Min_difference`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	minDifference : float | None
+		Minimum absolute difference between consecutive samples.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Min_difference')
 
 aspectName = 'Min_level'
 @registrationAudioAspect(aspectName)
 def analyzeMin_level(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the minimum sample value in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the lowest sample value in an audio file. The registered
+	audio aspect name is `Min_level`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	minLevel : float | None
+		Minimum sample value.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Min_level')
 
 aspectName = 'Noise_floor'
 @registrationAudioAspect(aspectName)
 def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the noise floor level of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to estimate the minimum signal level that represents the background
+	noise of an audio file. The registered audio aspect name is `Noise_floor`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	noiseFloor : float | None
+		Estimated noise floor level in decibels relative to full scale.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Noise_floor')
 
 aspectName = 'Noise_floor_count'
 @registrationAudioAspect(aspectName)
 def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the number of samples at or below the noise floor of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to count how many samples fall at or below the estimated noise floor
+	level of an audio file. The registered audio aspect name is `Noise_floor_count`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	noiseFloorCount : float | None
+		Number of samples at or below the noise floor level.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Noise_floor_count')
 
 aspectName = 'Peak_count'
 @registrationAudioAspect(aspectName)
 def analyzePeak_count(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the number of samples at or above the peak level of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to count how many samples reach or exceed the peak amplitude level
+	of an audio file. The registered audio aspect name is `Peak_count`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	peakCount : float | None
+		Number of samples at or above the peak level.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('Peak_count')
 
 aspectName = 'RMS_difference'
 @registrationAudioAspect(aspectName)
 def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the RMS of differences between consecutive samples in an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to summarize the root mean square of all sample-to-sample amplitude
+	changes in an audio file. The registered audio aspect name is `RMS_difference`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSdifference : float | None
+		RMS of differences between consecutive samples.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('RMS_difference')
 
 aspectName = 'RMS_trough'
 @registrationAudioAspect(aspectName)
 def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the trough short-term RMS level of an audio file.
+
+	(AI generated docstring)
+
+	You can use this function to find the lowest short-term RMS level across all analysis blocks
+	of an audio file. The registered audio aspect name is `RMS_trough`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMStrough : float | None
+		Lowest short-term RMS level in decibels relative to full scale.
+	"""
 	return ffprobeShotgunAndCache(pathFilename).get('RMS_trough')

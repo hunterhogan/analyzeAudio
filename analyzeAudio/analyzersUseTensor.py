@@ -1,6 +1,7 @@
 # ruff: noqa: D100
 from __future__ import annotations
 
+from analyzeAudio import truncateTensors
 from analyzeAudio.analyzersUseSpectrogram import analyzeChromagram
 from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
 from torch import nn, tensor
@@ -26,12 +27,6 @@ if TYPE_CHECKING:
 		fb: Tensor
 
 		def __call__(self, tensorInput: Tensor, tensorTarget: Tensor) -> Tensor: ...
-
-dictionaryDefaultSumAndDifferenceSTFTLossKeywordArguments: dict[str, list[int]] = {
-	'fft_sizes': [1024, 2048, 8192],
-	'hop_sizes': [256, 512, 2048],
-	'win_lengths': [1024, 2048, 8192],
-}
 
 def analyzeSRMR(tensorAudio: Tensor, sampleRate: int, *, pytorchOnCPU: bool | None, **keywordArguments: Any) -> Tensor:
 	"""Compute speech-to-reverberation modulation energy ratio values from `tensorAudio`.
@@ -132,6 +127,16 @@ def analyzeSRMRMean(tensorAudio: Tensor, sampleRate: int, pytorchOnCPU: bool | N
 	You can use this function when you need one scalar summary from
 	`analyzeSRMR` [1]. The registered aspect name is `SRMR mean`.
 
+	Mathematics
+	-----------
+	mean reduction : equation
+	```
+		Let s ≜ `analyzeSRMR(tensorAudio, sampleRate, pytorchOnCPU=pytorchOnCPU, **keywordArguments)`
+			n ≜ |s|
+
+		srmrMean = (1 / n) ∑ᵢ sᵢ
+	```
+
 	Returns
 	-------
 	srmrMean : float
@@ -148,56 +153,6 @@ def analyzeSRMRMean(tensorAudio: Tensor, sampleRate: int, pytorchOnCPU: bool | N
 
 	"""
 	return float(analyzeSRMR(tensorAudio, sampleRate, pytorchOnCPU=pytorchOnCPU, **keywordArguments).mean().item())
-
-#======== Contests ========================================
-
-def _alignTensorAudioLengths(*tupleTensorAudio: Tensor) -> tuple[Tensor, ...]:
-	"""I use this to trim multiple audio tensors to a shared sample length.
-
-	Parameters
-	----------
-	tupleTensorAudio : Tensor
-		Variadic collection of waveform tensors whose last axis stores samples.
-
-	Returns
-	-------
-	tupleTensorAudioAligned : tuple[Tensor, ...]
-		Tuple of tensors truncated to the minimum trailing sample length.
-
-	Shape Transformation
-	--------------------
-	shared sample axis : transformation
-	```
-		Let N ≜ min(`tensorAudio`.shape[-1] for each `tensorAudio` in `tupleTensorAudio`)
-
-		`tensorAudio` ↦ `tensorAudio`[..., :N]
-	```
-	"""
-	intSharedLength = min(tensorAudio.shape[-1] for tensorAudio in tupleTensorAudio)
-	return tuple(tensorAudio[..., :intSharedLength] for tensorAudio in tupleTensorAudio)
-
-def _formatTensorAudioForBatchFirstLoss(tensorAudio: Tensor) -> Tensor:
-	if tensorAudio.ndim < 4:
-		return tensorAudio.unsqueeze(0)
-	return tensorAudio
-
-def _formatTensorAudio(tensorAudio: Tensor, *, processed: bool = False) -> Tensor:
-	if not processed:
-		if tensorAudio.ndim == 1:
-			tensorFormatted: Tensor = tensorAudio.unsqueeze(0).unsqueeze(0)
-		elif tensorAudio.ndim == 2:
-			tensorFormatted = tensorAudio.unsqueeze(0)
-		else:
-			tensorFormatted = tensorAudio
-	elif tensorAudio.ndim == 1:
-		tensorFormatted = tensorAudio.unsqueeze(0).unsqueeze(0).unsqueeze(2)
-	elif tensorAudio.ndim == 2:
-		tensorFormatted = tensorAudio.unsqueeze(0).unsqueeze(2)
-	elif tensorAudio.ndim == 3:
-		tensorFormatted = tensorAudio.unsqueeze(0)
-	else:
-		tensorFormatted = tensorAudio
-	return tensorFormatted
 
 aspectName = 'LogWMSE'
 @registrationAudioAspect(aspectName)
@@ -257,10 +212,10 @@ def analyzeLogWMSEMean(
 			`tensorAudioCharlie`.shape[-1],
 		)
 
-		`tensorAudioCharlie`[..., :N]  ↦ [1, 1, sample], [1, channel, sample], or unchanged 3D+ shape
-		`tensorAudioBeta`[..., :N]   ↦ [1, 1, 1, sample], [1, channel, 1, sample],
+		`tensorAudioCharlie`[..., 0:N]  ↦ [1, 1, sample], [1, channel, sample], or unchanged 3D+ shape
+		`tensorAudioBeta`[..., 0:N]   ↦ [1, 1, 1, sample], [1, channel, 1, sample],
 			[1, channel, stem, sample], or unchanged 4D+ shape
-		`tensorAudioAlfa`[..., :N]   ↦ [1, 1, 1, sample], [1, channel, 1, sample],
+		`tensorAudioAlfa`[..., 0:N]   ↦ [1, 1, 1, sample], [1, channel, 1, sample],
 			[1, channel, stem, sample], or unchanged 4D+ shape
 	```
 
@@ -286,20 +241,44 @@ def analyzeLogWMSEMean(
 	[2] Landschoot, C. `crlandsc/torch-log-wmse`.
 		https://github.com/crlandsc/torch-log-wmse
 	"""
-	tensorAudioAlfa, tensorAudioBeta, tensorAudioCharlie = _alignTensorAudioLengths(
-		tensorAudioAlfa, tensorAudioBeta, tensorAudioCharlie
+	tensorAudioAlfa, tensorAudioBeta, tensorAudioCharlie = truncateTensors(
+		[tensorAudioAlfa, tensorAudioBeta, tensorAudioCharlie]
 	)
-	dictionaryKeywordArguments: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
+	dictionaryParameters: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
 	aspect = torch_log_wmse.LogWMSE(
-		audio_length=tensorAudioCharlie.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryKeywordArguments
+		audio_length=tensorAudioCharlie.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryParameters
 	)
-	return float(
-		aspect(
-			_formatTensorAudio(tensorAudioCharlie)
-			, _formatTensorAudio(tensorAudioBeta, processed=True)
-			, _formatTensorAudio(tensorAudioAlfa, processed=True)
-		).item()
-	)
+
+	if tensorAudioAlfa.ndim == 1:
+		tensorAudioAlfa = tensorAudioAlfa.unsqueeze(0).unsqueeze(0).unsqueeze(2)
+	elif tensorAudioAlfa.ndim == 2:
+		tensorAudioAlfa = tensorAudioAlfa.unsqueeze(0).unsqueeze(2)
+	elif tensorAudioAlfa.ndim == 3:
+		tensorAudioAlfa = tensorAudioAlfa.unsqueeze(0)
+
+	if tensorAudioBeta.ndim == 1:
+		tensorAudioBeta = tensorAudioBeta.unsqueeze(0).unsqueeze(0).unsqueeze(2)
+	elif tensorAudioBeta.ndim == 2:
+		tensorAudioBeta = tensorAudioBeta.unsqueeze(0).unsqueeze(2)
+	elif tensorAudioBeta.ndim == 3:
+		tensorAudioBeta = tensorAudioBeta.unsqueeze(0)
+
+	return float(aspect(_unsqueezeTo3axes(tensorAudioCharlie), tensorAudioBeta, tensorAudioAlfa).item())
+
+#======== Contests ========================================
+
+def _analyzeLoss(aspect: nn.Module, tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor) -> float:
+	return float(aspect(*map(_unsqueezeTo3axes, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
+
+def _unsqueezeLT4by1(tensorAudio: Tensor) -> Tensor:
+	if tensorAudio.ndim < 4:
+		return tensorAudio.unsqueeze(0)
+	return tensorAudio
+
+def _unsqueezeTo3axes(tensorAudio: Tensor) -> Tensor:
+	while tensorAudio.ndim < 3:
+		tensorAudio = tensorAudio.unsqueeze(0)
+	return tensorAudio
 
 name: str = 'L1SNR'
 aspectName = name
@@ -382,11 +361,8 @@ def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
 	aspect = torch_l1_snr.L1SNRLoss(name, **keywordArguments)
-	return -float(
-		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
-	)
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
 name = 'L1SNRDB'
 aspectName = name
@@ -483,11 +459,8 @@ def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
 	aspect = torch_l1_snr.L1SNRDBLoss(name, **keywordArguments)
-	return -float(
-		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
-	)
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
 name = 'MultiL1SNRDB'
 aspectName = name
@@ -591,11 +564,8 @@ def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
 	aspect = torch_l1_snr.MultiL1SNRDBLoss(name, **keywordArguments)
-	return -float(
-		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
-	)
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
 name = 'STFTL1SNRDB'
 aspectName = name
@@ -706,15 +676,8 @@ def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **k
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
 	aspect = torch_l1_snr.STFTL1SNRDBLoss(name, **keywordArguments)
-	return -float(
-		aspect(_formatTensorAudioForBatchFirstLoss(tensorAudioBeta), _formatTensorAudioForBatchFirstLoss(tensorAudioAlfa)).item()
-	)
-
-def _analyzeAuralossWaveformLoss(aspect: nn.Module, tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor) -> float:
-	tensorAudioAlfa, tensorAudioBeta = _alignTensorAudioLengths(tensorAudioAlfa, tensorAudioBeta)
-	return float(aspect(_formatTensorAudio(tensorAudioBeta), _formatTensorAudio(tensorAudioAlfa)).item())
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
 aspectName = 'DCLoss'
 @registrationAudioAspect(aspectName)
@@ -739,6 +702,17 @@ def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArg
 	dcLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_DC ≜ `auraloss.time.DCLoss(**keywordArguments)`
+
+		dcLoss = ℒ_DC(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -749,7 +723,7 @@ def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArg
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.time.DCLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.time.DCLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'ESRLoss'
 @registrationAudioAspect(aspectName)
@@ -774,6 +748,17 @@ def analyzeESRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordAr
 	esrLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_ESR ≜ `auraloss.time.ESRLoss(**keywordArguments)`
+
+		esrLoss = ℒ_ESR(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -784,7 +769,7 @@ def analyzeESRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordAr
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.time.ESRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.time.ESRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'LogCoshLoss'
 @registrationAudioAspect(aspectName)
@@ -809,6 +794,17 @@ def analyzeLogCoshLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 	logCoshLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_logcosh ≜ `auraloss.time.LogCoshLoss(**keywordArguments)`
+
+		logCoshLoss = ℒ_logcosh(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -819,7 +815,7 @@ def analyzeLogCoshLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.time.LogCoshLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.time.LogCoshLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'SNRLoss'
 @registrationAudioAspect(aspectName)
@@ -844,6 +840,17 @@ def analyzeSNRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordAr
 	snrLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_SNR ≜ `auraloss.time.SNRLoss(**keywordArguments)`
+
+		snrLoss = ℒ_SNR(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -854,7 +861,7 @@ def analyzeSNRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordAr
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.time.SNRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.time.SNRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'SISDRLoss'
 @registrationAudioAspect(aspectName)
@@ -879,6 +886,17 @@ def analyzeSISDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	siSdrLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_SISDR ≜ `auraloss.time.SISDRLoss(**keywordArguments)`
+
+		siSdrLoss = ℒ_SISDR(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -889,7 +907,7 @@ def analyzeSISDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.time.SISDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.time.SISDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'SDSDRLoss'
 @registrationAudioAspect(aspectName)
@@ -914,6 +932,17 @@ def analyzeSDSDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	sdSdrLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_SDSDR ≜ `auraloss.time.SDSDRLoss(**keywordArguments)`
+
+		sdSdrLoss = ℒ_SDSDR(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -924,7 +953,7 @@ def analyzeSDSDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.time.SDSDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.time.SDSDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'STFTLoss'
 @registrationAudioAspect(aspectName)
@@ -949,6 +978,17 @@ def analyzeSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordA
 	stftLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_STFT ≜ `auraloss.freq.STFTLoss(**keywordArguments)`
+
+		stftLoss = ℒ_STFT(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -959,7 +999,7 @@ def analyzeSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordA
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.freq.STFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.freq.STFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'MelSTFTLoss'
 @registrationAudioAspect(aspectName)
@@ -986,6 +1026,17 @@ def analyzeMelSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleR
 	melStftLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_MelSTFT ≜ `auraloss.freq.MelSTFTLoss(sample_rate=sampleRate, **keywordArguments)`
+
+		melStftLoss = ℒ_MelSTFT(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -996,8 +1047,7 @@ def analyzeMelSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleR
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	dictionaryKeywordArguments: dict[str, Any] = {'sample_rate': sampleRate, **keywordArguments}
-	return _analyzeAuralossWaveformLoss(auraloss.freq.MelSTFTLoss(**dictionaryKeywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.freq.MelSTFTLoss(**{'sample_rate': sampleRate, **keywordArguments}), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'ChromaSTFTLoss'
 @registrationAudioAspect(aspectName)
@@ -1025,6 +1075,20 @@ def analyzeChromaSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, samp
 	chromaStftLoss : float
 		Loss value produced by the configured chroma-domain objective.
 
+	Mathematics
+	-----------
+	chroma basis substitution : equation
+	```
+		Let F ≜ (`fft_size` // 2) + 1
+			I_F ≜ identity matrix in ℝ^(F×F)
+			C ≜ `analyzeChromagram(I_F, sampleRate, n_fft=fft_size, n_chroma=n_chroma, norm=None)`
+			ℒ_chroma ≜ `auraloss.freq.STFTLoss(**keywordArguments)` with `scale = 'chroma'` and `fb = C`
+			[α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+
+		chromaStftLoss = ℒ_chroma(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	n_chroma : int = 12
@@ -1041,10 +1105,10 @@ def analyzeChromaSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, samp
 		https://github.com/csteinmetz1/auraloss
 	[2] `analyzeChromagram`
 	"""
-	dictionaryKeywordArguments: dict[str, Any] = {'sample_rate': sampleRate, **keywordArguments}
-	integerChromaBins: int = int(dictionaryKeywordArguments.pop('n_chroma', dictionaryKeywordArguments.pop('n_bins', 12)))
-	dictionaryKeywordArguments.pop('scale', None)
-	aspect = cast('_AuralossChromaSTFTLoss', auraloss.freq.STFTLoss(**dictionaryKeywordArguments))
+	dictionaryParameters: dict[str, Any] = {'sample_rate': sampleRate, **keywordArguments}
+	integerChromaBins: int = int(dictionaryParameters.pop('n_chroma', dictionaryParameters.pop('n_bins', 12)))
+	dictionaryParameters.pop('scale', None)
+	aspect = cast('_AuralossChromaSTFTLoss', auraloss.freq.STFTLoss(**dictionaryParameters))
 	aspect.scale = 'chroma'
 	aspect.n_bins = integerChromaBins
 	integerFrequencyBins: int = (aspect.fft_size // 2) + 1
@@ -1064,7 +1128,7 @@ def analyzeChromaSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, samp
 	).unsqueeze(0)
 	if aspect.device is not None:
 		aspect.fb = aspect.fb.to(aspect.device)
-	return _analyzeAuralossWaveformLoss(cast('nn.Module', aspect), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(cast('nn.Module', aspect), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'MultiResolutionSTFTLoss'
 @registrationAudioAspect(aspectName)
@@ -1090,6 +1154,17 @@ def analyzeMultiResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Ten
 	multiResolutionStftLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_MR ≜ `auraloss.freq.MultiResolutionSTFTLoss(**keywordArguments)`
+
+		multiResolutionStftLoss = ℒ_MR(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -1100,7 +1175,7 @@ def analyzeMultiResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Ten
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.freq.MultiResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.freq.MultiResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'RandomResolutionSTFTLoss'
 @registrationAudioAspect(aspectName)
@@ -1126,6 +1201,17 @@ def analyzeRandomResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Te
 	randomResolutionStftLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	wrapper composition : equation
+	```
+		Let [α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_RR ≜ `auraloss.freq.RandomResolutionSTFTLoss(**keywordArguments)`
+
+		randomResolutionStftLoss = ℒ_RR(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	keywordArguments : Any
@@ -1136,7 +1222,7 @@ def analyzeRandomResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Te
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	return _analyzeAuralossWaveformLoss(auraloss.freq.RandomResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	return _analyzeLoss(auraloss.freq.RandomResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
 aspectName = 'SumAndDifferenceSTFTLoss'
 @registrationAudioAspect(aspectName)
@@ -1163,6 +1249,23 @@ def analyzeSumAndDifferenceSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Te
 	sumAndDifferenceStftLoss : float
 		Loss value produced by the upstream `auraloss` implementation [1].
 
+	Mathematics
+	-----------
+	default merge and wrapper composition : equation
+	```
+		Let d ≜ {
+			`fft_sizes`: [1024, 2048, 8192],
+			`hop_sizes`: [256, 512, 2048],
+			`win_lengths`: [1024, 2048, 8192],
+		}
+			θ ≜ {**d, **keywordArguments}
+			[α′, β′] ≜ `truncateTensors([tensorAudioAlfa, tensorAudioBeta])`
+			U(x) ≜ `_unsqueezeTo3axes(x)`
+			ℒ_SAD ≜ `auraloss.freq.SumAndDifferenceSTFTLoss(**θ)`
+
+		sumAndDifferenceStftLoss = ℒ_SAD(U(β′), U(α′))
+	```
+
 	Other Parameters
 	----------------
 	fft_sizes : list[int] = [1024, 2048, 8192]
@@ -1180,5 +1283,5 @@ def analyzeSumAndDifferenceSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Te
 	[1] Steinmetz, C. J., Reiss, J. D., & Bryan, N. J. `csteinmetz1/auraloss`.
 		https://github.com/csteinmetz1/auraloss
 	"""
-	dictionaryKeywordArguments: dict[str, Any] = {**dictionaryDefaultSumAndDifferenceSTFTLossKeywordArguments, **keywordArguments}
-	return _analyzeAuralossWaveformLoss(auraloss.freq.SumAndDifferenceSTFTLoss(**dictionaryKeywordArguments), tensorAudioAlfa, tensorAudioBeta)
+	defaults: dict[str, Any] = {'fft_sizes': [1024, 2048, 8192], 'hop_sizes': [256, 512, 2048], 'win_lengths': [1024, 2048, 8192]}
+	return _analyzeLoss(auraloss.freq.SumAndDifferenceSTFTLoss(**{**defaults, **keywordArguments}), tensorAudioAlfa, tensorAudioBeta)

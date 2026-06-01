@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pathlib
+import numpy
 import pytest
 import torch
 
@@ -38,3 +39,20 @@ def tensorSpectrogramMagnitudeAuralossCase() -> tuple[torch.Tensor, torch.Tensor
 	tensorSpectrogramMagnitudeAlfa = torch.linspace(0.17, 19.17, steps=257 * 137, dtype=torch.float32).reshape(1, 257, 137)
 	tensorSpectrogramMagnitudeBeta = (tensorSpectrogramMagnitudeAlfa * 0.83) + 0.19
 	return tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta
+
+@pytest.fixture
+def spectrogramFeatureCase() -> tuple[numpy.ndarray, numpy.ndarray, int]:
+	arraySpectrogramMagnitude = numpy.linspace(0.17, 23.17, num=257 * 149, dtype=numpy.float32).reshape(257, 149)
+	arraySpectrogramPower = numpy.square(arraySpectrogramMagnitude)
+	return arraySpectrogramMagnitude, arraySpectrogramPower, 44100
+
+@pytest.fixture
+def waveformLibrosaCase() -> tuple[numpy.ndarray, int]:
+	intSampleCount = 131071
+	arrayPhase = numpy.linspace(0.17, 97.17, num=intSampleCount, dtype=numpy.float32)
+	arrayWaveform = (
+		numpy.sin(arrayPhase) * 0.73
+		+ numpy.cos((arrayPhase * 0.61) + 0.29) * 0.17
+		+ numpy.sin((arrayPhase * 0.13) + 0.41) * 0.11
+	).astype(numpy.float32)
+	return arrayWaveform, 44100

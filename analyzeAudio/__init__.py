@@ -1,5 +1,4 @@
 # noqa: D104
-# pyright: reportUnusedImport=false
 from __future__ import annotations
 
 # isort: split
@@ -9,9 +8,13 @@ from analyzeAudio._theTypes import (
 	typeReturned as typeReturned)
 
 # isort: split
+from analyzeAudio._beDRY import truncateTensors as truncateTensors
+
+# isort: split
 from analyzeAudio.audioAspectsRegistry import audioAspects as audioAspects, getListAvailableAudioAspects as getListAvailableAudioAspects
 
 # isort: split
+# pyright: reportUnusedImport=false
 # NOTE Importing the modules triggers the registration of analyzer functions.
 from analyzeAudio import (
 	analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseTensorSpectrogram, analyzersUseWaveform)

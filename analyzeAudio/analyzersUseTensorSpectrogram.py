@@ -1,6 +1,7 @@
 # ruff: noqa: D100
 from __future__ import annotations
 
+from analyzeAudio import truncateTensors
 from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
 from auraloss import freq
 from typing import Any, TYPE_CHECKING
@@ -9,7 +10,7 @@ if TYPE_CHECKING:
 	from torch import nn, Tensor
 
 def _analyzeLoss(aspect: nn.Module, tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectrogramMagnitudeBeta: Tensor) -> float:
-	"""I use this shared adapter to evaluate one spectrogram-loss module on aligned frame counts.
+	"""I use this generalized function to apply an initialized `nn.Module` spectrogram-loss module on aligned frame counts.
 
 	(AI generated docstring)
 
@@ -44,8 +45,7 @@ def _analyzeLoss(aspect: nn.Module, tensorSpectrogramMagnitudeAlfa: Tensor, tens
 	[1] PyTorch `torch.nn.Module`
 		https://pytorch.org/docs/stable/generated/torch.nn.Module.html
 	"""
-	truncate: int = min(tensorSpectrogramMagnitudeAlfa.shape[-1], tensorSpectrogramMagnitudeBeta.shape[-1])
-	return float(aspect(tensorSpectrogramMagnitudeBeta[..., 0:truncate], tensorSpectrogramMagnitudeAlfa[..., 0:truncate]).item())
+	return float(aspect(*truncateTensors([tensorSpectrogramMagnitudeBeta, tensorSpectrogramMagnitudeAlfa])).item())
 
 aspectName = 'SpectralConvergenceLoss'
 @registrationAudioAspect(aspectName)
@@ -71,6 +71,17 @@ def analyzeSpectralConvergenceLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tenso
 	-------
 	valueLoss : float
 		Spectral convergence loss value.
+
+	Mathematics
+	-----------
+	spectral convergence objective : equation
+	```
+		Let Â ≜ `tensorSpectrogramMagnitudeAlfa`
+			B̂ ≜ `tensorSpectrogramMagnitudeBeta`
+			[Â′, B̂′] ≜ `truncateTensors([Â, B̂])`
+
+		valueLoss = ∥B̂′ − Â′∥_F / (∥Â′∥_F + ε)
+	```
 
 	See Also
 	--------
@@ -113,6 +124,19 @@ def analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpect
 	valueLoss : float
 		STFT magnitude loss value.
 
+	Mathematics
+	-----------
+	STFT magnitude objective wrapper : equation
+	```
+		Let Â ≜ `tensorSpectrogramMagnitudeAlfa`
+			B̂ ≜ `tensorSpectrogramMagnitudeBeta`
+			θ ≜ `keywordArguments`
+			[Â′, B̂′] ≜ `truncateTensors([Â, B̂])`
+			ℒ_STFTMag ≜ `freq.STFTMagnitudeLoss(**θ)`
+
+		valueLoss = ℒ_STFTMag(B̂′, Â′)
+	```
+
 	See Also
 	--------
 	`analyzeSpectralConvergenceLoss`
@@ -126,3 +150,40 @@ def analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpect
 
 	"""
 	return _analyzeLoss(freq.STFTMagnitudeLoss(**keywordArguments), tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta)
+
+aspectName = 'L1FrequencyLoss'
+@registrationAudioAspect(aspectName)
+def analyzeL1FrequencyLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectrogramMagnitudeBeta: Tensor) -> float:
+	"""Compute L1 frequency loss for two spectrogram magnitude `Tensor` values.
+
+	Parameters
+	----------
+	tensorSpectrogramMagnitudeAlfa : Tensor
+		Reference spectrogram magnitude `Tensor`.
+	tensorSpectrogramMagnitudeBeta : Tensor
+		Compared spectrogram magnitude `Tensor`.
+
+	Returns
+	-------
+	valueLoss : float
+		L1 frequency loss value.
+
+	Mathematics
+	-----------
+	L1 frequency loss : equation
+
+	# The L1 distance between magnitude spectrograms:
+	```
+		Let 𝒮 ≜ complex-valued spectrogram
+			ℒ ≜ L1 frequency loss
+
+		ℒL1 = ∥|𝒮(ŵ)| − |𝒮(w)|∥₁
+		y = 100 / (1 + (λ * ℒL1))
+
+		where λ = a scaling factor.
+	```
+	"""
+	keywordArguments = dict(log=False, distance="L1", reduction="sum")  # noqa: C408
+	L1: float = analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta, **keywordArguments)
+	λ = 10
+	return 100 / (1 + (λ * L1))

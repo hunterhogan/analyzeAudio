@@ -1,4 +1,5 @@
-from __future__ import annotations  # noqa: D100
+# ruff: noqa: D100
+from __future__ import annotations
 
 from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
 from typing import Any, TYPE_CHECKING
