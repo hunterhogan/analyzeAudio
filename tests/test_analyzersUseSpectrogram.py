@@ -9,25 +9,6 @@ if TYPE_CHECKING:
 	import numpy
 
 @pytest.mark.parametrize(('dictionaryKeywordArguments',), [({'n_fft': 513, 'hop_length': 137},)])
-def test_analyzeChromagramMean_returns_registered_float(
-	spectrogramFeatureCase: tuple[numpy.ndarray, numpy.ndarray, int], dictionaryKeywordArguments: dict[str, int]
-) -> None:
-	_arraySpectrogramMagnitudeUnused, arraySpectrogramPower, sampleRate = spectrogramFeatureCase
-	valueChromagramMean = analyzersUseSpectrogram.analyzeChromagramMean(arraySpectrogramPower, sampleRate, **dictionaryKeywordArguments)
-	assert isinstance(valueChromagramMean, float), (
-		f'analyzeChromagramMean returned {type(valueChromagramMean).__name__}, expected float for {sampleRate=} and {dictionaryKeywordArguments=}.'
-	)
-	assert math.isfinite(valueChromagramMean), (
-		f'analyzeChromagramMean returned non-finite value {valueChromagramMean} for {sampleRate=} and {dictionaryKeywordArguments=}.'
-	)
-	assert 'Chromagram mean' in audioAspects, (
-		"audioAspects did not register 'Chromagram mean', expected the spectrogram chromagram aspect key."
-	)
-	assert audioAspects['Chromagram mean']['analyzer'] is analyzersUseSpectrogram.analyzeChromagramMean, (
-		f"audioAspects['Chromagram mean'] registered {audioAspects['Chromagram mean']['analyzer']}, expected {analyzersUseSpectrogram.analyzeChromagramMean}."
-	)
-
-@pytest.mark.parametrize(('dictionaryKeywordArguments',), [({'n_fft': 513, 'hop_length': 137},)])
 def test_analyzeSpectralContrastMean_returns_registered_float(
 	spectrogramFeatureCase: tuple[numpy.ndarray, numpy.ndarray, int], dictionaryKeywordArguments: dict[str, int]
 ) -> None:

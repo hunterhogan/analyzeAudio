@@ -59,7 +59,6 @@ dependencies = [
 ]
 optional-dependencies = { development = ["pytest-cov", "scipy-stubs"], testing = [
   "pytest",
-  "pytest-xdist"
 ] }
 
 [project.urls]
@@ -82,16 +81,14 @@ report = { exclude_lines = [
   "if TYPE_CHECKING:",
   "if __name__ == \"__main__\":",
 ], ignore_errors = false }
-run = { branch = true, concurrency = [
-  "multiprocessing",
-], data_file = "tests/coverage/.coverage", omit = [
+run = { branch = true, data_file = "tests/coverage/.coverage", omit = [
   "tests/*",
 ], parallel = true, source = [
   ".",
 ] }
 
 [tool.pytest]
-addopts = ["--color=auto", "-n 4"]
+addopts = ["--color=auto"]
 log_auto_indent = "On"
 testpaths = ["tests"]
 
