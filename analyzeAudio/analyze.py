@@ -3,8 +3,7 @@
 (AI generated docstring)
 
 You can use this module to compute named audio aspect values for one file or many files. The
-module loads audio data, prepares common intermediate representations, and dispatches work to
-analyzers registered in `analyzeAudio.audioAspectsRegistry.audioAspects` [1].
+module returns one value per requested aspect name and preserves the requested aspect order.
 
 Contents
 --------
@@ -42,10 +41,8 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequenc
 	Compute requested aspect values for one audio file.
 
 	You can use this function to evaluate each name in `listAspectNames` against
-	`pathFilename`. The function reads `pathFilename`, prepares shared intermediate audio
-	representations for analyzers registered in `analyzeAudio.audioAspectsRegistry.audioAspects`
-	[1], and returns one value for each requested aspect name. If a name from
-	`listAspectNames` is absent from `audioAspects` [1], the matching return entry is
+	`pathFilename`. The function returns one value for each requested aspect name. If a
+	name from `listAspectNames` is absent from `audioAspects` [1], the matching return entry is
 	`'not found'`.
 
 	Parameters
@@ -61,11 +58,6 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequenc
 	listAspectValues : list[str | float]
 		One result for each entry in `listAspectNames`. Each result is either the analyzer
 		value or `'not found'` when no analyzer is registered for the matching aspect name.
-
-	See Also
-	--------
-	`analyzeAudioListPathFilenames`
-		Compute the same aspect values for many audio files.
 
 	References
 	----------
@@ -114,10 +106,10 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 	Compute requested aspect values for many audio files.
 
 	You can use this function to evaluate the same `listAspectNames` against each path in
-	`listPathFilenames`. The function calls `analyzeAudioFile` [1] in parallel workers and
-	returns one row for each completed file. Each row begins with the file path normalized to
-	POSIX text, followed by the aspect values aligned with `listAspectNames`. You can write
-	the returned rows directly with `analyzeAudio.dataTabularTOpathFilenameDelimited` [2].
+	`listPathFilenames`. The function returns one row per analyzed file. Each row begins with
+	the file path normalized to POSIX text, followed by the aspect values aligned with
+	`listAspectNames`. You can write the returned rows directly with
+	`analyzeAudio.dataTabularTOpathFilenameDelimited` [2].
 
 	Parameters
 	----------
@@ -163,13 +155,6 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 		['pathFilename', *singleTargetFloats],
 	)
 	```
-
-	See Also
-	--------
-	`analyzeAudioFile`
-		Compute requested aspect values for one audio file.
-	`analyzeAudio.dataTabularTOpathFilenameDelimited`
-		Write returned rows to a delimited text file.
 
 	References
 	----------

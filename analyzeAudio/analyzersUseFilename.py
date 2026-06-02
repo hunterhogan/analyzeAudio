@@ -27,7 +27,7 @@ arrayLUFSDataEmpty: arrayLUFSData = numpy.array([], dtype=numpy.float64).reshape
 #======== FFmpeg ==============================================================
 
 def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], filterChain: str) -> float | None:
-	"""I use this shared comparison helper to average one decibel-valued aspect across analysis frames.
+	"""I use this shared comparison function to average one decibel-valued aspect across analysis frames.
 
 	(AI generated docstring)
 
@@ -114,12 +114,7 @@ def getPSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | P
 
 @registrationAudioAspect('SDR mean')
 def getSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
-	"""Compute the mean signal-to-distortion ratio between two audio files.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the ratio between a target component and the remaining
-	distortion energy when two audio files are compared. The registered audio aspect name is "SDR mean" [1].
+	"""Aspect 'SDR mean': mean signal-to-distortion ratio between two audio files [1].
 
 	Parameters
 	----------
@@ -167,10 +162,7 @@ def getSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | Pa
 
 @registrationAudioAspect('SI-SDR mean')
 def getSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
-	"""Compute the mean scale-invariant signal-to-distortion ratio between two audio files.
-
-	You can use this function to compare two audio files while forgiving only a single global scaling
-	factor between them. The registered audio aspect name is "SI-SDR mean" [1].
+	"""Aspect 'SI-SDR mean': mean scale-invariant SDR between two audio files [1].
 
 	Parameters
 	----------
@@ -228,9 +220,8 @@ def _ffprobeShotgunAndCache(pathFilename: str | PathLike[Any]) -> dict[str, floa
 
 	(AI generated docstring)
 
-	I use this function to convert one structured analysis result into a dictionary of scalar audio
-	aspects. Other wrappers read one key from the returned dictionary and expose it as one registered
-	audio aspect.
+	I use this function to convert one structured analysis result into a dictionary of scalar and
+	array audio aspects.
 
 	Parameters
 	----------
@@ -341,20 +332,13 @@ def analyzeSpectralCentroid(pathFilename: str | PathLike[Any]) -> arrayAspectDat
 
 @registrationAudioAspect('Spectral centroid mean')
 def analyzeSpectralCentroidMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the "Spectral centroid mean" aspect of an audio file.
-
-	You can use this function to return one scalar summary for the aspect name
-	"Spectral centroid mean".
+	"""Aspect 'Spectral centroid mean': mean framewise spectral centroid.
 
 	Returns
 	-------
 	spectralCentroidMean : float
 		Mean value of the framewise spectral centroid.
 
-	See Also
-	--------
-	`analyzeSpectralCentroid`
-		Compute the framewise spectral-centroid trajectory.
 	"""
 	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralCentroid
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
@@ -399,20 +383,13 @@ def analyzeSpectralCrest(pathFilename: str | PathLike[Any]) -> arrayAspectData:
 
 @registrationAudioAspect('Spectral crest mean')
 def analyzeSpectralCrestMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the "Spectral crest mean" aspect of an audio file.
-
-	You can use this function to return one scalar summary for the aspect name
-	"Spectral crest mean".
+	"""Aspect 'Spectral crest mean': mean framewise spectral crest.
 
 	Returns
 	-------
 	spectralCrestMean : float
 		Mean value of the framewise spectral crest.
 
-	See Also
-	--------
-	`analyzeSpectralCrest`
-		Compute the framewise spectral-crest trajectory.
 	"""
 	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralCrest
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
@@ -456,12 +433,7 @@ def analyzeSpectralDecrease(pathFilename: str | PathLike[Any]) -> arrayAspectDat
 
 @registrationAudioAspect('Spectral decrease mean')
 def analyzeSpectralDecreaseMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral decrease of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how fast spectral magnitude tends to fall after the first
-	bins of each analyzed frame. The aspect name is "Spectral decrease mean".
+	"""Aspect 'Spectral decrease mean': mean framewise spectral decrease.
 
 	Parameters
 	----------
@@ -513,12 +485,7 @@ def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> arrayAspectData
 
 @registrationAudioAspect('Spectral entropy mean')
 def analyzeSpectralEntropyMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral entropy of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how concentrated or diffuse the framewise spectral energy
-	distribution is for one audio file. The aspect name is "Spectral entropy mean".
+	"""Aspect 'Spectral entropy mean': mean framewise spectral entropy.
 
 	Parameters
 	----------
@@ -571,22 +538,13 @@ def analyzeSpectralFlatness(pathFilename: str | PathLike[Any]) -> arrayAspectDat
 
 @registrationAudioAspect('Spectral flatness mean')
 def analyzeSpectralFlatnessMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral flatness of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain one scalar summary of framewise spectral flatness from an
-	audio file. The aspect name is "Spectral flatness mean".
+	"""Aspect 'Spectral flatness mean': mean framewise spectral flatness.
 
 	Returns
 	-------
 	spectralFlatnessMean : float
 		Mean value of the framewise spectral flatness.
 
-	See Also
-	--------
-	`analyzeAudio.analyzersUseSpectrogram.analyzeSpectralFlatness`
-		Compute the full spectral-flatness trajectory and describe the geometric-to-arithmetic ratio.
 	"""
 	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralFlatness
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
@@ -629,12 +587,7 @@ def analyzeSpectralFlux(pathFilename: str | PathLike[Any]) -> arrayAspectData:
 
 @registrationAudioAspect('Spectral flux mean')
 def analyzeSpectralFluxMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral flux of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how strongly the spectrum changes from one frame to the
-	next in one audio file. The aspect name is "Spectral flux mean".
+	"""Aspect 'Spectral flux mean': mean framewise spectral flux.
 
 	Parameters
 	----------
@@ -690,12 +643,7 @@ def analyzeSpectralKurtosis(pathFilename: str | PathLike[Any]) -> arrayAspectDat
 
 @registrationAudioAspect('Spectral kurtosis mean')
 def analyzeSpectralKurtosisMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral kurtosis of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how peaked the framewise spectral distribution is for one
-	audio file. The aspect name is "Spectral kurtosis mean".
+	"""Aspect 'Spectral kurtosis mean': mean framewise spectral kurtosis.
 
 	Parameters
 	----------
@@ -742,12 +690,7 @@ def analyzeSpectralMean(pathFilename: str | PathLike[Any]) -> arrayAspectData:
 
 @registrationAudioAspect('Power spectral density mean')
 def analyzeSpectralMeanMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean power spectral density of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the average spectral power across all frequency bins
-	and analyzed frames of an audio file. The aspect name is "Power spectral density mean".
+	"""Aspect 'Power spectral density mean': mean framewise power spectral density.
 
 	Parameters
 	----------
@@ -801,12 +744,7 @@ def analyzeSpectralRolloff(pathFilename: str | PathLike[Any]) -> arrayAspectData
 
 @registrationAudioAspect('Spectral rolloff mean')
 def analyzeSpectralRolloffMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral rolloff frequency of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the frequency below which a chosen proportion of spectral
-	energy is concentrated in analyzed frames. The aspect name is "Spectral rolloff mean".
+	"""Aspect 'Spectral rolloff mean': mean framewise spectral rolloff frequency.
 
 	Parameters
 	----------
@@ -861,12 +799,7 @@ def analyzeSpectralSkewness(pathFilename: str | PathLike[Any]) -> arrayAspectDat
 
 @registrationAudioAspect('Spectral skewness mean')
 def analyzeSpectralSkewnessMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral skewness of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the asymmetry of the framewise spectral distribution of one
-	audio file. The aspect name is "Spectral skewness mean".
+	"""Aspect 'Spectral skewness mean': mean framewise spectral skewness.
 
 	Parameters
 	----------
@@ -921,12 +854,7 @@ def analyzeSpectralSlope(pathFilename: str | PathLike[Any]) -> arrayAspectData:
 
 @registrationAudioAspect('Spectral slope mean')
 def analyzeSpectralSlopeMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral slope of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the linear trend of spectral magnitude over frequency in
-	analyzed frames. The aspect name is "Spectral slope mean".
+	"""Aspect 'Spectral slope mean': mean framewise spectral slope.
 
 	Parameters
 	----------
@@ -980,22 +908,13 @@ def analyzeSpectralSpread(pathFilename: str | PathLike[Any]) -> arrayAspectData:
 
 @registrationAudioAspect('Spectral spread mean')
 def analyzeSpectralSpreadMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral spread of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain one scalar summary of framewise spectral spread from an audio
-	file. The aspect name is "Spectral spread mean".
+	"""Aspect 'Spectral spread mean': mean framewise spectral spread.
 
 	Returns
 	-------
 	spectralSpreadMean : float
 		Mean value of the framewise spectral spread.
 
-	See Also
-	--------
-	`analyzeAudio.analyzersUseSpectrogram.analyzeSpectralBandwidth`
-		Compute the full spectral-spread trajectory and describe the p-order definition.
 	"""
 	theArrayCallable: Callable[[str | PathLike[Any]], arrayAspectData] = analyzeSpectralSpread
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
@@ -1040,12 +959,7 @@ def analyzeSpectralVariance(pathFilename: str | PathLike[Any]) -> arrayAspectDat
 
 @registrationAudioAspect('Spectral variance mean')
 def analyzeSpectralVarianceMean(pathFilename: str | PathLike[Any]) -> float:
-	"""Compute the mean spectral variance of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the dispersion of spectral power around the mean in
-	analyzed frames of an audio file. The aspect name is "Spectral variance mean".
+	"""Aspect 'Spectral variance mean': mean framewise spectral variance.
 
 	Parameters
 	----------
@@ -1064,12 +978,7 @@ def analyzeSpectralVarianceMean(pathFilename: str | PathLike[Any]) -> float:
 
 @registrationAudioAspect('Zero crossings')
 def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean number of zero crossings in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how often the waveform changes sign across analyzed
-	frames of one audio file. The registered audio aspect name is "Zero crossings" [1].
+	"""Aspect 'Zero crossings': mean number of sign changes per frame [1].
 
 	Parameters
 	----------
@@ -1109,12 +1018,7 @@ def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Zero-crossings rate')
 def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean zero-crossing rate of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how densely sign changes occur within analyzed frames of
-	one audio file. The registered audio aspect name is "Zero-crossings rate" [1].
+	"""Aspect 'Zero-crossings rate': mean normalized zero-crossing rate per frame [1].
 
 	Parameters
 	----------
@@ -1154,13 +1058,7 @@ def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> float | Non
 
 @registrationAudioAspect('DC offset')
 def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the DC offset of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to measure the mean sample amplitude across all samples in an audio
-	file. A DC offset of zero indicates no bias toward positive or negative values. The registered
-	audio aspect name is "DC offset".
+	"""Aspect 'DC offset': mean sample value as a proportion of full scale.
 
 	Parameters
 	----------
@@ -1186,12 +1084,7 @@ def analyzeDCoffset(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Dynamic range')
 def analyzeDynamicRange(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the dynamic range of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to measure the difference between the peak level and the noise floor
-	of an audio file. The registered audio aspect name is "Dynamic range".
+	"""Aspect 'Dynamic range': difference between peak level and noise floor.
 
 	Parameters
 	----------
@@ -1217,13 +1110,7 @@ def analyzeDynamicRange(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Signal entropy')
 def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the signal entropy of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize how uniformly distributed the sample amplitudes of an
-	audio file are. A higher value indicates a more uniform amplitude distribution. The registered
-	audio aspect name is "Signal entropy" [1].
+	"""Aspect 'Signal entropy': Shannon entropy of the amplitude distribution [1].
 
 	Parameters
 	----------
@@ -1255,12 +1142,7 @@ def analyzeSignalEntropy(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Duration-samples')
 def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the total number of samples in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain the total sample count of an audio file. The registered
-	audio aspect name is "Duration-samples".
+	"""Aspect 'Duration-samples': total number of audio samples.
 
 	Parameters
 	----------
@@ -1276,12 +1158,7 @@ def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Peak dB')
 def analyzePeak_level(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the peak amplitude of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the maximum absolute sample value in an audio file, expressed
-	as a decibel ratio relative to full scale. The registered audio aspect name is "Peak dB" [1].
+	"""Aspect 'Peak dB': maximum absolute sample amplitude in dBFS [1].
 
 	Parameters
 	----------
@@ -1313,12 +1190,7 @@ def analyzePeak_level(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('RMS total')
 def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the overall RMS level of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the average power of an audio file as a single decibel
-	value computed over all samples. The registered audio aspect name is "RMS total" [1].
+	"""Aspect 'RMS total': overall RMS level in dBFS [1].
 
 	Parameters
 	----------
@@ -1351,13 +1223,7 @@ def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Crest factor')
 def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the crest factor of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to compare the peak amplitude to the RMS level of an audio file.
-	A higher crest factor indicates greater amplitude variation between peaks and average power.
-	The registered audio aspect name is "Crest factor" [1].
+	"""Aspect 'Crest factor': ratio of peak amplitude to RMS level [1].
 
 	Parameters
 	----------
@@ -1392,12 +1258,7 @@ def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('RMS peak')
 def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the peak short-term RMS level of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the highest short-term RMS level across all analysis blocks
-	of an audio file. The registered audio aspect name is "RMS peak".
+	"""Aspect 'RMS peak': highest short-term RMS level in dBFS.
 
 	Parameters
 	----------
@@ -1425,12 +1286,7 @@ def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Abs_Peak_count')
 def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the number of samples at the absolute peak amplitude in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to count how many samples reach the absolute maximum amplitude of
-	an audio file. The registered audio aspect name is "Abs_Peak_count".
+	"""Aspect 'Abs_Peak_count': number of samples at the absolute peak amplitude.
 
 	Parameters
 	----------
@@ -1446,12 +1302,7 @@ def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Bit_depth')
 def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the bit depth of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain the number of bits used to encode each sample in an audio
-	file. The registered audio aspect name is "Bit_depth".
+	"""Aspect 'Bit_depth': number of bits per audio sample.
 
 	Parameters
 	----------
@@ -1467,12 +1318,7 @@ def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Flat_factor')
 def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the flat factor of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the proportion of analysis frames that contain
-	identical consecutive samples. The registered audio aspect name is "Flat_factor".
+	"""Aspect 'Flat_factor': mean proportion of flat (identical consecutive) samples.
 
 	Parameters
 	----------
@@ -1488,12 +1334,7 @@ def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Max_difference')
 def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the maximum absolute difference between consecutive samples in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the largest single-sample amplitude change across all
-	consecutive sample pairs in an audio file. The registered audio aspect name is "Max_difference".
+	"""Aspect 'Max_difference': largest absolute difference between consecutive samples.
 
 	Parameters
 	----------
@@ -1509,12 +1350,7 @@ def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Max_level')
 def analyzeMax_level(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the maximum sample value in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the highest sample value in an audio file. The registered
-	audio aspect name is "Max_level".
+	"""Aspect 'Max_level': maximum sample value.
 
 	Parameters
 	----------
@@ -1530,12 +1366,7 @@ def analyzeMax_level(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Mean_difference')
 def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the mean absolute difference between consecutive samples in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the average amplitude change between consecutive samples
-	in an audio file. The registered audio aspect name is "Mean_difference".
+	"""Aspect 'Mean_difference': mean absolute difference between consecutive samples.
 
 	Parameters
 	----------
@@ -1551,12 +1382,7 @@ def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Min_difference')
 def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the minimum absolute difference between consecutive samples in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the smallest single-sample amplitude change across all
-	consecutive sample pairs in an audio file. The registered audio aspect name is "Min_difference".
+	"""Aspect 'Min_difference': smallest absolute difference between consecutive samples.
 
 	Parameters
 	----------
@@ -1572,12 +1398,7 @@ def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Min_level')
 def analyzeMin_level(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the minimum sample value in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the lowest sample value in an audio file. The registered
-	audio aspect name is "Min_level".
+	"""Aspect 'Min_level': minimum sample value.
 
 	Parameters
 	----------
@@ -1593,12 +1414,7 @@ def analyzeMin_level(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Noise_floor')
 def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the noise floor level of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to estimate the minimum signal level that represents the background
-	noise of an audio file. The registered audio aspect name is "Noise_floor".
+	"""Aspect 'Noise_floor': estimated background noise floor level in dBFS.
 
 	Parameters
 	----------
@@ -1614,12 +1430,7 @@ def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Noise_floor_count')
 def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the number of samples at or below the noise floor of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to count how many samples fall at or below the estimated noise floor
-	level of an audio file. The registered audio aspect name is "Noise_floor_count".
+	"""Aspect 'Noise_floor_count': number of samples at or below the noise floor.
 
 	Parameters
 	----------
@@ -1635,12 +1446,7 @@ def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('Peak_count')
 def analyzePeak_count(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the number of samples at or above the peak level of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to count how many samples reach or exceed the peak amplitude level
-	of an audio file. The registered audio aspect name is "Peak_count".
+	"""Aspect 'Peak_count': number of samples at or above the peak level.
 
 	Parameters
 	----------
@@ -1656,12 +1462,7 @@ def analyzePeak_count(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('RMS_difference')
 def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the RMS of differences between consecutive samples in an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the root mean square of all sample-to-sample amplitude
-	changes in an audio file. The registered audio aspect name is "RMS_difference".
+	"""Aspect 'RMS_difference': RMS of differences between consecutive samples.
 
 	Parameters
 	----------
@@ -1677,12 +1478,7 @@ def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> float | None:
 
 @registrationAudioAspect('RMS_trough')
 def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the trough short-term RMS level of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to find the lowest short-term RMS level across all analysis blocks
-	of an audio file. The registered audio aspect name is "RMS_trough".
+	"""Aspect 'RMS_trough': lowest short-term RMS level in dBFS.
 
 	Parameters
 	----------
@@ -1728,20 +1524,13 @@ def analyzeTruePeak(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
 
 @registrationAudioAspect('true_peak maximum')
 def analyzeTruePeakOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the "true_peak maximum" aspect of an audio file.
-
-	You can use this function to return one scalar summary for the aspect name
-	"true_peak maximum".
+	"""Aspect 'true_peak maximum': maximum framewise true-peak level in dBTP.
 
 	Returns
 	-------
 	truePeakMaximum : float | None
 		Maximum value of the framewise true-peak trajectory.
 
-	See Also
-	--------
-	`analyzeTruePeak`
-		Compute the framewise true-peak trajectory.
 	"""
 	arrayAspect = analyzeTruePeak(pathFilename)
 	if 0 < len(arrayAspect):
@@ -1779,20 +1568,13 @@ def analyzeLUFSMomentary(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
 
 @registrationAudioAspect('LUFS momentary maximum')
 def analyzeLUFSMomentaryOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the "LUFS momentary maximum" aspect of an audio file.
-
-	You can use this function to return one scalar summary for the aspect name
-	"LUFS momentary maximum".
+	"""Aspect 'LUFS momentary maximum': maximum momentary loudness.
 
 	Returns
 	-------
 	LUFSmomentaryMaximum : float | None
 		Maximum value of the framewise momentary-loudness trajectory.
 
-	See Also
-	--------
-	`analyzeLUFSMomentary`
-		Compute the framewise LUFS-momentary trajectory.
 	"""
 	arrayAspect = analyzeLUFSMomentary(pathFilename)
 	if 0 < len(arrayAspect):
@@ -1831,20 +1613,13 @@ def analyzeLUFSShortTerm(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
 
 @registrationAudioAspect('LUFS short-term maximum')
 def analyzeLUFSShortTermOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the "LUFS short-term maximum" aspect of an audio file.
-
-	You can use this function to return one scalar summary for the aspect name
-	"LUFS short-term maximum".
+	"""Aspect 'LUFS short-term maximum': maximum short-term loudness.
 
 	Returns
 	-------
 	LUFSshortTermMaximum : float | None
 		Maximum value of the framewise short-term-loudness trajectory.
 
-	See Also
-	--------
-	`analyzeLUFSShortTerm`
-		Compute the framewise LUFS-short-term trajectory.
 	"""
 	arrayAspect = analyzeLUFSShortTerm(pathFilename)
 	if 0 < len(arrayAspect):
@@ -1901,12 +1676,7 @@ def analyzeLUFSIntegrated(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
 
 @registrationAudioAspect('LUFS integrated')
 def analyzeLUFSIntegratedOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the integrated programme loudness of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to obtain one gated, K-weighted loudness value for a complete audio
-	file. The aspect name is "LUFS integrated" [1].
+	"""Aspect 'LUFS integrated': gated K-weighted loudness of a complete file [1].
 
 	Parameters
 	----------
@@ -1974,12 +1744,7 @@ def analyzeLRA(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
 
 @registrationAudioAspect('LUFS loudness range')
 def analyzeLRAOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the loudness range of an audio file.
-
-	(AI generated docstring)
-
-	You can use this function to summarize the macroscopic spread of time-varying loudness in one
-	audio file. The aspect name is "LUFS loudness range" [1][2].
+	"""Aspect 'LUFS loudness range': macroscopic spread of time-varying loudness [1][2].
 
 	Parameters
 	----------
@@ -2035,12 +1800,7 @@ def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
 
 @registrationAudioAspect('LUFS low')
 def analyzeLUFSlowOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the lower loudness bound used in loudness-range measurement.
-
-	(AI generated docstring)
-
-	You can use this function to obtain the lower percentile boundary used when loudness range is
-	computed for one audio file. The aspect name is "LUFS low" [1].
+	"""Aspect 'LUFS low': lower percentile bound of the loudness range [1].
 
 	Parameters
 	----------
@@ -2096,12 +1856,7 @@ def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> arrayLUFSData:
 
 @registrationAudioAspect('LUFS high')
 def analyzeLUFShighOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	"""Compute the upper loudness bound used in loudness-range measurement.
-
-	(AI generated docstring)
-
-	You can use this function to obtain the upper percentile boundary used when loudness range is
-	computed for one audio file. The aspect name is "LUFS high" [1].
+	"""Aspect 'LUFS high': upper percentile bound of the loudness range [1].
 
 	Parameters
 	----------

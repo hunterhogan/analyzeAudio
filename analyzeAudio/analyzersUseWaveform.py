@@ -71,21 +71,13 @@ def analyzeTempogram(waveform: Audio, sampleRate: int, **keywordArguments: Any) 
 aspectName = 'Tempogram mean'
 @registrationAudioAspect(aspectName)
 def analyzeTempogramMean(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> float:
-	"""Compute the mean of the tempogram.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Tempogram mean`.
+	"""Aspect 'Tempogram mean': mean of the framewise tempogram.
 
 	Returns
 	-------
 	tempogramMean : float
 		Mean value of the time-varying tempogram.
 
-	See Also
-	--------
-	`analyzeTempogram`
-		Compute the full tempogram and describe the autocorrelation formulation.
 	"""
 	return float(analyzeTempogram(waveform, sampleRate, **keywordArguments).mean().item())
 
@@ -143,21 +135,13 @@ def analyzeRMS(waveform: Audio, **keywordArguments: Any) -> libturd:
 aspectName = 'RMS from waveform mean'
 @registrationAudioAspect(aspectName)
 def analyzeRMSMean(waveform: Audio, **keywordArguments: Any) -> float:
-	"""Compute the mean of the RMS level.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `RMS from waveform mean`.
+	"""Aspect 'RMS from waveform mean': mean framewise RMS level in decibels.
 
 	Returns
 	-------
 	rootMeanSquareMean : float
 		Mean value of the time-varying RMS level in decibels.
 
-	See Also
-	--------
-	`analyzeRMS`
-		Compute the full RMS-level trajectory and describe the framewise formula.
 	"""
 	return float(analyzeRMS(waveform, **keywordArguments).mean().item())
 
@@ -222,21 +206,13 @@ def analyzeTempo(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> l
 aspectName = 'Tempo mean'
 @registrationAudioAspect(aspectName)
 def analyzeTempoMean(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> float:
-	"""Compute the mean of the tempo estimate.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Tempo mean`.
+	"""Aspect 'Tempo mean': mean tempo estimate in beats per minute.
 
 	Returns
 	-------
 	tempoMean : float
 		Mean value of the tempo estimate in beats per minute.
 
-	See Also
-	--------
-	`analyzeTempo`
-		Compute the full tempo estimate and describe the dominant-tempo model.
 	"""
 	return float(analyzeTempo(waveform, sampleRate, **keywordArguments).mean().item())
 
@@ -288,20 +264,12 @@ def analyzeZeroCrossingRate(waveform: Audio, **keywordArguments: Any) -> libturd
 aspectName = 'Zero-crossing rate mean'
 @registrationAudioAspect(aspectName)
 def analyzeZeroCrossingRateMean(waveform: Audio, **keywordArguments: Any) -> float:
-	"""Compute the mean of the zero-crossing rate.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Zero-crossing rate mean`.
+	"""Aspect 'Zero-crossing rate mean': mean framewise zero-crossing rate.
 
 	Returns
 	-------
 	zeroCrossingRateMean : float
 		Mean value of the framewise zero-crossing rate.
 
-	See Also
-	--------
-	`analyzeZeroCrossingRate`
-		Compute the full zero-crossing-rate trajectory and describe the rate formula.
 	"""
 	return float(analyzeZeroCrossingRate(waveform, **keywordArguments).mean().item())

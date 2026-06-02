@@ -63,21 +63,13 @@ def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **key
 aspectName = 'Chromagram mean'
 @registrationAudioAspect(aspectName)
 def analyzeChromagramMean(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> float:
-	"""Compute the mean of the chromagram.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Chromagram mean`.
+	"""Aspect 'Chromagram mean': mean of the framewise chromagram.
 
 	Returns
 	-------
 	chromagramMean : float
 		Mean value of the time-varying chromagram.
 
-	See Also
-	--------
-	`analyzeChromagram`
-		Compute the full chromagram and describe the underlying pitch-class model.
 	"""
 	return float(analyzeChromagram(spectrogramPower, sampleRate, **keywordArguments).mean().item())
 
@@ -135,21 +127,13 @@ def analyzeSpectralContrast(spectrogramMagnitude: SpectrogramMagnitude, **keywor
 aspectName = 'Spectral Contrast mean'
 @registrationAudioAspect(aspectName)
 def analyzeSpectralContrastMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
-	"""Compute the mean of the spectral contrast.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Spectral Contrast mean`.
+	"""Aspect 'Spectral Contrast mean': mean of the framewise spectral contrast.
 
 	Returns
 	-------
 	spectralContrastMean : float
 		Mean value of the time-varying spectral contrast.
 
-	See Also
-	--------
-	`analyzeSpectralContrast`
-		Compute the full octave-band contrast and describe the published formula.
 	"""
 	return float(analyzeSpectralContrast(spectrogramMagnitude, **keywordArguments).mean().item())
 
@@ -204,21 +188,13 @@ def analyzeSpectralBandwidth(spectrogramMagnitude: SpectrogramMagnitude, **keywo
 aspectName = 'Spectral Bandwidth mean'
 @registrationAudioAspect(aspectName)
 def analyzeSpectralBandwidthMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
-	"""Compute the mean of the spectral bandwidth.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Spectral Bandwidth mean`.
+	"""Aspect 'Spectral Bandwidth mean': mean of the framewise spectral bandwidth.
 
 	Returns
 	-------
 	spectralBandwidthMean : float
 		Mean value of the time-varying spectral bandwidth.
 
-	See Also
-	--------
-	`analyzeSpectralBandwidth`
-		Compute the full spectral spread and describe the p-order definition.
 	"""
 	return float(analyzeSpectralBandwidth(spectrogramMagnitude, **keywordArguments).mean().item())
 
@@ -273,21 +249,13 @@ def analyzeSpectralCentroid(spectrogramMagnitude: SpectrogramMagnitude, **keywor
 aspectName = 'Spectral Centroid mean'
 @registrationAudioAspect(aspectName)
 def analyzeSpectralCentroidMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
-	"""Compute the mean of the spectral centroid.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Spectral Centroid mean`.
+	"""Aspect 'Spectral Centroid mean': mean of the framewise spectral centroid.
 
 	Returns
 	-------
 	spectralCentroidMean : float
 		Mean value of the time-varying spectral centroid.
 
-	See Also
-	--------
-	`analyzeSpectralCentroid`
-		Compute the full spectral centroid and describe the center-of-mass formula.
 	"""
 	return float(analyzeSpectralCentroid(spectrogramMagnitude, **keywordArguments).mean().item())
 
@@ -340,20 +308,12 @@ def analyzeSpectralFlatness(spectrogramMagnitude: SpectrogramMagnitude, **keywor
 aspectName = 'Spectral Flatness mean'
 @registrationAudioAspect(aspectName)
 def analyzeSpectralFlatnessMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
-	"""Compute the mean of the spectral flatness.
-
-	(AI generated docstring)
-
-	The registered audio aspect name is `Spectral Flatness mean`.
+	"""Aspect 'Spectral Flatness mean': mean of the framewise spectral flatness in decibels.
 
 	Returns
 	-------
 	spectralFlatnessMean : float
 		Mean value of the time-varying spectral flatness in decibels.
 
-	See Also
-	--------
-	`analyzeSpectralFlatness`
-		Compute the full spectral-flatness trajectory and describe the ratio.
 	"""
 	return float(analyzeSpectralFlatness(spectrogramMagnitude, **keywordArguments).mean().item())

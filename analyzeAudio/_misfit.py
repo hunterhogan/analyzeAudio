@@ -10,10 +10,8 @@ if TYPE_CHECKING:
 def dataTabularTOpathFilenameDelimited(pathFilename: PathLike[Any] | PurePath, tableRows: Iterable[Iterable[Any]], tableColumns: Iterable[Any], delimiterOutput: str = '\t') -> None:
 	r"""Write tabular rows to a delimited text file.
 
-	You can use this function to serialize `tableRows` and `tableColumns` to
-	`pathFilename`. The function converts each cell to text with `str`, joins each row with
-	`delimiterOutput`, writes a header row when `tableColumns` is truthy, and replaces any
-	existing contents of `pathFilename`. `analyzeAudio.analyzeAudioListPathFilenames` [1]
+	You can use this function to write `tableRows` and `tableColumns` to
+	`pathFilename` with `delimiterOutput`. `analyzeAudio.analyzeAudioListPathFilenames` [1]
 	returns row data that this function can write directly.
 
 	Parameters
@@ -21,11 +19,9 @@ def dataTabularTOpathFilenameDelimited(pathFilename: PathLike[Any] | PurePath, t
 	pathFilename : PathLike[Any] | PurePath
 		Path of the output text file.
 	tableRows : Iterable[Iterable[Any]]
-		Row sequence to write after the header row. The function converts each cell from
-		`tableRows` to text with `str`.
+		Row sequence to write after the header row.
 	tableColumns : Iterable[Any]
-		Column label sequence for the optional header row. A falsey `tableColumns` suppresses
-		the header row.
+		Column label sequence for the optional header row.
 	delimiterOutput : str = '\t'
 		Text delimiter inserted between adjacent cells.
 

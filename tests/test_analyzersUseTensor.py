@@ -107,7 +107,7 @@ def test_analyze_log_wmse_mean_truncates_and_reshapes_inputs_for_upstream_call(
 	tensorAudioAlfa, tensorAudioBeta, sampleRate = tensorAudioAuralossCase
 	tensorAudioAlfa = tensorAudioAlfa[:, :, :integerSampleTrimmedExpected]
 	tensorAudioBeta = tensorAudioBeta.squeeze(0)[:, : integerSampleTrimmedExpected + 2]
-	tensorAudioCharlie = tensorAudioAlfa[0, 0, : integerSampleTrimmedExpected + 4]
+	tensorAudioMixture = tensorAudioAlfa[0, 0, : integerSampleTrimmedExpected + 4]
 	dictionaryCaptured: dict[str, object] = {}
 
 	class StubLogWMSE:
@@ -124,7 +124,7 @@ def test_analyze_log_wmse_mean_truncates_and_reshapes_inputs_for_upstream_call(
 
 	monkeypatch.setattr(analyzersUseTensor.torch_log_wmse, 'LogWMSE', StubLogWMSE)
 
-	valueLoss = analyzersUseTensor.analyzeLogWMSEMean(tensorAudioAlfa, tensorAudioBeta, tensorAudioCharlie, sampleRate, reduction='mean')
+	valueLoss = analyzersUseTensor.analyzeLogWMSEMean(tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture, sampleRate, reduction='mean')
 
 	assert isinstance(valueLoss, float), f'analyzeLogWMSEMean returned {type(valueLoss).__name__}, expected float.'
 	assert math.isclose(valueLoss, 8.3, rel_tol=1e-7, abs_tol=1e-7), (

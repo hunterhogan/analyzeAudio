@@ -10,13 +10,12 @@ if TYPE_CHECKING:
 	from torch import nn, Tensor
 
 def _analyzeLoss(aspect: nn.Module, tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectrogramMagnitudeBeta: Tensor) -> float:
-	"""I use this generalized function to apply an initialized `nn.Module` spectrogram-loss module on aligned frame counts.
+	"""I use this function to evaluate one spectrogram-loss module on two spectrogram tensors.
 
 	(AI generated docstring)
 
-	I use this function to keep frame-alignment behavior consistent for multiple public analyzer functions.
-	The function truncates both input spectrogram magnitudes to the same trailing time-frame length,
-	then evaluates `aspect` and converts the scalar `Tensor` result to `float`.
+	I use this function to compute one scalar loss value from `tensorSpectrogramMagnitudeAlfa`
+	and `tensorSpectrogramMagnitudeBeta` with `aspect`.
 
 	Parameters
 	----------
@@ -31,14 +30,14 @@ def _analyzeLoss(aspect: nn.Module, tensorSpectrogramMagnitudeAlfa: Tensor, tens
 	Returns
 	-------
 	valueLoss : float
-		Loss value produced by `aspect` after frame-length alignment.
+		Loss value produced by `aspect`.
 
-	Sequence Trimming
+	Input Alignment
 	-----------------
 	frameCountShared : int
 		`frameCountShared` is `min(tensorSpectrogramMagnitudeAlfa.shape[-1],
 		tensorSpectrogramMagnitudeBeta.shape[-1])`. The function slices both values along axis `-1`
-		with `0:frameCountShared` before computing the loss.
+		with `0:frameCountShared` before evaluating `aspect`.
 
 	References
 	----------
@@ -56,9 +55,7 @@ def analyzeSpectralConvergenceLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tenso
 
 	You can use this function to measure spectral-convergence distance between
 	`tensorSpectrogramMagnitudeAlfa` and `tensorSpectrogramMagnitudeBeta` with
-	`auraloss.freq.SpectralConvergenceLoss` [1]. The function aligns time-frame length by truncating
-	both values to the shortest trailing dimension through `_analyzeLoss` [2], then returns one scalar
-	`float`.
+	`auraloss.freq.SpectralConvergenceLoss` [1].
 
 	Parameters
 	----------
@@ -83,16 +80,10 @@ def analyzeSpectralConvergenceLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tenso
 		valueLoss = ∥B̂′ − Â′∥_F / (∥Â′∥_F + ε)
 	```
 
-	See Also
-	--------
-	`analyzeSTFTMagnitudeLoss`
-		Compute STFT-magnitude loss with configurable keyword arguments.
-
 	References
 	----------
 	[1] auraloss `freq.SpectralConvergenceLoss`
 		https://github.com/csteinmetz1/auraloss
-	[2] `_analyzeLoss`
 
 	"""
 	return _analyzeLoss(freq.SpectralConvergenceLoss(), tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta)
@@ -106,9 +97,7 @@ def analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpect
 
 	You can use this function to measure magnitude-distance between
 	`tensorSpectrogramMagnitudeAlfa` and `tensorSpectrogramMagnitudeBeta` with
-	`auraloss.freq.STFTMagnitudeLoss` [1]. The function forwards `keywordArguments` to
-	`freq.STFTMagnitudeLoss`, aligns trailing frame length through `_analyzeLoss` [2], and returns one
-	scalar `float`.
+	`auraloss.freq.STFTMagnitudeLoss` [1].
 
 	Parameters
 	----------
@@ -126,7 +115,7 @@ def analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpect
 
 	Mathematics
 	-----------
-	STFT magnitude objective wrapper : equation
+	STFT magnitude objective : equation
 	```
 		Let Â ≜ `tensorSpectrogramMagnitudeAlfa`
 			B̂ ≜ `tensorSpectrogramMagnitudeBeta`
@@ -137,16 +126,10 @@ def analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpect
 		valueLoss = ℒ_STFTMag(B̂′, Â′)
 	```
 
-	See Also
-	--------
-	`analyzeSpectralConvergenceLoss`
-		Compute spectral convergence loss for the same input representation.
-
 	References
 	----------
 	[1] auraloss `freq.STFTMagnitudeLoss`
 		https://github.com/csteinmetz1/auraloss
-	[2] `_analyzeLoss`
 
 	"""
 	return _analyzeLoss(freq.STFTMagnitudeLoss(**keywordArguments), tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta)

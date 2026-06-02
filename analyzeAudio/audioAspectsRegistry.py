@@ -91,8 +91,8 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 		"""I use this nested function to record one analyzer function in the module registry.
 
 		This function receives `registrant`, stores `registrant` and the ordered parameter names of
-		`registrant`, and then returns `registrant` unchanged so decorator application does not wrap
-		the analyzer function.
+		`registrant`, and then returns `registrant` unchanged so the registered callable identity is
+		preserved.
 
 		Parameters
 		----------

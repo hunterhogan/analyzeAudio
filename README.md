@@ -62,9 +62,7 @@ dictionaryMeasurements = dict(zip(listAspectNames, listMeasurements, strict=True
 ```
 
 `analyzeAudioFile` reads one audio path, prepares shared intermediate representations, and lets
-registered analyzers reuse those representations. Under the hood that means one call can support
-measurements that need the raw waveform, `sampleRate`, a `torch.Tensor` waveform, a complex STFT,
-spectrogram magnitude, or spectrogram power.
+registered analyzers reuse those representations.
 
 `analyzeAudioFile` preserves the order of `listAspectNames`. If a requested aspect name is not
 registered, the matching return entry is `'not found'`.
@@ -125,7 +123,7 @@ These are the actual analyzers, organized by the representation they consume.
 
 - `analyzeAudio.analyzersUseFilename`
   - paired-path comparison metrics: `getPSNRmean`, `getSDRmean`, `getSI_SDRmean`
-  - framewise spectral arrays with matching mean wrappers: `analyzeSpectralCentroid`,
+  - framewise spectral arrays with matching mean summaries: `analyzeSpectralCentroid`,
     `analyzeSpectralCrest`, `analyzeSpectralDecrease`, `analyzeSpectralEntropy`,
     `analyzeSpectralFlatness`, `analyzeSpectralFlux`, `analyzeSpectralKurtosis`,
     `analyzeSpectralMean`, `analyzeSpectralRolloff`, `analyzeSpectralSkewness`,
@@ -193,8 +191,8 @@ valueLoss = analyzeSpectralConvergenceLoss(tensorMagnitudeReference, tensorMagni
 
 ### Use `truncateTensors` when you want the aligned tensors yourself
 
-Most tensor comparison analyzers already trim inputs internally. `truncateTensors` is there for the
-times when you want the aligned tensors yourself before reusing them across several metrics.
+Most tensor comparison analyzers already trim inputs. `truncateTensors` is there for the
+times when you want aligned tensors before reusing them across several metrics.
 
 ```python
 from analyzeAudio import truncateTensors

@@ -1,5 +1,4 @@
-- In `analyzeAudio/analyzersUseFilename.py`, keep mean-wrapper docstrings short and implementation-agnostic.
-- If a wrapper has `aspectName`, state the exact registered aspect name in the docstring.
-- Prefer paper/standard-backed `Mathematics` and `References` sections for standalone metrics in the filename analyzer.
-- For metrics with fuller theory docs in `analyzersUseSpectrogram.py` (for example centroid, spread, flatness), use concise wrappers plus `See Also` rather than duplicating theory.
-- Preserve existing AI-marker state when rewriting docstrings; do not add `(AI generated docstring)` to pre-existing undocumented-style docstrings like `getSI_SDRmean`.
+- In `analyzeAudio/analyzersUseFilename.py`, keep user-facing prose focused on the measured aspect and returned value.
+- Avoid implementation phrasing like "other wrappers read one key" or private cache/internal call descriptions in non-technical sections.
+- Remove non-essential `See Also` blocks when they only describe internal package structure instead of user choice points.
+- Keep private function docstrings first-person (`I use this ...`) but still avoid "helper" wording.
