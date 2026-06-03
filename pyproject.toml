@@ -48,6 +48,8 @@ classifiers = [
 ]
 dependencies = [
   "auraloss",
+  "hunterHearsPy",
+  "hunterMakesPy>=0.7.0",
   "librosa",
   "numpy",
   "scipy",
@@ -58,7 +60,7 @@ dependencies = [
   "tqdm"
 ]
 optional-dependencies = { development = ["pytest-cov", "scipy-stubs"], testing = [
-  "pytest",
+  "pytest"
 ] }
 
 [project.urls]

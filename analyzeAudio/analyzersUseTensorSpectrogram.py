@@ -154,14 +154,12 @@ def analyzeL1FrequencyLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectro
 	Mathematics
 	-----------
 	L1 frequency loss : equation
-
-	# The L1 distance between magnitude spectrograms:
 	```
 		Let 𝒮 ≜ complex-valued spectrogram
 			ℒ ≜ L1 frequency loss
 
-		ℒL1 = ∥|𝒮(ŵ)| − |𝒮(w)|∥₁
-		y = 100 / (1 + (λ * ℒL1))
+		ℒ = ∥|𝒮(ŵ)| − |𝒮(w)|∥₁
+		y = 100 / (1 + (λ * ℒ))
 
 		where λ = a scaling factor.
 	```

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from analyzeAudio.audioAspectsRegistry import audioAspects
 from concurrent.futures import as_completed, ProcessPoolExecutor
+from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from typing import Any, TYPE_CHECKING
 import librosa
 import numpy
@@ -101,7 +102,7 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequenc
 
 	return [dictionaryAspectsAnalyzed[aspectName] for aspectName in listAspectNames]
 
-def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[PathLike[Any]], listAspectNames: Sequence[str], CPUlimit: int | None = None) -> list[list[str | float]]:
+def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[PathLike[Any]], listAspectNames: Sequence[str], *, CPUlimit: bool | float | int | None = None) -> list[list[str | float]]:
 	"""
 	Compute requested aspect values for many audio files.
 
@@ -117,7 +118,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 		Path sequence of audio files to analyze.
 	listAspectNames : Sequence[str]
 		Audio aspect name sequence to evaluate for each file.
-	CPUlimit : int | None = None
+	CPUlimit : bool | float | int | None = None
 		Worker-count value for the process pool. Use `None` for the default worker count, or
 		use a positive integer for an explicit worker count. The function forwards `CPUlimit`
 		directly to the worker pool without additional normalization, so values less than `1`
@@ -165,10 +166,9 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 	"""
 	rowsListFilenameAspectValues: list[list[str | float]] = []
 
-	# TODO if hunterMakesPy is changed to python>=3.10
-	# max_workers = defineConcurrencyLimit(limit=CPUlimit)  # noqa: ERA001
+	max_workers: int = defineConcurrencyLimit(limit=CPUlimit)
 
-	with ProcessPoolExecutor(max_workers=CPUlimit) as concurrencyManager:
+	with ProcessPoolExecutor(max_workers=max_workers) as concurrencyManager:
 		dictionaryConcurrency: dict[Future[list[str | float]], str | PathLike[Any]] = {concurrencyManager.submit(analyzeAudioFile, pathFilename, listAspectNames)
 									: pathFilename
 									for pathFilename in listPathFilenames}
