@@ -21,7 +21,7 @@ References
 
 from __future__ import annotations
 
-from analyzeAudio.audioAspectsRegistry import audioAspects
+from analyzeAudio.registry import audioAspects
 from concurrent.futures import as_completed, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from typing import Any, TYPE_CHECKING

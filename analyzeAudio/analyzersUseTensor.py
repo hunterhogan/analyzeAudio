@@ -3,9 +3,8 @@ from __future__ import annotations
 
 from analyzeAudio import truncateTensors
 from analyzeAudio.analyzersUseSpectrogram import analyzeChromagram
-from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
-from torch import nn, tensor
-from torch._tensor import Tensor
+from analyzeAudio.registry import registrationAudioAspect, registrationAudioContest
+from torch import nn, tensor, Tensor
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 from typing import Any, cast, Protocol, TYPE_CHECKING
 import auraloss
@@ -15,7 +14,7 @@ import torch_log_wmse
 
 if TYPE_CHECKING:
 	from analyzeAudio._theTypes import SpectrogramPower
-	from torch import device, Tensor
+	from torch import device
 
 	# NOTE This is necessary because the original package thinks that type annotations and discipline are for pussies.
 	class _AuralossChromaSTFTLoss(Protocol):
@@ -112,8 +111,7 @@ def analyzeSRMR(tensorAudio: Tensor, sampleRate: int, *, pytorchOnCPU: bool | No
 	keywordArguments['fast'] = keywordArguments.get('fast') or pytorchOnCPU or None
 	return speech_reverberation_modulation_energy_ratio(tensorAudio, sampleRate, **keywordArguments)
 
-aspectName: str = 'SRMR mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('SRMR mean')
 def analyzeSRMRMean(tensorAudio: Tensor, sampleRate: int, pytorchOnCPU: bool | None, **keywordArguments: Any) -> float:  # noqa: FBT001
 	"""Aspect 'SRMR mean': mean speech-to-reverberation modulation energy ratio.
 
@@ -125,8 +123,7 @@ def analyzeSRMRMean(tensorAudio: Tensor, sampleRate: int, pytorchOnCPU: bool | N
 	"""
 	return float(analyzeSRMR(tensorAudio, sampleRate, pytorchOnCPU=pytorchOnCPU, **keywordArguments).mean().item())
 
-aspectName = 'LogWMSE'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('LogWMSE')
 def analyzeLogWMSEMean(
 	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, tensorAudioMixture: Tensor, sampleRate: int, **keywordArguments: Any
 ) -> float:
@@ -249,9 +246,7 @@ def _unsqueezeTo3axes(tensorAudio: Tensor) -> Tensor:
 		tensorAudio = tensorAudio.unsqueeze(0)
 	return tensorAudio
 
-name: str = 'L1SNR'
-aspectName = name
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('L1SNR')
 def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with L1SNR.
 
@@ -321,12 +316,10 @@ def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	aspect = torch_l1_snr.L1SNRLoss(name, **keywordArguments)
+	aspect = torch_l1_snr.L1SNRLoss('L1SNR', **keywordArguments)
 	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
-name = 'L1SNRDB'
-aspectName = name
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('L1SNRDB')
 def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with regularized L1SNR.
 
@@ -410,12 +403,10 @@ def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	aspect = torch_l1_snr.L1SNRDBLoss(name, **keywordArguments)
+	aspect = torch_l1_snr.L1SNRDBLoss('L1SNRDB', **keywordArguments)
 	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
-name = 'MultiL1SNRDB'
-aspectName = name
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('MultiL1SNRDB')
 def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with combined time and STFT L1SNRDB.
 
@@ -506,12 +497,10 @@ def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	aspect = torch_l1_snr.MultiL1SNRDBLoss(name, **keywordArguments)
+	aspect = torch_l1_snr.MultiL1SNRDBLoss('MultiL1SNRDB', **keywordArguments)
 	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
-name = 'STFTL1SNRDB'
-aspectName = name
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('STFTL1SNRDB')
 def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with spectrogram-domain L1SNRDB.
 
@@ -609,11 +598,10 @@ def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **k
 	[3] Landschoot, C. `crlandsc/torch-l1-snr`.
 		https://github.com/crlandsc/torch-l1-snr
 	"""
-	aspect = torch_l1_snr.STFTL1SNRDBLoss(name, **keywordArguments)
+	aspect = torch_l1_snr.STFTL1SNRDBLoss('STFTL1SNRDB', **keywordArguments)
 	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
-aspectName = 'DCLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('DCLoss')
 def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with direct-current offset loss.
 
@@ -657,8 +645,7 @@ def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArg
 	"""
 	return _analyzeLoss(auraloss.time.DCLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'ESRLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('ESRLoss')
 def analyzeESRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with error-to-signal ratio loss.
 
@@ -702,8 +689,7 @@ def analyzeESRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordAr
 	"""
 	return _analyzeLoss(auraloss.time.ESRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'LogCoshLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('LogCoshLoss')
 def analyzeLogCoshLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with log-cosh waveform loss.
 
@@ -747,8 +733,7 @@ def analyzeLogCoshLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 	"""
 	return _analyzeLoss(auraloss.time.LogCoshLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'SNRLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('SNRLoss')
 def analyzeSNRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with signal-to-noise ratio loss.
 
@@ -792,8 +777,7 @@ def analyzeSNRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordAr
 	"""
 	return _analyzeLoss(auraloss.time.SNRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'SISDRLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('SISDRLoss')
 def analyzeSISDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with scale-invariant SDR loss.
 
@@ -837,8 +821,7 @@ def analyzeSISDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	"""
 	return _analyzeLoss(auraloss.time.SISDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'SDSDRLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('SDSDRLoss')
 def analyzeSDSDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with scale-dependent SDR loss.
 
@@ -882,8 +865,7 @@ def analyzeSDSDRLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 	"""
 	return _analyzeLoss(auraloss.time.SDSDRLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'STFTLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('STFTLoss')
 def analyzeSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with STFT-domain loss.
 
@@ -927,8 +909,7 @@ def analyzeSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordA
 	"""
 	return _analyzeLoss(auraloss.freq.STFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'MelSTFTLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('MelSTFTLoss')
 def analyzeMelSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with mel-scaled STFT loss.
 
@@ -974,8 +955,7 @@ def analyzeMelSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleR
 	"""
 	return _analyzeLoss(auraloss.freq.MelSTFTLoss(**{'sample_rate': sampleRate, **keywordArguments}), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'ChromaSTFTLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('ChromaSTFTLoss')
 def analyzeChromaSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with chroma-weighted STFT loss.
 
@@ -1054,8 +1034,7 @@ def analyzeChromaSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, samp
 		aspect.fb = aspect.fb.to(aspect.device)
 	return _analyzeLoss(cast('nn.Module', aspect), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'MultiResolutionSTFTLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('MultiResolutionSTFTLoss')
 def analyzeMultiResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with multi-resolution STFT loss.
 
@@ -1100,8 +1079,7 @@ def analyzeMultiResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Ten
 	"""
 	return _analyzeLoss(auraloss.freq.MultiResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'RandomResolutionSTFTLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('RandomResolutionSTFTLoss')
 def analyzeRandomResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with random-resolution STFT loss.
 
@@ -1146,8 +1124,7 @@ def analyzeRandomResolutionSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Te
 	"""
 	return _analyzeLoss(auraloss.freq.RandomResolutionSTFTLoss(**keywordArguments), tensorAudioAlfa, tensorAudioBeta)
 
-aspectName = 'SumAndDifferenceSTFTLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('SumAndDifferenceSTFTLoss')
 def analyzeSumAndDifferenceSTFTLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with sum-and-difference STFT loss.
 

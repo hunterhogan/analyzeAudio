@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from analyzeAudio import BleedFull, BleedFullArray, ParametersMelSpectrogram
-from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
+from analyzeAudio.registry import registrationAudioAspect
 from typing import Any, TYPE_CHECKING
 from typing_extensions import Unpack
 import librosa

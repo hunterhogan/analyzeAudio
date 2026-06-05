@@ -72,22 +72,19 @@ Issues = "https://github.com/hunterhogan/analyzeAudio/issues"
 Repository = "https://github.com/hunterhogan/analyzeAudio.git"
 
 [project.scripts]
-whatMeasurements = "analyzeAudio.audioAspectsRegistry:getListAvailableAudioAspects"
+whatAspects = "analyzeAudio:getListAvailableAudioAspects"
+whatContests = "analyzeAudio:getListAvailableAudioContests"
+whatMeasurements = "analyzeAudio:getListAvailableAudioAspects"
 
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage]
-report = { exclude_lines = [
-  "if TYPE_CHECKING:",
-  "if __name__ == \"__main__\":",
-], ignore_errors = false }
+report = { exclude_lines = ["if TYPE_CHECKING:", "if __name__ == \"__main__\":"], ignore_errors = false }
 run = { branch = true, data_file = "tests/coverage/.coverage", omit = [
-  "tests/*",
-], parallel = true, source = [
-  ".",
-] }
+  "tests/*"
+], parallel = true, source = ["."] }
 
 [tool.pytest]
 addopts = ["--color=auto"]

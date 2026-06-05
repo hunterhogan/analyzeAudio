@@ -4,8 +4,8 @@
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
-from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
 from analyzeAudio.pythonator import pythonizeFFprobe
+from analyzeAudio.registry import registrationAudioAspect, registrationAudioContest
 from functools import cache
 from operator import getitem
 from statistics import mean
@@ -60,7 +60,7 @@ def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathL
 
 	return mean(map(float, regexPattern.findall(stderrFFmpeg)))
 
-@registrationAudioAspect('Peak Signal-to-Noise Ratio mean')
+@registrationAudioContest('Peak Signal-to-Noise Ratio mean')
 def getPSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	"""Compute the mean peak signal-to-noise ratio between two audio files.
 
@@ -112,7 +112,7 @@ def getPSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | P
 	filterChain: str = 'apsnr'
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
-@registrationAudioAspect('SDR mean')
+@registrationAudioContest('SDR mean')
 def getSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	"""Aspect 'SDR mean': mean signal-to-distortion ratio between two audio files [1].
 
@@ -160,7 +160,7 @@ def getSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | Pa
 	filterChain: str = 'asdr'
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
-@registrationAudioAspect('SI-SDR mean')
+@registrationAudioContest('SI-SDR mean')
 def getSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
 	"""Aspect 'SI-SDR mean': mean scale-invariant SDR between two audio files [1].
 

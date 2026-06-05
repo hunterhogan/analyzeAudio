@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio import analyzersUseTensorSpectrogram, audioAspects
+from analyzeAudio import analyzersUseTensorSpectrogram, audioContests
 from typing import TYPE_CHECKING
 import math
 import pytest
@@ -22,11 +22,11 @@ def test_auraloss_tensor_spectrogram_losses_return_registered_floats(
 		f'{analyzerName} returned {type(valueLoss).__name__}, expected float for aspect {stringAspectName}.'
 	)
 	assert math.isfinite(valueLoss), f'{analyzerName} returned non-finite value {valueLoss} for aspect {stringAspectName}.'
-	assert stringAspectName in audioAspects, (
-		f'audioAspects did not register {stringAspectName}; available keys do not include the expected tensor-spectrogram auraloss aspect name.'
+	assert stringAspectName in audioContests, (
+		f'audioContests did not register {stringAspectName}; available keys do not include the expected tensor-spectrogram auraloss aspect name.'
 	)
-	assert audioAspects[stringAspectName]['analyzer'] is analyzer, (
-		f'audioAspects[{stringAspectName!r}] registered {audioAspects[stringAspectName]["analyzer"]}, expected {analyzer}.'
+	assert audioContests[stringAspectName]['analyzer'] is analyzer, (
+		f'audioContests[{stringAspectName!r}] registered {audioContests[stringAspectName]["analyzer"]}, expected {analyzer}.'
 	)
 
 @pytest.mark.parametrize(
@@ -51,9 +51,9 @@ def test_analyze_l1_frequency_loss_returns_registered_bounded_similarity(
 		assert valueLoss < 100.0, (
 			f'analyzeL1FrequencyLoss returned {valueLoss}, expected value strictly below 100.0 for non-identical spectrogram magnitudes in {stringCaseName}.'
 		)
-	assert 'L1FrequencyLoss' in audioAspects, (
-		'audioAspects did not register L1FrequencyLoss; available keys do not include the expected tensor-spectrogram aspect name.'
+	assert 'L1FrequencyLoss' in audioContests, (
+		'audioContests did not register L1FrequencyLoss; available keys do not include the expected tensor-spectrogram aspect name.'
 	)
-	assert audioAspects['L1FrequencyLoss']['analyzer'] is analyzersUseTensorSpectrogram.analyzeL1FrequencyLoss, (
-		f"audioAspects['L1FrequencyLoss'] registered {audioAspects['L1FrequencyLoss']['analyzer']}, expected {analyzersUseTensorSpectrogram.analyzeL1FrequencyLoss}."
+	assert audioContests['L1FrequencyLoss']['analyzer'] is analyzersUseTensorSpectrogram.analyzeL1FrequencyLoss, (
+		f"audioContests['L1FrequencyLoss'] registered {audioContests['L1FrequencyLoss']['analyzer']}, expected {analyzersUseTensorSpectrogram.analyzeL1FrequencyLoss}."
 	)

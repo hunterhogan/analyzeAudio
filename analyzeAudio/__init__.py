@@ -12,7 +12,9 @@ from analyzeAudio._theTypes import (
 from analyzeAudio._beDRY import truncateTensors as truncateTensors
 
 # isort: split
-from analyzeAudio.audioAspectsRegistry import audioAspects as audioAspects, getListAvailableAudioAspects as getListAvailableAudioAspects
+from analyzeAudio.registry import (
+	audioAspects as audioAspects, audioContests as audioContests, getListAvailableAudioAspects as getListAvailableAudioAspects,
+	getListAvailableAudioContests as getListAvailableAudioContests)
 
 # isort: split
 # pyright: reportUnusedImport=false

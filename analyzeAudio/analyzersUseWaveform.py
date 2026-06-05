@@ -1,7 +1,7 @@
 """Analyzers that use the waveform of audio data."""
 from __future__ import annotations
 
-from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
+from analyzeAudio.registry import registrationAudioAspect
 from typing import Any, TYPE_CHECKING
 import librosa
 import numpy
@@ -68,8 +68,7 @@ def analyzeTempogram(waveform: Audio, sampleRate: int, **keywordArguments: Any) 
 	"""
 	return librosa.feature.tempogram(y=waveform, sr=sampleRate, **keywordArguments)
 
-aspectName = 'Tempogram mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Tempogram mean')
 def analyzeTempogramMean(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> float:
 	"""Aspect 'Tempogram mean': mean of the framewise tempogram.
 
@@ -132,8 +131,7 @@ def analyzeRMS(waveform: Audio, **keywordArguments: Any) -> libturd:
 	arrayRMS: libturd = librosa.feature.rms(y=waveform, **keywordArguments)
 	return 20 * numpy.log10(arrayRMS, where=(arrayRMS != 0), out=None)  # dB
 
-aspectName = 'RMS from waveform mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('RMS from waveform mean')
 def analyzeRMSMean(waveform: Audio, **keywordArguments: Any) -> float:
 	"""Aspect 'RMS from waveform mean': mean framewise RMS level in decibels.
 
@@ -203,8 +201,7 @@ def analyzeTempo(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> l
 	tempogram: libturd = analyzeTempogram(waveform, sampleRate)
 	return librosa.feature.tempo(y=waveform, sr=sampleRate, tg=tempogram, **keywordArguments)
 
-aspectName = 'Tempo mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Tempo mean')
 def analyzeTempoMean(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> float:
 	"""Aspect 'Tempo mean': mean tempo estimate in beats per minute.
 
@@ -261,8 +258,7 @@ def analyzeZeroCrossingRate(waveform: Audio, **keywordArguments: Any) -> libturd
 	"""
 	return librosa.feature.zero_crossing_rate(y=waveform, **keywordArguments)
 
-aspectName = 'Zero-crossing rate mean'
-@registrationAudioAspect(aspectName)
+@registrationAudioAspect('Zero-crossing rate mean')
 def analyzeZeroCrossingRateMean(waveform: Audio, **keywordArguments: Any) -> float:
 	"""Aspect 'Zero-crossing rate mean': mean framewise zero-crossing rate.
 

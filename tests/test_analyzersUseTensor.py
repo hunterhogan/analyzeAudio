@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio import analyzersUseTensor, audioAspects
+from analyzeAudio import analyzersUseTensor, audioAspects, audioContests
 import math
 import pytest
 import torch
@@ -34,11 +34,11 @@ def test_auraloss_waveform_losses_return_registered_floats(
 		f'{analyzerName} returned {type(valueLoss).__name__}, expected float for aspect {stringAspectName}.'
 	)
 	assert math.isfinite(valueLoss), f'{analyzerName} returned non-finite value {valueLoss} for aspect {stringAspectName}.'
-	assert stringAspectName in audioAspects, (
+	assert stringAspectName in audioContests, (
 		f'audioAspects did not register {stringAspectName}; available keys do not include the expected auraloss aspect name.'
 	)
-	assert audioAspects[stringAspectName]['analyzer'] is analyzer, (
-		f'audioAspects[{stringAspectName!r}] registered {audioAspects[stringAspectName]["analyzer"]}, expected {analyzer}.'
+	assert audioContests[stringAspectName]['analyzer'] is analyzer, (
+		f'audioAspects[{stringAspectName!r}] registered {audioContests[stringAspectName]["analyzer"]}, expected {analyzer}.'
 	)
 
 @pytest.mark.parametrize(

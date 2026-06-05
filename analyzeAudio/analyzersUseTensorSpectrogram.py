@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from analyzeAudio import truncateTensors
-from analyzeAudio.audioAspectsRegistry import registrationAudioAspect
+from analyzeAudio.registry import registrationAudioContest
 from auraloss import freq
 from typing import Any, TYPE_CHECKING
 
@@ -46,8 +46,7 @@ def _analyzeLoss(aspect: nn.Module, tensorSpectrogramMagnitudeAlfa: Tensor, tens
 	"""
 	return float(aspect(*truncateTensors([tensorSpectrogramMagnitudeBeta, tensorSpectrogramMagnitudeAlfa])).item())
 
-aspectName = 'SpectralConvergenceLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('SpectralConvergenceLoss')
 def analyzeSpectralConvergenceLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectrogramMagnitudeBeta: Tensor) -> float:
 	"""Compute spectral convergence loss for two spectrogram magnitude `Tensor` values.
 
@@ -88,8 +87,7 @@ def analyzeSpectralConvergenceLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tenso
 	"""
 	return _analyzeLoss(freq.SpectralConvergenceLoss(), tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta)
 
-aspectName = 'STFTMagnitudeLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('STFTMagnitudeLoss')
 def analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectrogramMagnitudeBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Compute STFT magnitude loss for two spectrogram magnitude `Tensor` values.
 
@@ -134,8 +132,7 @@ def analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpect
 	"""
 	return _analyzeLoss(freq.STFTMagnitudeLoss(**keywordArguments), tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta)
 
-aspectName = 'L1FrequencyLoss'
-@registrationAudioAspect(aspectName)
+@registrationAudioContest('L1FrequencyLoss')
 def analyzeL1FrequencyLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectrogramMagnitudeBeta: Tensor) -> float:
 	"""Compute L1 frequency loss for two spectrogram magnitude `Tensor` values.
 
