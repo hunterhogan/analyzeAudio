@@ -169,9 +169,9 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 	max_workers: int = defineConcurrencyLimit(limit=CPUlimit)
 
 	with ProcessPoolExecutor(max_workers=max_workers) as concurrencyManager:
-		dictionaryConcurrency: dict[Future[list[str | float]], str | PathLike[Any]] = {concurrencyManager.submit(analyzeAudioFile, pathFilename, listAspectNames)
-									: pathFilename
-									for pathFilename in listPathFilenames}
+		dictionaryConcurrency: dict[Future[list[str | float]], str | PathLike[Any]] = {
+			concurrencyManager.submit(analyzeAudioFile, pathFilename, listAspectNames): pathFilename
+				for pathFilename in listPathFilenames}
 
 		for claimTicket in as_completed(dictionaryConcurrency):
 			listAspectValues: list[str | float] = claimTicket.result()

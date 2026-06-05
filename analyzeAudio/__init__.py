@@ -3,7 +3,8 @@ from __future__ import annotations
 
 # isort: split
 from analyzeAudio._theTypes import (
-	analyzersAudioAspects as analyzersAudioAspects, Audio as Audio, libturd as libturd, parameterSpecifications as parameterSpecifications,
+	analyzersAudioAspects as analyzersAudioAspects, Audio as Audio, BleedFull as BleedFull, BleedFullArray as BleedFullArray,
+	libturd as libturd, ParametersMelSpectrogram as ParametersMelSpectrogram, parameterSpecifications as parameterSpecifications,
 	Spectrogram as Spectrogram, SpectrogramMagnitude as SpectrogramMagnitude, SpectrogramPower as SpectrogramPower,
 	typeReturned as typeReturned)
 
