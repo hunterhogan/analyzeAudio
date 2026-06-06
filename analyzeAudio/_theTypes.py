@@ -32,6 +32,8 @@ class ParametersMelSpectrogram(TypedDict, total=False):
 	n_mels: int
 	norm: float | Literal['slaney'] | None
 	power: float
+	sr: int
+	top_db: float | None
 	win_length: int
 	window: str | tuple[Any, ...] | float | Callable[[int], ndarray] | ArrayLike
 

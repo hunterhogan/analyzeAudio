@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 # isort: split
+from analyzeAudio._theSSOT import settingsPackage
+
+# isort: split
 from analyzeAudio._theTypes import (
 	analyzersAudioAspects as analyzersAudioAspects, Audio as Audio, BleedFull as BleedFull, BleedFullArray as BleedFullArray,
 	libturd as libturd, ParametersMelSpectrogram as ParametersMelSpectrogram, parameterSpecifications as parameterSpecifications,

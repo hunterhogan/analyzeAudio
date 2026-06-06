@@ -131,9 +131,9 @@ def analyzeLogWMSEMean(
 
 	(AI generated docstring)
 
-	You can use this function to compute the registered `LogWMSE` audio
-	aspect from a reference source `tensorAudioAlfa`, an estimated source
-	`tensorAudioBeta`, and an unprocessed mixture `tensorAudioMixture` [1][2].
+	You can use this function to compute the registered `LogWMSE` audio aspect from a reference source
+	`tensorAudioAlfa`, an estimated source `tensorAudioBeta`, and an unprocessed mixture
+	`tensorAudioMixture` [1][2].
 
 	Parameters
 	----------
@@ -149,8 +149,8 @@ def analyzeLogWMSEMean(
 	Returns
 	-------
 	logwmseMean : float
-		Positive logWMSE score. Higher values indicate smaller weighted errors when
-		`return_as_loss` uses the default value `False` [2].
+		Positive logWMSE score. Higher values indicate smaller weighted errors when `return_as_loss`
+		uses the default value `False` [2].
 
 	Mathematics
 	-----------
@@ -192,9 +192,8 @@ def analyzeLogWMSEMean(
 	impulse_response_sample_rate : int = 44100
 		Sampling rate of `impulse_response` in hertz [2].
 	return_as_loss : bool = False
-		Whether the upstream implementation should return a negative loss instead of
-		a positive loss. This function sets `False` by default, but a caller-provided
-		value overrides that default [2].
+		Whether the upstream implementation should return a negative loss instead of a positive loss.
+		This function sets `False` by default, but a caller-provided value overrides that default [2].
 	bypass_filter : bool = False
 		Whether the upstream implementation should skip frequency weighting [2].
 	reduction : str = 'mean'
@@ -207,9 +206,8 @@ def analyzeLogWMSEMean(
 	[2] Landschoot, C. `crlandsc/torch-log-wmse`.
 		https://github.com/crlandsc/torch-log-wmse
 	"""
-	tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture = truncateTensors(
-		[tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture]
-	)
+	tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture = truncateTensors([tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture])
+
 	dictionaryParameters: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
 	aspect = torch_log_wmse.LogWMSE(
 		audio_length=tensorAudioMixture.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryParameters
@@ -317,7 +315,7 @@ def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.L1SNRLoss('L1SNR', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
 
 @registrationAudioContest('L1SNRDB')
 def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -404,7 +402,7 @@ def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.L1SNRDBLoss('L1SNRDB', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
 
 @registrationAudioContest('MultiL1SNRDB')
 def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -498,7 +496,7 @@ def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.MultiL1SNRDBLoss('MultiL1SNRDB', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
 
 @registrationAudioContest('STFTL1SNRDB')
 def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -599,7 +597,7 @@ def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **k
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.STFTL1SNRDBLoss('STFTL1SNRDB', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
+	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
 
 @registrationAudioContest('DCLoss')
 def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:

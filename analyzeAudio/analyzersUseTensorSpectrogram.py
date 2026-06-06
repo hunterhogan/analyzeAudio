@@ -154,14 +154,14 @@ def analyzeL1FrequencyLoss(tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectro
 	```
 		Let 𝒮 ≜ complex-valued spectrogram
 			ℒ ≜ L1 frequency loss
+			λ ≜ a scaling factor
 
 		ℒ = ∥|𝒮(ŵ)| − |𝒮(w)|∥₁
 		y = 100 / (1 + (λ * ℒ))
 
-		where λ = a scaling factor.
 	```
 	"""
-	keywordArguments = dict(log=False, distance="L1", reduction="sum")  # noqa: C408
-	L1: float = analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta, **keywordArguments)
 	λ = 10
+	keywordArguments = dict(log=False, distance="L1", reduction="mean")
+	L1: float = analyzeSTFTMagnitudeLoss(tensorSpectrogramMagnitudeAlfa, tensorSpectrogramMagnitudeBeta, **keywordArguments)
 	return 100 / (1 + (λ * L1))

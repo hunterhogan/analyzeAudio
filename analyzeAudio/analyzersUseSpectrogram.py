@@ -350,8 +350,8 @@ def analyzeBleedFullMelDB(spectrogramMagnitudeAlfa: SpectrogramMagnitude, spectr
 		Mₐ = F · Xₐ
 		Mᵦ = F · Xᵦ
 
-		Aᵢ = 20 × log₁₀(Mₐᵢ)   ∀ Mₐᵢ ≠ 0
-		Bᵢ = 20 × log₁₀(Mᵦᵢ)   ∀ Mᵦᵢ ≠ 0
+		Aᵢ = 20 × log₁₀(Mₐᵢ)   ∀ Mₐᵢ ≠ 0, ∀ Aᵢ < |80.0|
+		Bᵢ = 20 × log₁₀(Mᵦᵢ)   ∀ Mᵦᵢ ≠ 0, ∀ Bᵢ < |80.0|
 
 		Δ = B − A
 
@@ -382,6 +382,10 @@ def analyzeBleedFullMelDB(spectrogramMagnitudeAlfa: SpectrogramMagnitude, spectr
 		Normalization method for the mel spectrogram.
 	power : float = 1.0
 		Exponent for the magnitude spectrogram.
+	sr : int = 44100
+		Sample rate in hertz used to build the mel filter bank.
+	top_db : float | None = 80.0
+		Maximum decibel range retained after amplitude-to-decibel conversion.
 	win_length : int = None
 		Windowing function length for the FFT.
 	window : str | tuple[Any, ...] | float | Callable[[int], ndarray] | ArrayLike = "hann"
@@ -392,12 +396,12 @@ def analyzeBleedFullMelDB(spectrogramMagnitudeAlfa: SpectrogramMagnitude, spectr
 	[1] csteinmetz1/auraloss issue #79. Enhancement ? New metric for source
 		separation, measuring separately bleed and fullness in separated audio.
 		https://github.com/csteinmetz1/auraloss/issues/79
-	[2] ZFTurbo. Music-Source-Separation-Training `bleed_full` metric.
+	[2] ZFTurbo and jarredou. Music-Source-Separation-Training `bleed_full` metric.
 		https://github.com/ZFTurbo/Music-Source-Separation-Training/blob/c0197a0b2f1fffa8631779e1e92835a2e24d1c99/utils/metrics.py#L304-L385
 	[3] librosa.feature.melspectrogram.
 		https://librosa.org/doc/latest/generated/librosa.feature.melspectrogram.html
-	[4] numpy.log10.
-		https://numpy.org/doc/stable/reference/generated/numpy.log10.html
+	[4] librosa.amplitude_to_db.
+		https://librosa.org/doc/latest/generated/librosa.amplitude_to_db.html
 	"""
 	parametersMelSpectrogram = ParametersMelSpectrogram(
 		dtype=keywordArguments.get('dtype', numpy.float32)
@@ -409,14 +413,17 @@ def analyzeBleedFullMelDB(spectrogramMagnitudeAlfa: SpectrogramMagnitude, spectr
 		, n_mels=keywordArguments.get('n_mels', 512)
 		, norm=keywordArguments.get('norm', "slaney")
 		, power=keywordArguments.get('power', 1.0)
+		, sr=keywordArguments.get('sr', 44100)
 		, win_length=keywordArguments.get('win_length', keywordArguments.get('n_fft', 4096))
 		, window=keywordArguments.get('window', "hann")
 	)
 
+	top_db: float | None = keywordArguments.get('top_db', 80.0)
+
 	spectrogramMagnitudeAlfa = librosa.feature.melspectrogram(S=spectrogramMagnitudeAlfa, **parametersMelSpectrogram)
 	spectrogramMagnitudeBeta = librosa.feature.melspectrogram(S=spectrogramMagnitudeBeta, **parametersMelSpectrogram)
-	spectrogramMagnitudeAlfa = 20 * numpy.log10(spectrogramMagnitudeAlfa, where=(spectrogramMagnitudeAlfa != 0), out=None)  # dB
-	spectrogramMagnitudeBeta = 20 * numpy.log10(spectrogramMagnitudeBeta, where=(spectrogramMagnitudeBeta != 0), out=None)  # dB
+	spectrogramMagnitudeAlfa = librosa.amplitude_to_db(spectrogramMagnitudeAlfa, ref=1.0, top_db=top_db)  # pyright: ignore[reportUnknownMemberType]
+	spectrogramMagnitudeBeta = librosa.amplitude_to_db(spectrogramMagnitudeBeta, ref=1.0, top_db=top_db)  # pyright: ignore[reportUnknownMemberType]
 
 	return _bleedFullArrays(spectrogramMagnitudeAlfa, spectrogramMagnitudeBeta)
 
