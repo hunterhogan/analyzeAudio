@@ -47,6 +47,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+  "Z0Z_tools>=2.0.0",
   "auraloss",
   "hunterHearsPy",
   "hunterMakesPy>=0.7.0",

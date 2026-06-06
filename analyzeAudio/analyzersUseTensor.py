@@ -123,7 +123,7 @@ def analyzeSRMRMean(tensorAudio: Tensor, sampleRate: int, pytorchOnCPU: bool | N
 	"""
 	return float(analyzeSRMR(tensorAudio, sampleRate, pytorchOnCPU=pytorchOnCPU, **keywordArguments).mean().item())
 
-@registrationAudioAspect('LogWMSE')
+# @registrationAudioAspect('LogWMSE')
 def analyzeLogWMSEMean(
 	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, tensorAudioMixture: Tensor, sampleRate: int, **keywordArguments: Any
 ) -> float:
