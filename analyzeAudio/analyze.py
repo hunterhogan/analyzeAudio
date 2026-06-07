@@ -18,14 +18,13 @@ References
 [1] `analyzeAudio.audioAspectsRegistry.audioAspects`
 
 """
-
 from __future__ import annotations
 
 from analyzeAudio.registry import audioAspects
 from concurrent.futures import as_completed, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
 from pathlib import Path, PurePath
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import librosa
 import numpy
 import soundfile
@@ -37,6 +36,7 @@ if TYPE_CHECKING:
 	from concurrent.futures import Future
 	from os import PathLike
 	from torch import Tensor
+	from typing import Any
 
 def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequence[str]) -> list[str | float]:
 	"""

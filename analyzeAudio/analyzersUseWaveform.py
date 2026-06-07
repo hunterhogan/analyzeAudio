@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from analyzeAudio.registry import registrationAudioAspect
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import librosa
 import numpy
 
 if TYPE_CHECKING:
 	from analyzeAudio import Audio, libturd
+	from typing import Any
 
 # TODO `librosa.zero_crossings`.
 

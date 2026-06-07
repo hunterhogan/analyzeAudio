@@ -4,10 +4,11 @@ from __future__ import annotations
 from analyzeAudio import truncateTensors
 from analyzeAudio.registry import registrationAudioContest
 from auraloss import freq
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from torch import nn, Tensor
+	from typing import Any
 
 def _analyzeLoss(aspect: nn.Module, tensorSpectrogramMagnitudeAlfa: Tensor, tensorSpectrogramMagnitudeBeta: Tensor) -> float:
 	"""I use this function to evaluate one spectrogram-loss module on two spectrogram tensors.

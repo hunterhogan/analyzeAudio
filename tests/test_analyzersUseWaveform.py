@@ -8,7 +8,7 @@ import pytest
 
 if TYPE_CHECKING:
 	from pathlib import Path
-	from tests.conftest import WaveformSampleRate
+	from tests import WaveformSampleRate
 
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float, expected: float) -> None:
 	assert actual == expected, f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'

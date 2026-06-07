@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from numpy import complexfloating, dtype, float64, floating, ndarray
-from typing import Any, Literal, NamedTuple, ParamSpec, TYPE_CHECKING, TypeAlias, TypedDict, TypeVar
+from typing import Any, NamedTuple, ParamSpec, Protocol, TYPE_CHECKING, TypedDict, TypeVar
 
 if TYPE_CHECKING:
 	from collections.abc import Callable
 	from numpy.typing import ArrayLike, DTypeLike
+	from torch import device, Tensor
+	from typing import Literal, TypeAlias
 
 parameterSpecifications = ParamSpec('parameterSpecifications')
 typeReturned = TypeVar('typeReturned')
@@ -45,3 +47,13 @@ SpectrogramPower: TypeAlias = ndarray[tuple[int, int, int], dtype[floating[Any]]
 
 arrayChannelData: TypeAlias = ndarray[tuple[int, int], dtype[float64]]
 arrayOverallData: TypeAlias = ndarray[tuple[int], dtype[float64]]
+
+class AuralossChromaSTFTLoss(Protocol):
+	fft_size: int
+	window: Tensor
+	device: device | None
+	scale: str
+	n_bins: int
+	fb: Tensor
+
+	def __call__(self, tensorInput: Tensor, tensorTarget: Tensor) -> Tensor: ...
