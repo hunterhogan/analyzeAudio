@@ -9,11 +9,11 @@ import pathlib
 import subprocess  # noqa: S404
 
 if TYPE_CHECKING:
-	from analyzeAudio import arrayChannelData, arrayOverallData
+	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from os import PathLike
 
 @cache
-def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, arrayChannelData | arrayOverallData]:
+def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, ArrayChannelData | ArrayOverallData]:
 	"""I use this shared extractor to collect scalar audio aspects from one analysis pass.
 
 	(AI generated docstring)
@@ -28,7 +28,7 @@ def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, arr
 
 	Returns
 	-------
-	dictionaryAspects : dict[str, arrayChannelData | arrayOverallData]
+	dictionaryAspects : dict[str, ArrayChannelData | ArrayOverallData]
 		Dictionary mapping aspect identifiers to array numeric values.
 	"""
 	# TODO Investigate, why `PureWindowsPath`?
@@ -66,7 +66,7 @@ def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, arr
 	stdoutFFprobe, _DISCARDstderr = systemProcessFFprobe.communicate()
 	FFprobeStructured = getitem(pythonizeFFprobe(stdoutFFprobe.decode('utf-8')), -1)
 
-	dictionaryAspects: dict[str, arrayChannelData | arrayOverallData] = {}
+	dictionaryAspects: dict[str, ArrayChannelData | ArrayOverallData] = {}
 	if 'aspectralstats' in FFprobeStructured:
 		"""No matter how many channels, each keyName is `numpy.ndarray[tuple[int, int], numpy.dtype[numpy.float64]]`
 		where `tuple[int, int]` is (channel, frame)

@@ -2,41 +2,40 @@
 from __future__ import annotations
 
 from analyzeAudio.registry import registrationAudioAspect
-from typing import TYPE_CHECKING
+from numpy import dtype, ndarray
+from typing import Any, TYPE_CHECKING
 import librosa
 import numpy
 
 if TYPE_CHECKING:
-	from analyzeAudio import libturd, SpectrogramMagnitude, SpectrogramPower
-	from typing import Any
+	from analyzeAudio import ArrayAspect, ArrayAspectSpectrogramFramewise, SpectrogramMagnitude, SpectrogramPower
+	from numpy import float32
 
 # TODO `analyzeRMSSpectrogram`, `librosa.feature.rms(S=spectrogramMagnitude)`.
 
-def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> libturd:
+def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> ndarray[tuple[int, int, int], dtype[float32]]:
 	"""Compute octave-equivalent pitch-class energy over time.
 
 	(AI generated docstring)
 
-	You can use this function to summarize tonal content as one chroma vector per
-	analysis frame. The function folds octave-equivalent spectral energy into a
-	12-class pitch representation so that notes separated by octaves contribute to
-	the same chroma bin [1][2].
+	You can use this function to summarize tonal content as one chroma vector per analysis frame. The
+	function folds octave-equivalent spectral energy into a 12-class pitch representation so that
+	notes separated by octaves contribute to the same chroma bin [1][2].
 
 	Parameters
 	----------
 	spectrogramPower : SpectrogramPower
-		Power-domain spectral representation whose energy is folded into pitch
-		classes.
+		Power-domain spectral representation whose energy is folded into pitch classes.
 	sampleRate : int
 		Sampling rate of the analyzed signal in hertz.
 	keywordArguments : Any
-		Additional chroma-analysis settings.
+		Additional keyword arguments forwarded to ``librosa.feature.chroma_stft``.
 
 	Returns
 	-------
-	chromagram : libturd
-		Time-varying chroma representation with one octave-folded pitch-class vector
-		per analysis frame.
+	chromagram : numpy.ndarray
+		Time-varying chroma representation with shape (12, n_frames) and dtype float32. Each column is
+		a pitch-class (chroma) vector for a single analysis frame.
 
 	Mathematics
 	-----------
@@ -53,13 +52,11 @@ def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **key
 	References
 	----------
 	[1] Fujishima, T. (1999). Realtime chord recognition of musical sound:
-		A system using Common Lisp Music. Proceedings of the International
-		Computer Music Conference, 464–467.
-		https://ccrma.stanford.edu/~jos/mus423h/Real_Time_Chord_Recognition_Musical.html
+		A system using Common Lisp Music. Proceedings of the International Computer Music Conference,
+		464–467. https://ccrma.stanford.edu/~jos/mus423h/Real_Time_Chord_Recognition_Musical.html
 	[2] Lee, K., & Slaney, M. (2006). Automatic chord recognition from audio
-		using a HMM with supervised learning. Proceedings of the International
-		Society for Music Information Retrieval, 133–137.
-		https://ccrma.stanford.edu/~kglee/pubs/klee-ismir06.pdf
+		using a HMM with supervised learning. Proceedings of the International Society for Music
+		Information Retrieval, 133–137. https://ccrma.stanford.edu/~kglee/pubs/klee-ismir06.pdf
 	"""
 	return librosa.feature.chroma_stft(S=spectrogramPower, sr=sampleRate, **keywordArguments)
 
@@ -75,27 +72,27 @@ def analyzeChromagramMean(spectrogramPower: SpectrogramPower, sampleRate: int, *
 	"""
 	return float(analyzeChromagram(spectrogramPower, sampleRate, **keywordArguments).mean().item())
 
-def analyzeSpectralContrast(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> libturd:
+def analyzeSpectralContrast(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspect:
 	"""Compute octave-band peak-to-valley contrast.
 
 	(AI generated docstring)
 
-	You can use this function to measure how strongly spectral peaks stand above
-	spectral valleys in each octave band. High values indicate narrow-band,
-	harmonic structure, while lower values indicate flatter or noisier spectral
-	content [1].
+	You can use this function to measure how strongly spectral peaks stand above spectral valleys in
+	each octave band. High values indicate narrow-band, harmonic structure, while lower values
+	indicate flatter or noisier spectral content [1].
 
 	Parameters
 	----------
 	spectrogramMagnitude : SpectrogramMagnitude
 		Magnitude-domain spectral representation to be analyzed in octave bands.
 	keywordArguments : Any
-		Additional spectral-contrast settings.
+		Additional keyword arguments forwarded to ``librosa.feature.spectral_contrast``.
 
 	Returns
 	-------
-	spectralContrast : libturd
-		Framewise contrast values for each octave band.
+	spectralContrast : numpy.ndarray
+		Framewise contrast values for each octave band with shape (n_bands + 1, n_frames). Each row
+		corresponds to one octave band.
 
 	Mathematics
 	-----------
@@ -120,8 +117,8 @@ def analyzeSpectralContrast(spectrogramMagnitude: SpectrogramMagnitude, **keywor
 	References
 	----------
 	[1] Jiang, D.-N., Lu, L., Zhang, H.-J., Tao, J.-H., & Cai, L.-H. (2002).
-		Music type classification by spectral contrast feature. Proceedings of
-		the IEEE International Conference on Multimedia and Expo, 113–116.
+		Music type classification by spectral contrast feature. Proceedings of the IEEE International
+		Conference on Multimedia and Expo, 113–116.
 		https://hcsi.cs.tsinghua.edu.cn/Paper/Paper02/200218.pdf
 	"""
 	return librosa.feature.spectral_contrast(S=spectrogramMagnitude, **keywordArguments)
@@ -138,27 +135,26 @@ def analyzeSpectralContrastMean(spectrogramMagnitude: SpectrogramMagnitude, **ke
 	"""
 	return float(analyzeSpectralContrast(spectrogramMagnitude, **keywordArguments).mean().item())
 
-def analyzeSpectralBandwidth(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> libturd:
+def analyzeSpectralBandwidth(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
 	"""Compute spectral spread around the framewise centroid.
 
 	(AI generated docstring)
 
-	You can use this function to measure how widely spectral energy is dispersed
-	around the center of mass of each analysis frame. The returned value is the
-	p-order bandwidth, which reduces to the usual standard-deviation form when
-	p = 2 [1].
+	You can use this function to measure how widely spectral energy is dispersed around the center of
+	mass of each analysis frame. The returned value is the p-order bandwidth, which reduces to the
+	usual standard-deviation form when p = 2 [1].
 
 	Parameters
 	----------
 	spectrogramMagnitude : SpectrogramMagnitude
 		Magnitude-domain spectral representation whose spread is measured.
 	keywordArguments : Any
-		Additional bandwidth-analysis settings.
+		Additional keyword arguments forwarded to ``librosa.feature.spectral_bandwidth``.
 
 	Returns
 	-------
-	spectralBandwidth : libturd
-		Framewise spectral bandwidth values.
+	spectralBandwidth : ArrayAspectSpectrogramFramewise
+		Framewise spectral bandwidth values with shape (1, n_frames).
 
 	Mathematics
 	-----------
@@ -179,11 +175,11 @@ def analyzeSpectralBandwidth(spectrogramMagnitude: SpectrogramMagnitude, **keywo
 	References
 	----------
 	[1] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S.
-		(2011). The Timbre Toolbox: Extracting audio descriptors from musical
-		signals. Journal of the Acoustical Society of America, 130(5), 2902–2916.
+		(2011). The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
 		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
 	"""
-	centroid: libturd = analyzeSpectralCentroid(spectrogramMagnitude, **keywordArguments)
+	centroid: ArrayAspectSpectrogramFramewise = analyzeSpectralCentroid(spectrogramMagnitude, **keywordArguments)
 	return librosa.feature.spectral_bandwidth(S=spectrogramMagnitude, centroid=centroid, **keywordArguments)
 
 @registrationAudioAspect('Spectral Bandwidth mean')
@@ -198,26 +194,25 @@ def analyzeSpectralBandwidthMean(spectrogramMagnitude: SpectrogramMagnitude, **k
 	"""
 	return float(analyzeSpectralBandwidth(spectrogramMagnitude, **keywordArguments).mean().item())
 
-def analyzeSpectralCentroid(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> libturd:
+def analyzeSpectralCentroid(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
 	"""Compute the frequency center of mass of each analysis frame.
 
 	(AI generated docstring)
 
-	You can use this function to estimate the balance point of spectral energy in
-	each frame. Higher centroid values are commonly associated with brighter
-	timbres [1][2].
+	You can use this function to estimate the balance point of spectral energy in each frame. Higher
+	centroid values are commonly associated with brighter timbres [1][2].
 
 	Parameters
 	----------
 	spectrogramMagnitude : SpectrogramMagnitude
 		Magnitude-domain spectral representation whose center of mass is measured.
 	keywordArguments : Any
-		Additional centroid-analysis settings.
+		Additional keyword arguments forwarded to ``librosa.feature.spectral_centroid``.
 
 	Returns
 	-------
-	spectralCentroid : libturd
-		Framewise spectral centroid values.
+	spectralCentroid : ArrayAspectSpectrogramFramewise
+		Framewise spectral centroid values with shape (1, n_frames).
 
 	Mathematics
 	-----------
@@ -237,11 +232,11 @@ def analyzeSpectralCentroid(spectrogramMagnitude: SpectrogramMagnitude, **keywor
 	References
 	----------
 	[1] Grey, J. M., & Gordon, J. W. (1978). Perceptual effects of spectral
-		modifications on musical timbres. Journal of the Acoustical Society of
-		America, 63(5), 1493–1500.
+		modifications on musical timbres. Journal of the Acoustical Society of America, 63(5),
+		1493–1500.
 	[2] Peeters, G., Giordano, B. L., Susini, P., Misdariis, N., & McAdams, S.
-		(2011). The Timbre Toolbox: Extracting audio descriptors from musical
-		signals. Journal of the Acoustical Society of America, 130(5), 2902–2916.
+		(2011). The Timbre Toolbox: Extracting audio descriptors from musical signals. Journal of the
+		Acoustical Society of America, 130(5), 2902–2916.
 		https://www.mcgill.ca/mpcl/files/mpcl/peeters_2011_jasa.pdf
 	"""
 	return librosa.feature.spectral_centroid(S=spectrogramMagnitude, **keywordArguments)
@@ -258,25 +253,83 @@ def analyzeSpectralCentroidMean(spectrogramMagnitude: SpectrogramMagnitude, **ke
 	"""
 	return float(analyzeSpectralCentroid(spectrogramMagnitude, **keywordArguments).mean().item())
 
-def analyzeSpectralFlatness(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> libturd:
-	"""Compute spectral flatness in decibels.
+def analyzeSpectralFlatness(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
+	"""Compute the spectral flatness ratio for each analysis frame.
 
 	(AI generated docstring)
 
-	You can use this function to quantify how noise-like or tone-like a spectrum
-	is. The underlying flatness ratio compares geometric and arithmetic means of
-	the spectrum [1], and this function expresses that ratio on a decibel scale.
+	You can use this function to quantify how noise-like or tone-like a spectrum is. The flatness
+	ratio compares the geometric mean and the arithmetic mean of the magnitude spectrum and returns
+	values in the interval [0, 1], where values near 1 are noise-like and values near 0 are tone-like
+	[1]. Use ``analyzeSpectralFlatness_dB`` to convert the ratio to decibels.
 
 	Parameters
 	----------
 	spectrogramMagnitude : SpectrogramMagnitude
 		Magnitude-domain spectral representation whose flatness is measured.
 	keywordArguments : Any
-		Additional flatness-analysis settings.
+		Additional keyword arguments forwarded to ``librosa.feature.spectral_flatness``.
 
 	Returns
 	-------
-	spectralFlatnessDecibels : libturd
+	spectralFlatness : ArrayAspectSpectrogramFramewise
+		Framewise spectral flatness values in the range [0, 1].
+
+	Mathematics
+	-----------
+	spectral-flatness ratio : equation
+	```
+		Let X(k) ≜ spectral magnitude and K ≜ number of frequency bins
+
+		SF(X) = (∏_(k = 0)^(K - 1) X(k))^(1/K) /
+				((1/K) ∑_(k = 0)^(K - 1) X(k))
+	```
+
+	decibel mapping : equation
+	```
+		SF_dB(X) = 20 log10(SF(X))
+	```
+
+	References
+	----------
+	[1] Gray, A. H., & Markel, J. D. (1974). A spectral-flatness measure for
+		studying the autocorrelation method of linear prediction of speech analysis. IEEE Transactions
+		on Acoustics, Speech, and Signal Processing, 22(3), 207–217.
+	"""
+	return librosa.feature.spectral_flatness(S=spectrogramMagnitude, **keywordArguments)
+
+@registrationAudioAspect('Spectral Flatness mean')
+def analyzeSpectralFlatnessMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
+	"""Aspect 'Spectral Flatness mean': mean of the framewise spectral flatness.
+
+	Returns
+	-------
+	spectralFlatnessMean : float
+		Mean value of the time-varying spectral flatness ratio.
+
+	"""
+	return float(analyzeSpectralFlatness(spectrogramMagnitude, **keywordArguments).mean().item())
+
+def analyzeSpectralFlatness_dB(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
+	"""Compute spectral flatness in decibels.
+
+	(AI generated docstring)
+
+	You can use this function to quantify how noise-like or tone-like a spectrum is. This function
+	converts the framewise flatness ratio into decibels using 20·log10. Values are in decibels and
+	follow the conversion from the ratio returned by ``analyzeSpectralFlatness``.
+
+	Parameters
+	----------
+	spectrogramMagnitude : SpectrogramMagnitude
+		Magnitude-domain spectral representation whose flatness is measured.
+	keywordArguments : Any
+		Additional keyword arguments forwarded to ``analyzeSpectralFlatness`` and the underlying
+		``librosa`` call.
+
+	Returns
+	-------
+	spectralFlatnessDecibels : ArrayAspectSpectrogramFramewise
 		Framewise spectral-flatness values expressed in decibels.
 
 	Mathematics
@@ -297,16 +350,15 @@ def analyzeSpectralFlatness(spectrogramMagnitude: SpectrogramMagnitude, **keywor
 	References
 	----------
 	[1] Gray, A. H., & Markel, J. D. (1974). A spectral-flatness measure for
-		studying the autocorrelation method of linear prediction of speech
-		analysis. IEEE Transactions on Acoustics, Speech, and Signal Processing,
-		22(3), 207–217.
+		studying the autocorrelation method of linear prediction of speech analysis. IEEE Transactions
+		on Acoustics, Speech, and Signal Processing, 22(3), 207–217.
 	"""
-	spectralFlatness: libturd = librosa.feature.spectral_flatness(S=spectrogramMagnitude, **keywordArguments)
-	return 20 * numpy.log10(spectralFlatness, where=(spectralFlatness != 0), out=None)  # dB
+	spectralFlatness: ArrayAspectSpectrogramFramewise = analyzeSpectralFlatness(spectrogramMagnitude, **keywordArguments)
+	return 20 * numpy.log10(spectralFlatness, where=(spectralFlatness != 0), out=None)
 
-@registrationAudioAspect('Spectral Flatness mean')
-def analyzeSpectralFlatnessMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
-	"""Aspect 'Spectral Flatness mean': mean of the framewise spectral flatness in decibels.
+@registrationAudioAspect('Spectral Flatness dB mean')
+def analyzeSpectralFlatness_dBMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
+	"""Aspect 'Spectral Flatness dB mean': mean of the framewise spectral flatness in decibels.
 
 	Returns
 	-------
@@ -314,4 +366,4 @@ def analyzeSpectralFlatnessMean(spectrogramMagnitude: SpectrogramMagnitude, **ke
 		Mean value of the time-varying spectral flatness in decibels.
 
 	"""
-	return float(analyzeSpectralFlatness(spectrogramMagnitude, **keywordArguments).mean().item())
+	return float(analyzeSpectralFlatness_dB(spectrogramMagnitude, **keywordArguments).mean().item())

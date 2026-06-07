@@ -78,7 +78,7 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequenc
 	# two channels, which it probably should not do. So check to see if I have changed it.
 	with soundfile.SoundFile(pathFilename) as readSoundFile:
 		sampleRate: int = readSoundFile.samplerate  # pyright: ignore[reportUnusedVariable]  # noqa: F841
-		waveform: Audio = readSoundFile.read(dtype='float32').astype(numpy.float32)
+		waveform: Audio = readSoundFile.read(dtype='float32', always_2d=True).astype(numpy.float32)
 		waveform = waveform.T
 
 	tryAgain: bool = True

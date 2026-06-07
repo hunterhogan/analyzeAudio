@@ -9,14 +9,36 @@ from typing import Any, TYPE_CHECKING
 import numpy
 
 if TYPE_CHECKING:
-	from analyzeAudio import arrayChannelData, arrayOverallData
+	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from os import PathLike
 
-arrayChannelDataEmpty: arrayChannelData = numpy.array([], dtype=numpy.float64).reshape(0, 0)
-arrayOverallDataEmpty: arrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)
+arrayChannelDataEmpty: ArrayChannelData = numpy.array([], dtype=numpy.float64).reshape(0, 0)
+arrayOverallDataEmpty: ArrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)
 
-def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> arrayOverallData:
-	"""Aspect 'Abs_Peak_count': number of samples at the absolute peak amplitude.
+def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
+	"""Compute the number of samples at the absolute peak amplitude.
+
+	You can use this function to obtain the per-file overall counts of samples that equal the absolute
+	peak amplitude as reported by ffprobe for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	absPeakCount : ArrayOverallData
+		NumPy array containing overall counts per file, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Overall.Abs_Peak_count', arrayOverallDataEmpty)
+
+@registrationAudioAspect('Abs_Peak_count total')
+def analyzeAbs_Peak_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Return the total number of samples at the absolute peak amplitude.
+
+	You can use this function to obtain the scalar overall count derived from `analyzeAbs_Peak_count`
+	for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -26,12 +48,8 @@ def analyzeAbs_Peak_count(pathFilename: str | PathLike[Any]) -> arrayOverallData
 	Returns
 	-------
 	absPeakCount : float | None
-		Number of samples at the absolute peak amplitude.
+		Scalar total count, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Overall.Abs_Peak_count', arrayOverallDataEmpty)
-
-@registrationAudioAspect('Abs_Peak_count total')
-def analyzeAbs_Peak_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeAbs_Peak_count(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = arrayAspect[-1]
@@ -39,8 +57,30 @@ def analyzeAbs_Peak_countTotal(pathFilename: str | PathLike[Any]) -> float | Non
 		aspect = None
 	return aspect
 
-def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Bit_depth': number of bits per audio sample.
+def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the bit depth per channel for an audio file.
+
+	You can use this function to obtain the per-channel bit depth values reported by ffprobe
+	for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	bitDepth : ArrayChannelData
+		NumPy array of per-channel bit depth values, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Bit_depth', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Bit_depth mean')
+def analyzeBit_depthMean(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean bit depth across channels.
+
+	You can use this function to obtain the mean bit depth computed from per-channel values
+	returned by `analyzeBit_depth` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -50,12 +90,8 @@ def analyzeBit_depth(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 	Returns
 	-------
 	bitDepth : float | None
-		Number of bits per sample.
+		Mean bit depth across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Bit_depth', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Bit_depth mean')
-def analyzeBit_depthMean(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeBit_depth(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -63,8 +99,11 @@ def analyzeBit_depthMean(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Crest_factor': ratio of peak amplitude to RMS level [1].
+def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the crest factor (ratio of peak amplitude to RMS level).
+
+	You can use this function to obtain per-channel crest factor values for the audio file at
+	`pathFilename`.
 
 	Parameters
 	----------
@@ -73,8 +112,8 @@ def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 	Returns
 	-------
-	crestFactor : float | None
-		Ratio of peak amplitude to RMS level.
+	crestFactor : ArrayChannelData
+		NumPy array of per-channel crest factor values, or an empty array when unavailable.
 
 	Mathematics
 	-----------
@@ -99,15 +138,10 @@ def analyzeCrest_factor(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 @registrationAudioAspect('Crest_factor mean')
 def analyzeCrest_factorMean(pathFilename: str | PathLike[Any]) -> float | None:
-	arrayAspect = analyzeCrest_factor(pathFilename)
-	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
-	else:
-		aspect = None
-	return aspect
+	"""Compute the mean crest factor across channels.
 
-def analyzeDC_offset(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'DC_offset': mean sample value as a proportion of full scale.
+	You can use this function to obtain the mean crest factor computed from per-channel values
+	returned by `analyzeCrest_factor` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -116,8 +150,31 @@ def analyzeDC_offset(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 	Returns
 	-------
-	DCoffset : float | None
-		Mean sample value as a proportion of the full-scale range.
+	crestFactor : float | None
+		Mean crest factor across channels, or None when unavailable.
+	"""
+	arrayAspect = analyzeCrest_factor(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+	else:
+		aspect = None
+	return aspect
+
+def analyzeDC_offset(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the DC offset (mean sample value) as a proportion of full scale.
+
+	You can use this function to obtain per-channel DC offset values for the audio file at
+	`pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	DCoffset : ArrayChannelData
+		NumPy array of per-channel DC offset values, or an empty array when unavailable.
 
 	Mathematics
 	-----------
@@ -133,15 +190,10 @@ def analyzeDC_offset(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 @registrationAudioAspect('DC_offset mean')
 def analyzeDC_offsetMean(pathFilename: str | PathLike[Any]) -> float | None:
-	arrayAspect = analyzeDC_offset(pathFilename)
-	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
-	else:
-		aspect = None
-	return aspect
+	"""Compute the mean DC offset across channels.
 
-def analyzeDynamic_range(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Dynamic_range': difference between peak level and noise floor.
+	You can use this function to obtain the mean DC offset computed from per-channel values
+	returned by `analyzeDC_offset` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -150,8 +202,32 @@ def analyzeDynamic_range(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 	Returns
 	-------
-	dynamicRange : float | None
-		Difference between peak level and noise floor in decibels.
+	DCoffset : float | None
+		Mean DC offset across channels, or None when unavailable.
+	"""
+	arrayAspect = analyzeDC_offset(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+	else:
+		aspect = None
+	return aspect
+
+def analyzeDynamic_range(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the dynamic range: difference between peak level and noise floor.
+
+	You can use this function to obtain per-channel dynamic range values (dB) for the audio file
+	at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	dynamicRange : ArrayChannelData
+		NumPy array of per-channel dynamic range values in decibels, or an empty array when
+		unavailable.
 
 	Mathematics
 	-----------
@@ -167,15 +243,10 @@ def analyzeDynamic_range(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 @registrationAudioAspect('Dynamic_range overall')
 def analyzeDynamic_rangeOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	arrayAspect = analyzeDynamic_range(pathFilename)
-	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
-	else:
-		aspect = None
-	return aspect
+	"""Compute the overall dynamic range (mean across channels).
 
-def analyzeEntropy(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Entropy': Shannon entropy of the amplitude distribution [1].
+	You can use this function to obtain the mean dynamic range computed from per-channel values
+	returned by `analyzeDynamic_range` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -184,8 +255,31 @@ def analyzeEntropy(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 	Returns
 	-------
-	signalEntropy : float | None
-		Shannon entropy of the sample amplitude distribution.
+	dynamicRange : float | None
+		Mean dynamic range in decibels, or None when unavailable.
+	"""
+	arrayAspect = analyzeDynamic_range(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+	else:
+		aspect = None
+	return aspect
+
+def analyzeEntropy(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the Shannon entropy of the amplitude distribution.
+
+	You can use this function to obtain per-channel entropy values for the audio file at
+	`pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	signalEntropy : ArrayChannelData
+		NumPy array of per-channel Shannon entropy values, or an empty array when unavailable.
 
 	Mathematics
 	-----------
@@ -207,6 +301,21 @@ def analyzeEntropy(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 @registrationAudioAspect('Entropy mean')
 def analyzeEntropyMean(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean Shannon entropy across channels.
+
+	You can use this function to obtain the mean entropy computed from per-channel values
+	returned by `analyzeEntropy` for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	signalEntropy : float | None
+		Mean Shannon entropy across channels, or None when unavailable.
+	"""
 	arrayAspect = analyzeEntropy(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -214,8 +323,30 @@ def analyzeEntropyMean(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Flat_factor': mean proportion of flat (identical consecutive) samples.
+def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the mean proportion of flat (identical consecutive) samples.
+
+	You can use this function to obtain per-channel per-frame proportions of identical consecutive
+	samples for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	flatFactor : ArrayChannelData
+		NumPy array of per-channel flat-sample proportions, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Flat_factor', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Flat_factor mean')
+def analyzeFlat_factorMean(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean flat-sample proportion across channels.
+
+	You can use this function to obtain the mean flat-sample proportion computed from per-channel
+	values returned by `analyzeFlat_factor` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -225,12 +356,8 @@ def analyzeFlat_factor(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 	Returns
 	-------
 	flatFactor : float | None
-		Mean proportion of flat (identical consecutive) samples across analysis frames.
+		Mean proportion across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Flat_factor', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Flat_factor mean')
-def analyzeFlat_factorMean(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeFlat_factor(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -238,8 +365,31 @@ def analyzeFlat_factorMean(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Max_difference': largest absolute difference between consecutive samples.
+def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the largest absolute difference between consecutive samples.
+
+	You can use this function to obtain per-channel maximum absolute sample-to-sample
+	differences for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	maxDifference : ArrayChannelData
+		NumPy array of per-channel maximum absolute differences, or an empty array when
+		unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Max_difference', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Max_difference overall')
+def analyzeMax_differenceOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall maximum absolute difference (mean across channels).
+
+	You can use this function to obtain the mean of per-channel maximum absolute differences
+	returned by `analyzeMax_difference` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -249,12 +399,8 @@ def analyzeMax_difference(pathFilename: str | PathLike[Any]) -> arrayChannelData
 	Returns
 	-------
 	maxDifference : float | None
-		Maximum absolute difference between consecutive samples.
+		Mean maximum absolute difference across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Max_difference', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Max_difference overall')
-def analyzeMax_differenceOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeMax_difference(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -262,8 +408,30 @@ def analyzeMax_differenceOverall(pathFilename: str | PathLike[Any]) -> float | N
 		aspect = None
 	return aspect
 
-def analyzeMax_level(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Max_level': maximum sample value.
+def analyzeMax_level(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the maximum sample value per channel.
+
+	You can use this function to obtain per-channel maximum sample values for the audio file at
+	`pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	maxLevel : ArrayChannelData
+		NumPy array of per-channel maximum sample values, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Max_level', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Max_level overall')
+def analyzeMax_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall maximum sample value (mean across channels).
+
+	You can use this function to obtain the mean maximum sample value computed from per-channel
+	values returned by `analyzeMax_level` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -273,12 +441,8 @@ def analyzeMax_level(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 	Returns
 	-------
 	maxLevel : float | None
-		Maximum sample value.
+		Mean maximum sample value across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Max_level', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Max_level overall')
-def analyzeMax_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeMax_level(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -286,8 +450,30 @@ def analyzeMax_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Mean_difference': mean absolute difference between consecutive samples.
+def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the mean absolute difference between consecutive samples.
+
+	You can use this function to obtain per-channel mean absolute differences between consecutive
+	samples for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	meanDifference : ArrayChannelData
+		NumPy array of per-channel mean absolute differences, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Mean_difference', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Mean_difference mean')
+def analyzeMean_differenceMean(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the mean of mean absolute differences across channels.
+
+	You can use this function to obtain the scalar mean computed from per-channel values
+	returned by `analyzeMean_difference` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -297,12 +483,8 @@ def analyzeMean_difference(pathFilename: str | PathLike[Any]) -> arrayChannelDat
 	Returns
 	-------
 	meanDifference : float | None
-		Mean absolute difference between consecutive samples.
+		Mean value across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Mean_difference', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Mean_difference mean')
-def analyzeMean_differenceMean(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeMean_difference(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -310,8 +492,31 @@ def analyzeMean_differenceMean(pathFilename: str | PathLike[Any]) -> float | Non
 		aspect = None
 	return aspect
 
-def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Min_difference': smallest absolute difference between consecutive samples.
+def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the smallest absolute difference between consecutive samples.
+
+	You can use this function to obtain per-channel minimum absolute differences between consecutive
+	samples for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	minDifference : ArrayChannelData
+		NumPy array of per-channel minimum absolute differences, or an empty array when
+		unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Min_difference', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Min_difference overall')
+def analyzeMin_differenceOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall minimum absolute difference (mean across channels).
+
+	You can use this function to obtain the mean of per-channel minimum differences returned by
+	`analyzeMin_difference` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -321,12 +526,8 @@ def analyzeMin_difference(pathFilename: str | PathLike[Any]) -> arrayChannelData
 	Returns
 	-------
 	minDifference : float | None
-		Minimum absolute difference between consecutive samples.
+		Mean minimum absolute difference across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Min_difference', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Min_difference overall')
-def analyzeMin_differenceOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeMin_difference(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -334,8 +535,30 @@ def analyzeMin_differenceOverall(pathFilename: str | PathLike[Any]) -> float | N
 		aspect = None
 	return aspect
 
-def analyzeMin_level(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Min_level': minimum sample value.
+def analyzeMin_level(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the minimum sample value per channel.
+
+	You can use this function to obtain per-channel minimum sample values for the audio file at
+	`pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	minLevel : ArrayChannelData
+		NumPy array of per-channel minimum sample values, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Min_level', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Min_level overall')
+def analyzeMin_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall minimum sample value (mean across channels).
+
+	You can use this function to obtain the mean minimum sample value computed from per-channel
+	values returned by `analyzeMin_level` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -345,12 +568,8 @@ def analyzeMin_level(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 	Returns
 	-------
 	minLevel : float | None
-		Minimum sample value.
+		Mean minimum sample value across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Min_level', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Min_level overall')
-def analyzeMin_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeMin_level(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -358,8 +577,31 @@ def analyzeMin_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Noise_floor': estimated background noise floor level in dBFS.
+def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the estimated background noise floor level in dBFS per channel.
+
+	You can use this function to obtain per-channel noise-floor estimates (dBFS) for the audio file
+	at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	noiseFloor : ArrayChannelData
+		NumPy array of per-channel noise-floor levels in dBFS, or an empty array when
+		unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Noise_floor', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Noise_floor overall')
+def analyzeNoise_floorOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall noise floor level (mean across channels).
+
+	You can use this function to obtain the mean noise-floor level computed from per-channel
+	values returned by `analyzeNoise_floor` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -369,12 +611,8 @@ def analyzeNoise_floor(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 	Returns
 	-------
 	noiseFloor : float | None
-		Estimated noise floor level in decibels relative to full scale.
+		Mean noise-floor level in dBFS across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Noise_floor', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Noise_floor overall')
-def analyzeNoise_floorOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeNoise_floor(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -382,8 +620,30 @@ def analyzeNoise_floorOverall(pathFilename: str | PathLike[Any]) -> float | None
 		aspect = None
 	return aspect
 
-def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Noise_floor_count': number of samples at or below the noise floor.
+def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the number of samples at or below the estimated noise floor per channel.
+
+	You can use this function to obtain per-channel counts of samples deemed to be at or below
+	the estimated noise floor for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	noiseFloorCount : ArrayChannelData
+		NumPy array of per-channel counts, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Noise_floor_count', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Noise_floor_count total')
+def analyzeNoise_floor_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Return the total count of samples at or below the noise floor.
+
+	You can use this function to obtain the scalar total count derived from
+	`analyzeNoise_floor_count` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -393,12 +653,8 @@ def analyzeNoise_floor_count(pathFilename: str | PathLike[Any]) -> arrayChannelD
 	Returns
 	-------
 	noiseFloorCount : float | None
-		Number of samples at or below the noise floor level.
+		Scalar total count, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Noise_floor_count', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Noise_floor_count total')
-def analyzeNoise_floor_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeNoise_floor_count(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -406,8 +662,30 @@ def analyzeNoise_floor_countTotal(pathFilename: str | PathLike[Any]) -> float | 
 		aspect = None
 	return aspect
 
-def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> arrayOverallData:
-	"""Aspect 'Number_of_samples': total number of audio samples.
+def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
+	"""Compute the total number of audio samples.
+
+	You can use this function to obtain per-file total sample counts reported by ffprobe for the
+	audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	numberOfSamples : ArrayOverallData
+		NumPy array containing total sample counts per file, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Overall.Number_of_samples', arrayOverallDataEmpty)
+
+@registrationAudioAspect('Number_of_samples total')
+def analyzeNumber_of_samplesTotal(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Return the total number of audio samples as a scalar.
+
+	You can use this function to obtain the scalar total number of samples derived from
+	`analyzeNumber_of_samples` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -417,12 +695,8 @@ def analyzeNumber_of_samples(pathFilename: str | PathLike[Any]) -> arrayOverallD
 	Returns
 	-------
 	numberOfSamples : float | None
-		Total number of audio samples.
+		Scalar total number of samples, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Overall.Number_of_samples', arrayOverallDataEmpty)
-
-@registrationAudioAspect('Number_of_samples total')
-def analyzeNumber_of_samplesTotal(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeNumber_of_samples(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect = arrayAspect[-1]
@@ -430,8 +704,30 @@ def analyzeNumber_of_samplesTotal(pathFilename: str | PathLike[Any]) -> float | 
 		aspect = None
 	return aspect
 
-def analyzePeak_count(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Peak_count': number of samples at or above the peak level.
+def analyzePeak_count(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the number of samples at or above the peak level per channel.
+
+	You can use this function to obtain per-channel counts of samples that meet or exceed the
+	peak level for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	peakCount : ArrayChannelData
+		NumPy array of per-channel peak counts, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('Peak_count', arrayChannelDataEmpty)
+
+@registrationAudioAspect('Peak_count total')
+def analyzePeak_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Return the total number of samples at or above the peak level.
+
+	You can use this function to obtain the scalar total count derived from
+	`analyzePeak_count` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -441,12 +737,8 @@ def analyzePeak_count(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 	Returns
 	-------
 	peakCount : float | None
-		Number of samples at or above the peak level.
+		Scalar total count, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('Peak_count', arrayChannelDataEmpty)
-
-@registrationAudioAspect('Peak_count total')
-def analyzePeak_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzePeak_count(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -454,8 +746,11 @@ def analyzePeak_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzePeak_level(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Peak_level': maximum absolute sample amplitude in dBFS [1].
+def analyzePeak_level(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the peak level (maximum absolute sample amplitude) in dBFS.
+
+	You can use this function to obtain per-channel peak level values (dBFS) for the audio file
+	at `pathFilename`.
 
 	Parameters
 	----------
@@ -464,8 +759,8 @@ def analyzePeak_level(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 	Returns
 	-------
-	peakDB : float | None
-		Peak amplitude in decibels relative to full scale.
+	peakDB : ArrayChannelData
+		NumPy array of per-channel peak levels in dBFS, or an empty array when unavailable.
 
 	Mathematics
 	-----------
@@ -487,6 +782,21 @@ def analyzePeak_level(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 @registrationAudioAspect('Peak_level overall')
 def analyzePeak_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall peak level (mean across channels).
+
+	You can use this function to obtain the mean peak level computed from per-channel values
+	returned by `analyzePeak_level` for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	peakDB : float | None
+		Mean peak level in dBFS, or None when unavailable.
+	"""
 	arrayAspect = analyzePeak_level(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -494,8 +804,30 @@ def analyzePeak_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'RMS_difference': RMS of differences between consecutive samples.
+def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the RMS of differences between consecutive samples per channel.
+
+	You can use this function to obtain per-channel RMS values of sample-to-sample differences
+	for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSdifference : ArrayChannelData
+		NumPy array of per-channel RMS differences, or an empty array when unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('RMS_difference', arrayChannelDataEmpty)
+
+@registrationAudioAspect('RMS_difference overall')
+def analyzeRMS_differenceOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall RMS difference (mean across channels).
+
+	You can use this function to obtain the mean RMS difference computed from per-channel values
+	returned by `analyzeRMS_difference` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -505,12 +837,8 @@ def analyzeRMS_difference(pathFilename: str | PathLike[Any]) -> arrayChannelData
 	Returns
 	-------
 	RMSdifference : float | None
-		RMS of differences between consecutive samples.
+		Mean RMS difference across channels, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('RMS_difference', arrayChannelDataEmpty)
-
-@registrationAudioAspect('RMS_difference overall')
-def analyzeRMS_differenceOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeRMS_difference(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -518,8 +846,11 @@ def analyzeRMS_differenceOverall(pathFilename: str | PathLike[Any]) -> float | N
 		aspect = None
 	return aspect
 
-def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> arrayOverallData:
-	"""Aspect 'RMS_level': overall RMS level in dBFS [1].
+def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
+	"""Compute the overall RMS level in dBFS for the audio file.
+
+	You can use this function to obtain per-file overall RMS level values reported by ffprobe for
+	the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -528,8 +859,9 @@ def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 	Returns
 	-------
-	RMSlevel : float | None
-		Overall RMS level in decibels relative to full scale.
+	RMSlevel : ArrayOverallData
+		NumPy array containing overall RMS level values per file, or an empty array when
+		unavailable.
 
 	Mathematics
 	-----------
@@ -552,15 +884,10 @@ def analyzeRMS_level(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 @registrationAudioAspect('RMS_level overall')
 def analyzeRMS_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
-	arrayAspect = analyzeRMS_level(pathFilename)
-	if 0 < len(arrayAspect):
-		aspect = arrayAspect[-1]
-	else:
-		aspect = None
-	return aspect
+	"""Return the scalar overall RMS level for the audio file.
 
-def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'RMS_peak': highest short-term RMS level in dBFS.
+	You can use this function to obtain the final scalar RMS level derived from
+	`analyzeRMS_level` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -569,8 +896,32 @@ def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 	Returns
 	-------
-	RMSpeak : float | None
-		Highest short-term RMS level in decibels relative to full scale.
+	RMSlevel : float | None
+		Scalar RMS level in dBFS, or None when unavailable.
+	"""
+	arrayAspect = analyzeRMS_level(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect = arrayAspect[-1]
+	else:
+		aspect = None
+	return aspect
+
+def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the highest short-term RMS level per channel in dBFS.
+
+	You can use this function to obtain per-channel short-term RMS peak values for the audio
+	file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSpeak : ArrayChannelData
+		NumPy array of per-channel short-term RMS peak values in dBFS, or an empty array when
+		unavailable.
 
 	Mathematics
 	-----------
@@ -588,6 +939,21 @@ def analyzeRMS_peak(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 
 @registrationAudioAspect('RMS_peak overall')
 def analyzeRMS_peakOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall short-term RMS peak (mean across channels).
+
+	You can use this function to obtain the mean short-term RMS peak computed from per-channel
+	values returned by `analyzeRMS_peak` for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMSpeak : float | None
+		Mean short-term RMS peak in dBFS, or None when unavailable.
+	"""
 	arrayAspect = analyzeRMS_peak(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -595,8 +961,31 @@ def analyzeRMS_peakOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'RMS_trough': lowest short-term RMS level in dBFS.
+def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the lowest short-term RMS level per channel in dBFS.
+
+	You can use this function to obtain per-channel short-term RMS trough values for the audio
+	file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	RMStrough : ArrayChannelData
+		NumPy array of per-channel short-term RMS trough values in dBFS, or an empty array when
+		unavailable.
+	"""
+	return ffprobeAllInclusiveCache(pathFilename).get('RMS_trough', arrayChannelDataEmpty)
+
+@registrationAudioAspect('RMS_trough overall')
+def analyzeRMS_troughOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall short-term RMS trough (mean across channels).
+
+	You can use this function to obtain the mean short-term RMS trough computed from per-channel
+	values returned by `analyzeRMS_trough` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -606,12 +995,8 @@ def analyzeRMS_trough(pathFilename: str | PathLike[Any]) -> arrayChannelData:
 	Returns
 	-------
 	RMStrough : float | None
-		Lowest short-term RMS level in decibels relative to full scale.
+		Mean short-term RMS trough in dBFS, or None when unavailable.
 	"""
-	return ffprobeAllInclusiveCache(pathFilename).get('RMS_trough', arrayChannelDataEmpty)
-
-@registrationAudioAspect('RMS_trough overall')
-def analyzeRMS_troughOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	arrayAspect = analyzeRMS_trough(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
@@ -619,8 +1004,11 @@ def analyzeRMS_troughOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Zero_crossings': mean number of sign changes per frame [1].
+def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the mean number of sign changes (zero crossings) per analysis frame.
+
+	You can use this function to obtain per-channel zero-crossing counts (mean per frame) for the
+	audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -629,8 +1017,9 @@ def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> arrayChannelData
 
 	Returns
 	-------
-	zeroCrossings : float | None
-		Mean number of sign changes per analyzed frame.
+	zeroCrossings : ArrayChannelData
+		NumPy array of per-channel mean zero-crossing counts per frame, or an empty array when
+		unavailable.
 
 	Mathematics
 	-----------
@@ -660,15 +1049,10 @@ def analyzeZero_crossings(pathFilename: str | PathLike[Any]) -> arrayChannelData
 
 @registrationAudioAspect('Zero_crossings total')
 def analyzeZero_crossingsTotal(pathFilename: str | PathLike[Any]) -> float | None:
-	arrayAspect = analyzeZero_crossings(pathFilename)
-	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
-	else:
-		aspect = None
-	return aspect
+	"""Return the mean zero-crossing count across channels as a scalar.
 
-def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> arrayChannelData:
-	"""Aspect 'Zero_crossings_rate': mean normalized zero-crossing rate per frame [1].
+	You can use this function to obtain the scalar mean zero-crossing count derived from
+	`analyzeZero_crossings` for the audio file at `pathFilename`.
 
 	Parameters
 	----------
@@ -677,8 +1061,32 @@ def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> arrayChanne
 
 	Returns
 	-------
-	zeroCrossingsRate : float | None
-		Mean normalized zero-crossing count per analyzed frame.
+	zeroCrossings : float | None
+		Mean zero-crossing count, or None when unavailable.
+	"""
+	arrayAspect = analyzeZero_crossings(pathFilename)
+	if 0 < len(arrayAspect):
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+	else:
+		aspect = None
+	return aspect
+
+def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	"""Compute the mean normalized zero-crossing rate per analysis frame.
+
+	You can use this function to obtain per-channel zero-crossing rate values (normalized by
+	frame length) for the audio file at `pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	zeroCrossingsRate : ArrayChannelData
+		NumPy array of per-channel normalized zero-crossing rates per frame, or an empty array
+		when unavailable.
 
 	Mathematics
 	-----------
@@ -708,6 +1116,22 @@ def analyzeZero_crossings_rate(pathFilename: str | PathLike[Any]) -> arrayChanne
 
 @registrationAudioAspect('Zero_crossings_rate overall')
 def analyzeZero_crossings_rateOverall(pathFilename: str | PathLike[Any]) -> float | None:
+	"""Compute the overall normalized zero-crossing rate (mean across channels).
+
+	You can use this function to obtain the mean normalized zero-crossing rate computed from
+	per-channel values returned by `analyzeZero_crossings_rate` for the audio file at
+	`pathFilename`.
+
+	Parameters
+	----------
+	pathFilename : str | PathLike[Any]
+		Path of the audio file to analyze.
+
+	Returns
+	-------
+	zeroCrossingsRate : float | None
+		Mean normalized zero-crossing rate, or None when unavailable.
+	"""
 	arrayAspect = analyzeZero_crossings_rate(pathFilename)
 	if 0 < len(arrayAspect):
 		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)

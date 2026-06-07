@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from analyzeAudio.analyzersUseSpectrogram import (
-	analyzeChromagramMean, analyzeSpectralBandwidthMean, analyzeSpectralCentroidMean, analyzeSpectralContrastMean, analyzeSpectralFlatnessMean)
+	analyzeChromagramMean, analyzeSpectralBandwidthMean, analyzeSpectralCentroidMean, analyzeSpectralContrastMean,
+	analyzeSpectralFlatness_dBMean, analyzeSpectralFlatnessMean)
 from tests.dataSamples.expected import expectedSpectrogram
 from typing import TYPE_CHECKING
 import pytest
@@ -37,3 +38,8 @@ def test_analyzeSpectralContrastMean(spectrogramMagnitude_sampleRate: Spectrogra
 def test_analyzeSpectralFlatnessMean(spectrogramMagnitude_sampleRate: SpectrogramMagnitudeSampleRate, expected: dict[str, float]) -> None:
 	actual = analyzeSpectralFlatnessMean(spectrogramMagnitude_sampleRate.spectrogramMagnitude)
 	_standardizedEqualScalars('analyzeSpectralFlatnessMean', spectrogramMagnitude_sampleRate.pathFilename, actual, expected[spectrogramMagnitude_sampleRate.pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedSpectrogram['analyzeSpectralFlatness_dBMean']])
+def test_analyzeSpectralFlatness_dBMean(spectrogramMagnitude_sampleRate: SpectrogramMagnitudeSampleRate, expected: dict[str, float]) -> None:
+	actual = analyzeSpectralFlatness_dBMean(spectrogramMagnitude_sampleRate.spectrogramMagnitude)
+	_standardizedEqualScalars('analyzeSpectralFlatness_dBMean', spectrogramMagnitude_sampleRate.pathFilename, actual, expected[spectrogramMagnitude_sampleRate.pathFilename.name])

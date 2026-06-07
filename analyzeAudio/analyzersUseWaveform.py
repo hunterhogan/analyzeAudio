@@ -1,4 +1,3 @@
-# ruff: noqa: D103
 """Analyzers that use the waveform of audio data."""
 from __future__ import annotations
 
@@ -8,31 +7,32 @@ import librosa
 import numpy
 
 if TYPE_CHECKING:
-	from analyzeAudio import Audio, libturd
+	from analyzeAudio import ArrayAspect, ArrayAspectWaveformFramewise, Audio
+	from numpy import dtype, floating, ndarray
 	from typing import Any
 
 # TODO `librosa.zero_crossings`.
 
-def analyzeRMSWaveform(waveform: Audio, **keywordArguments: Any) -> libturd:
-	"""Compute root-mean-square level from the waveform in decibels.
+def analyzeRMSWaveform(waveform: Audio, **keywordArguments: Any) -> ArrayAspectWaveformFramewise:
+	"""Compute framewise root-mean-square amplitude.
 
 	(AI generated docstring)
 
-	You can use this function to summarize framewise signal level from
-	`waveform`. The function measures root-mean-square amplitude for each
-	analysis frame and expresses the result on a decibel scale [1][2].
+	You can use this function to compute per-frame root-mean-square (RMS) amplitude from `waveform`.
+	This is a thin wrapper around `librosa.feature.rms` that returns an ArrayAspect of RMS amplitudes
+	for each analysis frame.
 
 	Parameters
 	----------
 	waveform : Audio
-		Waveform whose framewise level is measured.
+		Waveform whose framewise RMS amplitude is measured.
 	keywordArguments : Any
-		Additional RMS-analysis settings.
+		Additional keyword arguments passed to `librosa.feature.rms`.
 
 	Returns
 	-------
-	rootMeanSquareDecibels : libturd
-		Framewise RMS level expressed in decibels.
+	rootMeanSquare : ArrayAspectWaveformFramewise
+		Framewise root-mean-square amplitude (linear units). Values are amplitudes, not decibels.
 
 	Mathematics
 	-----------
@@ -44,21 +44,17 @@ def analyzeRMSWaveform(waveform: Audio, **keywordArguments: Any) -> libturd:
 		RMS(t) = √((1 / N) ∑_(k = 0)^(N - 1) xₜ[k]²)
 	```
 
-	decibel mapping : equation
-	```
-		L_RMS(t) = 20 log10(RMS(t))
-	```
-
 	References
 	----------
 	[1] Constantinescu, C., & Brad, R. (2023). An overview on sound features
-		in time and frequency domain. International Journal of Advanced
-		Statistics and IT&C for Economics and Life Sciences, 13(1), 51–56.
+		in time and frequency domain. International Journal of Advanced Statistics and IT&C for
+		Economics and Life Sciences, 13(1), 51–56.
 		https://reference-global.com/download/article/10.2478/ijasitels-2023-0006.pdf
 	[2] Panagiotakis, C., & Tziritas, G. (2005). A speech/music discriminator
-		based on RMS and zero-crossings. IEEE Transactions on Multimedia,
-		7(1), 155–166.
+		based on RMS and zero-crossings. IEEE Transactions on Multimedia, 7(1), 155–166.
 		https://www.csd.uoc.gr/~tziritas/papers/07tmm01-panagiotakis-proof.pdf
+	[3] `librosa.feature.rms`
+		https://librosa.org/doc/latest/generated/librosa.feature.rms.html
 	"""
 	return librosa.feature.rms(y=waveform, **keywordArguments)
 
@@ -68,14 +64,47 @@ def analyzeRMSWaveformMean(waveform: Audio, **keywordArguments: Any) -> float:
 
 	Returns
 	-------
-	rootMeanSquareMean : float
-		Mean value of the time-varying RMS level in decibels.
+	rmsMean : float
+		Arithmetic mean of the framewise RMS amplitude.
 
 	"""
 	return float(analyzeRMSWaveform(waveform, **keywordArguments).mean().item())
 
-def analyzeRMSWaveform_dB(waveform: Audio, **keywordArguments: Any) -> libturd:
-	arrayRMS: libturd = analyzeRMSWaveform(waveform, **keywordArguments)
+def analyzeRMSWaveform_dB(waveform: Audio, **keywordArguments: Any) -> ArrayAspectWaveformFramewise:
+	"""Compute framewise RMS level in decibels.
+
+	(AI generated docstring)
+
+	You can use this function to convert framewise RMS amplitudes into decibel units using a 20 ·
+	log10 mapping. The function obtains linear RMS values from `analyzeRMSWaveform` and applies a
+	logarithmic mapping. Callers should handle zero values if they wish to replace −inf or placeholder
+	values produced by the logarithm.
+
+	Parameters
+	----------
+	waveform : Audio
+		Waveform whose framewise RMS amplitude is measured.
+	keywordArguments : Any
+		Additional arguments forwarded to `analyzeRMSWaveform`.
+
+	Returns
+	-------
+	rms_dB : ArrayAspectWaveformFramewise
+		Framewise RMS level in decibels (dB).
+
+	See Also
+	--------
+	`analyzeRMSWaveform`
+		Compute framewise RMS amplitude.
+
+	References
+	----------
+	[1] `librosa.feature.rms`
+		https://librosa.org/doc/latest/generated/librosa.feature.rms.html
+	[2] `numpy.log10`
+		https://numpy.org/doc/stable/reference/generated/numpy.log10.html
+	"""
+	arrayRMS: ArrayAspectWaveformFramewise = analyzeRMSWaveform(waveform, **keywordArguments)
 	return 20 * numpy.log10(arrayRMS, where=(arrayRMS != 0), out=None)
 
 @registrationAudioAspect('RMS Waveform dB mean')
@@ -90,15 +119,14 @@ def analyzeRMSWaveform_dBMean(waveform: Audio, **keywordArguments: Any) -> float
 	"""
 	return float(analyzeRMSWaveform_dB(waveform, **keywordArguments).mean().item())
 
-def analyzeTempogram(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> libturd:
+def analyzeTempogram(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> ArrayAspect:
 	"""Compute a local autocorrelation tempogram from the waveform.
 
 	(AI generated docstring)
 
-	You can use this function to measure how strongly different pulse periods are
-	present over time in `waveform`. The function returns a time-varying tempo
-	representation whose values reflect local periodicity on a beats-per-minute
-	axis [1][2].
+	You can use this function to measure how strongly different pulse periods are present over time in
+	`waveform`. The function returns a time-varying tempo representation whose values reflect local
+	periodicity on a beats-per-minute axis [1][2].
 
 	Parameters
 	----------
@@ -107,11 +135,11 @@ def analyzeTempogram(waveform: Audio, sampleRate: int, **keywordArguments: Any) 
 	sampleRate : int
 		Sampling rate of `waveform` in hertz.
 	keywordArguments : Any
-		Additional tempogram-analysis settings.
+		Additional tempogram-analysis settings forwarded to `librosa.feature.tempogram`.
 
 	Returns
 	-------
-	tempogram : libturd
+	tempogram : ArrayAspect
 		Time-varying autocorrelation tempogram of `waveform`.
 
 	Mathematics
@@ -138,14 +166,14 @@ def analyzeTempogram(waveform: Audio, sampleRate: int, **keywordArguments: Any) 
 	References
 	----------
 	[1] Grosche, P., Müller, M., & Kurth, F. (2010). Cyclic tempogram — a
-		mid-level tempo representation for music signals. Proceedings of the
-		IEEE International Conference on Acoustics, Speech and Signal Processing,
-		5522–5525.
+		mid-level tempo representation for music signals. Proceedings of the IEEE International
+		Conference on Acoustics, Speech and Signal Processing, 5522–5525.
 		https://www.audiolabs-erlangen.de/content/resources/MIR/tempogramtoolbox/2010_GroscheMuellerKurth_TempogramCyclic_ICASSP.pdf
 	[2] Müller, M., Ellis, D. P. W., Klapuri, A., & Richard, G. (2011). Signal
-		processing for music analysis. IEEE Journal of Selected Topics in Signal
-		Processing, 5(6), 1088–1110.
-		https://www.ee.columbia.edu/~dpwe/pubs/MuEKR11-spmus.pdf
+		processing for music analysis. IEEE Journal of Selected Topics in Signal Processing, 5(6),
+		1088–1110. https://www.ee.columbia.edu/~dpwe/pubs/MuEKR11-spmus.pdf
+	[3] `librosa.feature.tempogram`
+		https://librosa.org/doc/latest/generated/librosa.feature.tempogram.html
 	"""
 	return librosa.feature.tempogram(y=waveform, sr=sampleRate, **keywordArguments)
 
@@ -161,16 +189,14 @@ def analyzeTempogramMean(waveform: Audio, sampleRate: int, **keywordArguments: A
 	"""
 	return float(analyzeTempogram(waveform, sampleRate, **keywordArguments).mean().item())
 
-def analyzeTempo(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> libturd:
+def analyzeTempo(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> ndarray[tuple[int], dtype[floating[Any]]]:
 	"""Estimate tempo in beats per minute from waveform periodicity.
 
 	(AI generated docstring)
 
-	You can use this function to estimate the dominant tempo implied by
-	`waveform`. The function interprets the strongest periodicities of a
-	tempogram as tempo candidates in beats per minute, and `keywordArguments`
-	can request either a single estimate or a time-varying tempo trajectory
-	[1][2].
+	You can use this function to estimate the dominant tempo implied by `waveform`. The function
+	interprets the strongest periodicities of a tempogram as tempo candidates in beats per minute, and
+	`keywordArguments` can request either a single estimate or a time-varying tempo trajectory [1][2].
 
 	Parameters
 	----------
@@ -179,11 +205,11 @@ def analyzeTempo(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> l
 	sampleRate : int
 		Sampling rate of `waveform` in hertz.
 	keywordArguments : Any
-		Additional tempo-estimation settings.
+		Additional tempo-estimation settings forwarded to `librosa.feature.tempo`.
 
 	Returns
 	-------
-	tempo : libturd
+	tempo : ndarray[tuple[int], dtype[floating[Any]]]
 		Tempo estimate or tempo trajectory in beats per minute.
 
 	Mathematics
@@ -207,16 +233,16 @@ def analyzeTempo(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> l
 	References
 	----------
 	[1] Grosche, P., Müller, M., & Kurth, F. (2010). Cyclic tempogram — a
-		mid-level tempo representation for music signals. Proceedings of the
-		IEEE International Conference on Acoustics, Speech and Signal Processing,
-		5522–5525.
+		mid-level tempo representation for music signals. Proceedings of the IEEE International
+		Conference on Acoustics, Speech and Signal Processing, 5522–5525.
 		https://www.audiolabs-erlangen.de/content/resources/MIR/tempogramtoolbox/2010_GroscheMuellerKurth_TempogramCyclic_ICASSP.pdf
 	[2] Müller, M., Ellis, D. P. W., Klapuri, A., & Richard, G. (2011). Signal
-		processing for music analysis. IEEE Journal of Selected Topics in Signal
-		Processing, 5(6), 1088–1110.
-		https://www.ee.columbia.edu/~dpwe/pubs/MuEKR11-spmus.pdf
+		processing for music analysis. IEEE Journal of Selected Topics in Signal Processing, 5(6),
+		1088–1110. https://www.ee.columbia.edu/~dpwe/pubs/MuEKR11-spmus.pdf
+	[3] `librosa.feature.tempo`
+		https://librosa.org/doc/latest/generated/librosa.feature.tempo.html
 	"""
-	tempogram: libturd = analyzeTempogram(waveform, sampleRate)
+	tempogram: ArrayAspect = analyzeTempogram(waveform, sampleRate)
 	return librosa.feature.tempo(y=waveform, sr=sampleRate, tg=tempogram, **keywordArguments)
 
 @registrationAudioAspect('Tempo mean')
@@ -231,27 +257,26 @@ def analyzeTempoMean(waveform: Audio, sampleRate: int, **keywordArguments: Any) 
 	"""
 	return float(analyzeTempo(waveform, sampleRate, **keywordArguments).mean().item())
 
-def analyzeZeroCrossingRate(waveform: Audio, **keywordArguments: Any) -> libturd:
+def analyzeZeroCrossingRate(waveform: Audio, **keywordArguments: Any) -> ArrayAspectWaveformFramewise:
 	"""Compute the zero-crossing rate of the waveform.
 
 	(AI generated docstring)
 
-	You can use this function to measure how often `waveform` changes sign
-	within each analysis frame. Higher values indicate more frequent sign
-	alternations, which often accompany noisier or higher-frequency content
-	[1][2].
+	You can use this function to measure how often `waveform` changes sign within each analysis frame.
+	Higher values indicate more frequent sign alternations, which often accompany noisier or
+	higher-frequency content [1][2].
 
 	Parameters
 	----------
 	waveform : Audio
 		Waveform whose sign changes are counted frame by frame.
 	keywordArguments : Any
-		Additional zero-crossing-analysis settings.
+		Additional keyword arguments passed to `librosa.feature.zero_crossing_rate`.
 
 	Returns
 	-------
-	zeroCrossingRate : libturd
-		Framewise zero-crossing rate.
+	zeroCrossingRate : ArrayAspectWaveformFramewise
+		Framewise zero-crossing rate (ratio of sign changes per frame).
 
 	Mathematics
 	-----------
@@ -268,11 +293,12 @@ def analyzeZeroCrossingRate(waveform: Audio, **keywordArguments: Any) -> libturd
 	References
 	----------
 	[1] Panagiotakis, C., & Tziritas, G. (2005). A speech/music discriminator
-		based on RMS and zero-crossings. IEEE Transactions on Multimedia,
-		7(1), 155–166.
+		based on RMS and zero-crossings. IEEE Transactions on Multimedia, 7(1), 155–166.
 		https://www.csd.uoc.gr/~tziritas/papers/07tmm01-panagiotakis-proof.pdf
 	[2] Zero-crossing rate. Introduction to Speech Processing.
 		https://speechprocessingbook.aalto.fi/Representations/Zero-crossing_rate.html
+	[3] `librosa.feature.zero_crossing_rate`
+		https://librosa.org/doc/latest/generated/librosa.feature.zero_crossing_rate.html
 	"""
 	return librosa.feature.zero_crossing_rate(y=waveform, **keywordArguments)
 

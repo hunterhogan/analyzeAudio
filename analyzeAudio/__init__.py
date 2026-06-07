@@ -6,8 +6,10 @@ from analyzeAudio._theSSOT import settingsPackage  # pyright: ignore[reportUnuse
 
 # isort: split
 from analyzeAudio._theTypes import (
-	analyzersAudioAspects as analyzersAudioAspects, arrayChannelData as arrayChannelData, arrayOverallData as arrayOverallData, Audio as Audio,
-	AuralossChromaSTFTLoss as AuralossChromaSTFTLoss, BleedFull as BleedFull, BleedFullArray as BleedFullArray, libturd as libturd,
+	analyzersAudioAspects as analyzersAudioAspects, ArrayAspect as ArrayAspect,
+	ArrayAspectSpectrogramFramewise as ArrayAspectSpectrogramFramewise, ArrayAspectWaveformFramewise as ArrayAspectWaveformFramewise,
+	ArrayChannelData as ArrayChannelData, ArrayOverallData as ArrayOverallData, Audio as Audio,
+	AuralossChromaSTFTLoss as AuralossChromaSTFTLoss, BleedFull as BleedFull, BleedFullArray as BleedFullArray,
 	ParametersMelSpectrogram as ParametersMelSpectrogram, parameterSpecifications as parameterSpecifications, Spectrogram as Spectrogram,
 	SpectrogramMagnitude as SpectrogramMagnitude, SpectrogramPower as SpectrogramPower, typeReturned as typeReturned)
 

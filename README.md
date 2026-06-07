@@ -9,207 +9,383 @@ Some options to [download FFmpeg and FFprobe](https://www.ffmpeg.org/download.ht
 [![pip install analyzeAudio](https://img.shields.io/badge/pip_install-analyzeAudio-gray.svg?labelColor=blue)](https://pypi.org/project/analyzeAudio/)
 [![uv add analyzeAudio](https://img.shields.io/badge/uv_add-analyzeAudio-gray.svg?labelColor=blue)](https://pypi.org/project/analyzeAudio/)
 
-## Some ways to use this package
+## What is in the package
 
-`analyzeAudio` works at five practical levels: audio path, waveform array, spectrogram array,
-waveform tensor, and magnitude-spectrogram tensor. The top-level API is the quickest way to ask
-for named measurements from audio paths. The lower-level modules are there when you already have
-decoded audio in memory, want the full array or tensor instead of one summary float, or want to
-call direct comparison and loss analyzers yourself.
+`analyzeAudio` provides two user-facing kinds of audio analysis.
 
-### Top-level exports you will probably reach for first
+- Audio aspects measure one audio file.
+- Audio contests compare two audio files, waveforms, tensors, or spectrograms.
 
-| Export                                                                             | Purpose                                                                            |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `analyzeAudioFile(pathFilename, listAspectNames)`                                  | Analyze one audio path and return one result per requested registered aspect name. |
-| `analyzeAudioListPathFilenames(listPathFilenames, listAspectNames, CPUlimit=None)` | Analyze many audio paths in parallel and return one completed row per audio path.  |
-| `getListAvailableAudioAspects()`                                                   | Return the sorted list of registered aspect names.                                 |
-| `audioAspects`                                                                     | Registry of `aspect name -> analyzer callable + required parameter names`.         |
-| `truncateTensors(listTensors)`                                                     | Trim multiple tensors to the same trailing length before direct comparison.        |
-| `dataTabularTOpathFilenameDelimited(...)`                                          | Write batch results to a delimited text file.                                      |
+The main user workflows are:
 
-The package also re-exports the type aliases `Audio`, `Spectrogram`, `SpectrogramMagnitude`, and
-`SpectrogramPower` so downstream code can annotate the same representations the analyzers expect.
+| What you want | Use |
+| --- | --- |
+| One value for each selected measurement on one file | `analyzeAudioFile` |
+| The same selected measurements for many files | `analyzeAudioListPathFilenames` |
+| A TSV, CSV, or other delimited output file | `dataTabularTOpathFilenameDelimited` |
+| One specific measurement or detailed frame data | Import a direct analyzer function |
+| One comparison score between two files | Import a filename contest function |
+| One comparison score between two tensors or spectrograms | Import a tensor or spectrogram contest function |
 
-### Choose the module that matches the representation you already have
+### One-file measurements
 
-| If you already have...                      | Reach for...                            | What you get                                                                                     |
-| ------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| one or more audio paths                     | top-level API or `analyzersUseFilename` | named single-path measurements, paired-path comparisons, FFprobe/FFmpeg-derived arrays, loudness |
-| waveform `numpy.ndarray` + `sampleRate`     | `analyzersUseWaveform`                  | tempogram, RMS, tempo, and zero-crossing arrays or their mean summaries                          |
-| spectrogram magnitude/power `numpy.ndarray` | `analyzersUseSpectrogram`               | chroma and spectral-descriptor arrays or their mean summaries                                    |
-| waveform `torch.Tensor`                     | `analyzersUseTensor`                    | SRMR, logWMSE, source-separation scores, and waveform/STFT-domain loss analyzers                 |
-| magnitude spectrogram `torch.Tensor`        | `analyzersUseTensorSpectrogram`         | spectrogram-magnitude comparison losses such as spectral convergence and STFT-magnitude distance |
+Use these names with `analyzeAudioFile` or
+`analyzeAudioListPathFilenames`. Names are case-sensitive.
 
-The registry spans more than single-path measurements. Some registered names are convenient
-single-audio measurements, some are paired-path comparisons, some expect waveform tensors, and some
-expect magnitude spectrogram tensors.
+Loudness and true peak:
 
-### Use `analyzeAudioFile` to measure registered single-audio aspects from one path
+| Name | What it measures |
+| --- | --- |
+| `LUFS integrated` | Whole-file integrated loudness. |
+| `LUFS momentary maximum` | Maximum momentary loudness. |
+| `LUFS short-term maximum` | Maximum short-term loudness. |
+| `LUFS loudness range` | Loudness range. |
+| `LUFS low` | Low loudness range boundary. |
+| `LUFS high` | High loudness range boundary. |
+| `true_peak maximum` | Maximum true peak level. |
+
+Signal level, dynamics, and samples:
+
+| Name | What it measures |
+| --- | --- |
+| `RMS_level overall` | Overall RMS level. |
+| `RMS_peak overall` | Overall RMS peak. |
+| `RMS_trough overall` | Overall RMS trough. |
+| `RMS_difference overall` | Overall RMS difference between adjacent samples. |
+| `Peak_level overall` | Overall peak level. |
+| `Peak_count total` | Total detected peak count. |
+| `Abs_Peak_count total` | Total absolute peak count. |
+| `Crest_factor mean` | Mean crest factor. |
+| `Dynamic_range overall` | Overall dynamic range. |
+| `DC_offset mean` | Mean DC offset. |
+| `Bit_depth mean` | Mean detected bit depth. |
+| `Entropy mean` | Mean signal entropy. |
+| `Flat_factor mean` | Mean flat factor. |
+| `Max_difference overall` | Maximum sample difference. |
+| `Max_level overall` | Maximum sample level. |
+| `Mean_difference mean` | Mean adjacent-sample difference. |
+| `Min_difference overall` | Minimum sample difference. |
+| `Min_level overall` | Minimum sample level. |
+| `Noise_floor overall` | Overall noise floor. |
+| `Noise_floor_count total` | Total noise-floor count. |
+| `Number_of_samples total` | Total samples. |
+| `Zero_crossings total` | Total zero crossings. |
+| `Zero_crossings_rate overall` | Overall zero-crossing rate. |
+
+Spectral measurements:
+
+| Name | What it measures |
+| --- | --- |
+| `Power spectral density mean` | Mean power spectral density. |
+| `Spectral centroid mean` | Mean spectral center of mass from filename analysis. |
+| `Spectral crest mean` | Mean spectral crest. |
+| `Spectral decrease mean` | Mean spectral decrease. |
+| `Spectral entropy mean` | Mean spectral entropy. |
+| `Spectral flatness mean` | Mean spectral flatness from filename analysis. |
+| `Spectral flux mean` | Mean spectral flux. |
+| `Spectral kurtosis mean` | Mean spectral kurtosis. |
+| `Spectral rolloff mean` | Mean spectral rolloff. |
+| `Spectral skewness mean` | Mean spectral skewness. |
+| `Spectral slope mean` | Mean spectral slope. |
+| `Spectral spread mean` | Mean spectral spread. |
+| `Spectral variance mean` | Mean spectral variance. |
+| `Spectral Bandwidth mean` | Mean librosa spectral bandwidth. |
+| `Spectral Centroid mean` | Mean librosa spectral centroid. |
+| `Spectral Contrast mean` | Mean librosa spectral contrast. |
+| `Spectral Flatness mean` | Mean librosa spectral flatness ratio. |
+| `Spectral Flatness dB mean` | Mean librosa spectral flatness in decibels. |
+| `Chromagram mean` | Mean chroma energy across pitch classes. |
+
+Waveform, rhythm, and speech measurements:
+
+| Name | What it measures |
+| --- | --- |
+| `RMS Waveform mean` | Mean waveform RMS amplitude. |
+| `RMS Waveform dB mean` | Mean waveform RMS level in decibels. |
+| `Tempogram mean` | Mean tempogram value. |
+| `Tempo mean` | Mean estimated tempo. |
+| `Zero Crossing Rate mean` | Mean waveform zero-crossing rate. |
+| `SRMR mean` | Mean speech-to-reverberation modulation energy ratio. |
+
+Some names intentionally differ only by capitalization or wording. For example,
+`Spectral flatness mean` and `Spectral Flatness mean` are different
+measurements. Use the exact name from the table.
+
+### Measure one file
 
 ```python
 from analyzeAudio import analyzeAudioFile
 
 listAspectNames = [
-    'LUFS integrated',
-    'RMS peak',
-    'SRMR mean',
-    'Spectral Flatness mean',
+    "LUFS integrated",
+    "true_peak maximum",
+    "RMS_level overall",
+    "Spectral Flatness mean",
+    "Zero Crossing Rate mean",
 ]
 
-listMeasurements = analyzeAudioFile(pathFilename, listAspectNames)
-dictionaryMeasurements = dict(zip(listAspectNames, listMeasurements, strict=True))
+listValues = analyzeAudioFile("voice.wav", listAspectNames)
+measurements = dict(zip(listAspectNames, listValues, strict=True))
+print(measurements)
 ```
 
-`analyzeAudioFile` reads one audio path, prepares shared intermediate representations, and lets
-registered analyzers reuse those representations.
+`analyzeAudioFile` returns one value for each requested name, in the same order.
+If a requested name is unavailable, that value is `"not found"`.
 
-`analyzeAudioFile` preserves the order of `listAspectNames`. If a requested aspect name is not
-registered, the matching return entry is `'not found'`.
-
-Registered names are case-sensitive, and some intentionally similar names come from different
-analysis routes. For example, `Spectral Flatness mean` and `Spectral flatness mean` are different
-registered names, and so are `Zero-crossing rate mean` and `Zero-crossings rate`.
-
-Some registered names require inputs that cannot come from a single audio path alone. Examples
-include `SI-SDR mean`, `LogWMSE`, `L1SNRDB`, and `SpectralConvergenceLoss`. For those, inspect the
-registry and call the analyzer directly.
-
-### Use `analyzeAudioListPathFilenames` to batch single-audio measurements across many paths
+### Measure many files
 
 ```python
-from analyzeAudio import analyzeAudioListPathFilenames, dataTabularTOpathFilenameDelimited
+from pathlib import Path
+from analyzeAudio import analyzeAudioListPathFilenames
 
-listAspectNames = ['LUFS integrated', 'Spectral Flatness mean']
-rowsListFilenameAspectValues = analyzeAudioListPathFilenames(listPathFilenames, listAspectNames)
+listPathFilenames = sorted(Path("audio").glob("*.wav"))
+listAspectNames = [
+    "LUFS integrated",
+    "LUFS loudness range",
+    "true_peak maximum",
+]
+
+rows = analyzeAudioListPathFilenames(
+    listPathFilenames,
+    listAspectNames,
+    CPUlimit=4,
+)
+
+for row in rows:
+    print(row)
+```
+
+Each row starts with the analyzed filename, followed by the requested values.
+Rows are returned as files finish, so row order can differ from input order.
+
+### Save measurements
+
+```python
+from analyzeAudio import (
+    analyzeAudioListPathFilenames,
+    dataTabularTOpathFilenameDelimited,
+)
+
+listAspectNames = ["LUFS integrated", "true_peak maximum"]
+rows = analyzeAudioListPathFilenames(["one.wav", "two.wav"], listAspectNames)
 
 dataTabularTOpathFilenameDelimited(
-    pathFilenameOutput,
-    rowsListFilenameAspectValues,
-    ['pathFilename', *listAspectNames],
+    "measurements.tsv",
+    rows,
+    ["pathFilename", *listAspectNames],
 )
 ```
 
-Each returned row starts with the audio path converted to POSIX text, followed by the requested
-values. The rows are returned in worker-completion order rather than the original input order.
-Use `CPUlimit` when you want to cap the worker count explicitly.
-
-### Use `getListAvailableAudioAspects` and `audioAspects` to inspect the registry or call an analyzer directly
+For CSV output, use a comma delimiter:
 
 ```python
-from analyzeAudio import audioAspects, getListAvailableAudioAspects
-
-print(getListAvailableAudioAspects())
-print(audioAspects['Chromagram mean']['analyzerParameters'])
-print(audioAspects['SI-SDR mean']['analyzerParameters'])
-print(audioAspects['LogWMSE']['analyzerParameters'])
-
-SI_SDR_channelsMean = audioAspects['SI-SDR mean']['analyzer'](
-    pathFilenameAudioFile,
-    pathFilenameDifferentAudioFile,
+dataTabularTOpathFilenameDelimited(
+    "measurements.csv",
+    rows,
+    ["pathFilename", *listAspectNames],
+    delimiterOutput=",",
 )
 ```
 
-Use `audioAspects[name]['analyzerParameters']` first. It tells you whether the registered name
-expects one audio path, two audio paths, waveform tensors, a reference-estimate-mixture triple, or
-spectrogram magnitudes.
+### Get detailed arrays
 
-That is the quickest way to discover whether a name is meant for the high-level single-audio API or
-for direct invocation.
+Summary names usually return one number. Direct analyzer functions without
+summary words usually return the per-frame, per-channel, or per-band values.
 
-### Use the lower-level modules when you want the actual analyzer instead of one registry float
+```python
+from analyzeAudio.analyzersUseFilename import (
+    analyzeLUFSIntegratedOverall,
+    analyzeLUFSMomentary,
+)
 
-These are the actual analyzers, organized by the representation they consume.
+integrated = analyzeLUFSIntegratedOverall("voice.wav")
+momentaryFrames = analyzeLUFSMomentary("voice.wav")
+```
 
-- `analyzeAudio.analyzersUseFilename`
-  - paired-path comparison metrics: `getPSNRmean`, `getSDRmean`, `getSI_SDRmean`
-  - framewise spectral arrays with matching mean summaries: `analyzeSpectralCentroid`,
-    `analyzeSpectralCrest`, `analyzeSpectralDecrease`, `analyzeSpectralEntropy`,
-    `analyzeSpectralFlatness`, `analyzeSpectralFlux`, `analyzeSpectralKurtosis`,
-    `analyzeSpectralMean`, `analyzeSpectralRolloff`, `analyzeSpectralSkewness`,
-    `analyzeSpectralSlope`, `analyzeSpectralSpread`, `analyzeSpectralVariance`
-  - file-level FFprobe `astats` scalars: `analyzeZero_crossings`, `analyzeZero_crossings_rate`,
-    `analyzeDCoffset`, `analyzeDynamicRange`, `analyzeSignalEntropy`, `analyzeNumber_of_samples`,
-    `analyzePeak_level`, `analyzeRMS_level`, `analyzeCrest_factor`, `analyzeRMS_peak`,
-    `analyzeAbs_Peak_count`, `analyzeBit_depth`, `analyzeFlat_factor`, `analyzeMax_difference`,
-    `analyzeMax_level`, `analyzeMean_difference`, `analyzeMin_difference`, `analyzeMin_level`,
-    `analyzeNoise_floor`, `analyzeNoise_floor_count`, `analyzePeak_count`,
-    `analyzeRMS_difference`, `analyzeRMS_trough`
-  - loudness and true-peak arrays plus scalar summaries: `analyzeTruePeak`,
-    `analyzeLUFSMomentary`, `analyzeLUFSShortTerm`, `analyzeLUFSIntegrated`, `analyzeLRA`,
-    `analyzeLUFSlow`, `analyzeLUFShigh`, plus the matching `...Overall` scalar functions
-- `analyzeAudio.analyzersUseWaveform`
-  - raw arrays: `analyzeTempogram`, `analyzeRMS`, `analyzeTempo`, `analyzeZeroCrossingRate`
-  - mean summaries: `analyzeTempogramMean`, `analyzeRMSMean`, `analyzeTempoMean`,
-    `analyzeZeroCrossingRateMean`
-- `analyzeAudio.analyzersUseSpectrogram`
-  - raw arrays: `analyzeChromagram`, `analyzeSpectralContrast`, `analyzeSpectralBandwidth`,
-    `analyzeSpectralCentroid`, `analyzeSpectralFlatness`
-  - mean summaries: `analyzeChromagramMean`, `analyzeSpectralContrastMean`,
-    `analyzeSpectralBandwidthMean`, `analyzeSpectralCentroidMean`,
-    `analyzeSpectralFlatnessMean`
-- `analyzeAudio.analyzersUseTensor`
-  - reverberation and intelligibility: `analyzeSRMR`, `analyzeSRMRMean`
-  - reference-estimate-mixture scoring: `analyzeLogWMSEMean`
-  - source-separation scores: `analyzeL1SNRMean`, `analyzeL1SNRDBMean`,
-    `analyzeMultiL1SNRDBMean`, `analyzeSTFTL1SNRDBMean`
-  - waveform-domain and STFT-domain loss analyzers: `analyzeDCLoss`, `analyzeESRLoss`,
-    `analyzeLogCoshLoss`, `analyzeSNRLoss`, `analyzeSISDRLoss`, `analyzeSDSDRLoss`,
-    `analyzeSTFTLoss`, `analyzeMelSTFTLoss`, `analyzeChromaSTFTLoss`,
-    `analyzeMultiResolutionSTFTLoss`, `analyzeRandomResolutionSTFTLoss`,
-    `analyzeSumAndDifferenceSTFTLoss`
-- `analyzeAudio.analyzersUseTensorSpectrogram`
-  - magnitude-spectrogram comparison analyzers: `analyzeSpectralConvergenceLoss`,
-    `analyzeSTFTMagnitudeLoss`, `analyzeL1FrequencyLoss`
-- `analyzeAudio.ffmpeg`
-  - environment check for Colab-style sessions: `verifyFFmpegColab`
+### Use audio already loaded in Python
 
-Several concept names exist in more than one module. That is intentional. For example,
-`Spectral flatness mean` comes from the filename-based FFprobe route, while `Spectral Flatness mean`
-comes from the spectrogram route. Similar names do not necessarily mean duplicate implementations.
+Waveform analyzers accept waveform samples shaped as channels by samples.
 
 ```python
 import numpy
 import soundfile
+from analyzeAudio.analyzersUseWaveform import (
+    analyzeRMSWaveformMean,
+    analyzeTempoMean,
+    analyzeZeroCrossingRateMean,
+)
 
-from analyzeAudio.analyzersUseWaveform import analyzeTempogram
+with soundfile.SoundFile("voice.wav") as audioFile:
+    sampleRate = audioFile.samplerate
+    waveform = audioFile.read(dtype="float32", always_2d=True).astype(numpy.float32).T
 
-with soundfile.SoundFile(pathFilename) as readSoundFile:
-    sampleRate = readSoundFile.samplerate
-    waveform = readSoundFile.read(dtype='float32').astype(numpy.float32).T
-
-tempogram = analyzeTempogram(waveform, sampleRate)
+rms = analyzeRMSWaveformMean(waveform)
+tempo = analyzeTempoMean(waveform, sampleRate)
+zeroCrossingRate = analyzeZeroCrossingRateMean(waveform)
 ```
+
+Spectrogram analyzers accept magnitude or power spectrograms.
 
 ```python
-from analyzeAudio.analyzersUseTensor import analyzeL1SNRDBMean
-from analyzeAudio.analyzersUseTensorSpectrogram import analyzeSpectralConvergenceLoss
+import librosa
+import numpy
+from analyzeAudio.analyzersUseSpectrogram import (
+    analyzeChromagramMean,
+    analyzeSpectralCentroidMean,
+)
 
-valueScore = analyzeL1SNRDBMean(tensorAudioReference, tensorAudioEstimate)
-valueLoss = analyzeSpectralConvergenceLoss(tensorMagnitudeReference, tensorMagnitudeEstimate)
+spectrogram = librosa.stft(waveform)
+spectrogramMagnitude = numpy.absolute(spectrogram)
+spectrogramPower = spectrogramMagnitude**2
+
+spectralCentroid = analyzeSpectralCentroidMean(spectrogramMagnitude)
+chromagram = analyzeChromagramMean(spectrogramPower, sampleRate)
 ```
 
-### Use `truncateTensors` when you want the aligned tensors yourself
+### Two-input comparisons
 
-Most tensor comparison analyzers already trim inputs. `truncateTensors` is there for the
-times when you want aligned tensors before reusing them across several metrics.
+Filename contests compare two audio files:
+
+| Function | What it compares |
+| --- | --- |
+| `analyzePSNRmean` | Mean peak signal-to-noise ratio. |
+| `analyzeSDRmean` | Mean signal-to-distortion ratio. |
+| `analyzeSI_SDRmean` | Mean scale-invariant signal-to-distortion ratio. |
+| `analyzeKPSNRmean` | Bounded score from PSNR. |
+| `analyzeKSDRmean` | Bounded score from SDR. |
+| `analyzeKSI_SDRmean` | Bounded score from SI-SDR. |
 
 ```python
-from analyzeAudio import truncateTensors
+from analyzeAudio.analyzersUseFilename import (
+    analyzePSNRmean,
+    analyzeSDRmean,
+    analyzeSI_SDRmean,
+)
 
-tensorAudioReference, tensorAudioEstimate = truncateTensors([
-    tensorAudioReference,
-    tensorAudioEstimate,
-])
+pathReference = "reference.wav"
+pathEstimate = "estimate.wav"
+
+psnr = analyzePSNRmean(pathReference, pathEstimate)
+sdr = analyzeSDRmean(pathReference, pathEstimate)
+si_sdr = analyzeSI_SDRmean(pathReference, pathEstimate)
 ```
 
-### Use `whatMeasurements` to list registered measurements from the command line
+Tensor waveform contests usually compare two PyTorch waveform tensors:
 
-```sh
-whatMeasurements
+| Function | What it compares |
+| --- | --- |
+| `analyzeL1SNRMean` | Mean L1 signal-to-noise ratio. |
+| `analyzeL1SNRDBMean` | Mean L1 signal-to-noise ratio in decibels. |
+| `analyzeMultiL1SNRDBMean` | Multi-source L1 SNR in decibels. |
+| `analyzeSTFTL1SNRDBMean` | STFT-domain L1 SNR in decibels. |
+| `analyzeLogWMSEMean` | Mean log weighted MSE audio-quality score for reference, estimate, and mixture tensors. |
+| `analyzeDCLoss` | DC loss. |
+| `analyzeESRLoss` | Error-to-signal ratio loss. |
+| `analyzeLogCoshLoss` | Log-cosh loss. |
+| `analyzeSNRLoss` | Signal-to-noise ratio loss. |
+| `analyzeSISDRLoss` | Scale-invariant SDR loss. |
+| `analyzeSDSDRLoss` | Scale-dependent SDR loss. |
+| `analyzeSTFTLoss` | STFT loss. |
+| `analyzeMelSTFTLoss` | Mel-STFT loss. |
+| `analyzeChromaSTFTLoss` | Chroma-STFT loss. |
+| `analyzeMultiResolutionSTFTLoss` | Multi-resolution STFT loss. |
+| `analyzeRandomResolutionSTFTLoss` | Random-resolution STFT loss. |
+| `analyzeSumAndDifferenceSTFTLoss` | Sum-and-difference STFT loss. |
+
+```python
+from analyzeAudio.contestsTensor import (
+    analyzeL1SNRDBMean,
+    analyzeMultiResolutionSTFTLoss,
+)
+
+l1snrdb = analyzeL1SNRDBMean(tensorReference, tensorEstimate)
+mrstft = analyzeMultiResolutionSTFTLoss(tensorReference, tensorEstimate)
 ```
 
-This prints the same sorted registry names returned by `getListAvailableAudioAspects()`.
+`analyzeLogWMSEMean` also needs the original mixture and sample rate:
+
+```python
+from analyzeAudio.contestsTensor import analyzeLogWMSEMean
+
+logwmse = analyzeLogWMSEMean(
+    tensorReference,
+    tensorEstimate,
+    tensorMixture,
+    sampleRate,
+)
+```
+
+Tensor spectrogram contests compare two PyTorch magnitude spectrogram tensors:
+
+| Function | What it compares |
+| --- | --- |
+| `analyzeSpectralConvergenceLoss` | Spectral convergence loss. |
+| `analyzeSTFTMagnitudeLoss` | STFT magnitude loss. |
+| `analyzeL1FrequencyLoss` | L1 frequency score. |
+
+```python
+from analyzeAudio.contestsTensorSpectrogram import (
+    analyzeSpectralConvergenceLoss,
+    analyzeSTFTMagnitudeLoss,
+)
+
+spectralConvergence = analyzeSpectralConvergenceLoss(
+    tensorSpectrogramMagnitudeReference,
+    tensorSpectrogramMagnitudeEstimate,
+)
+stftMagnitude = analyzeSTFTMagnitudeLoss(
+    tensorSpectrogramMagnitudeReference,
+    tensorSpectrogramMagnitudeEstimate,
+)
+```
+
+NumPy spectrogram helpers compare two magnitude spectrograms:
+
+| Function | What it returns |
+| --- | --- |
+| `analyzeBleedFullMelDB` | Arrays of added and missing mel-scaled dB content. |
+| `analyzeBleedFullMelDBMean` | Two scores: `bleed` and `full`. |
+
+```python
+from analyzeAudio.contestsSpectrogram import analyzeBleedFullMelDBMean
+
+bleedFull = analyzeBleedFullMelDBMean(
+    spectrogramMagnitudeReference,
+    spectrogramMagnitudeEstimate,
+)
+print(bleedFull.bleed, bleedFull.full)
+```
+
+### Colab helper
+
+For Google Colab notebooks, the package includes `verifyFFmpegColab`:
+
+```python
+from analyzeAudio.ffmpeg import verifyFFmpegColab
+
+verifyFFmpegColab()
+```
+
+Run it before filename-based measurements in Colab.
+
+### Exact-name checks
+
+The tables above describe what is in the package. These helpers are available
+when you want a copyable list from the installed version:
+
+```python
+from analyzeAudio import getListAvailableAudioAspects, getListAvailableAudioContests
+
+print(getListAvailableAudioAspects())
+print(getListAvailableAudioContests())
+```
+
+The terminal commands are:
+
+```powershell
+whatAspects
+whatContests
+```
 
 ## Reference materials
 

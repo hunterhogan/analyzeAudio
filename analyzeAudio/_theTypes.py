@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from numpy import complexfloating, dtype, float64, floating, ndarray
-from typing import Any, NamedTuple, ParamSpec, Protocol, TYPE_CHECKING, TypedDict, TypeVar
+from typing import Any, Literal, NamedTuple, ParamSpec, Protocol, TYPE_CHECKING, TypedDict, TypeVar
 
 if TYPE_CHECKING:
 	from collections.abc import Callable
 	from numpy.typing import ArrayLike, DTypeLike
 	from torch import device, Tensor
-	from typing import Literal, TypeAlias
+	from typing import TypeAlias
 
 parameterSpecifications = ParamSpec('parameterSpecifications')
 typeReturned = TypeVar('typeReturned')
@@ -40,13 +40,15 @@ class ParametersMelSpectrogram(TypedDict, total=False):
 	window: str | tuple[Any, ...] | float | Callable[[int], ndarray] | ArrayLike
 
 Audio: TypeAlias = ndarray[tuple[int, ...], dtype[floating[Any]]]
-libturd: TypeAlias = ndarray[tuple[int, ...], dtype[Any]]
+ArrayAspect: TypeAlias = ndarray[tuple[int, ...], dtype[floating[Any]]]
 Spectrogram: TypeAlias = ndarray[tuple[int, int, int], dtype[complexfloating[Any, Any]]]
 SpectrogramMagnitude: TypeAlias = ndarray[tuple[int, int, int], dtype[floating[Any]]]
 SpectrogramPower: TypeAlias = ndarray[tuple[int, int, int], dtype[floating[Any]]]
+ArrayAspectSpectrogramFramewise: TypeAlias = ndarray[tuple[int, Literal[1], int], dtype[floating[Any]]]
+ArrayAspectWaveformFramewise: TypeAlias = ndarray[tuple[Literal[1], int], dtype[floating[Any]]]
 
-arrayChannelData: TypeAlias = ndarray[tuple[int, int], dtype[float64]]
-arrayOverallData: TypeAlias = ndarray[tuple[int], dtype[float64]]
+ArrayChannelData: TypeAlias = ndarray[tuple[int, int], dtype[float64]]
+ArrayOverallData: TypeAlias = ndarray[tuple[int], dtype[float64]]
 
 class AuralossChromaSTFTLoss(Protocol):
 	fft_size: int

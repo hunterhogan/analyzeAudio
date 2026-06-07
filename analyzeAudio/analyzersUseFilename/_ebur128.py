@@ -9,15 +9,15 @@ from typing import Any, TYPE_CHECKING
 import numpy
 
 if TYPE_CHECKING:
-	from analyzeAudio import arrayOverallData
+	from analyzeAudio import ArrayOverallData
 	from os import PathLike
 
-arrayOverallDataEmpty: arrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)
+arrayOverallDataEmpty: ArrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)
 
 # TODO 'true_peaks_ch0', 'true_peaks_ch1', etc.
 # TODO one function ro return one array with all LUFS aspects.
 
-def analyzeTruePeak(pathFilename: str | PathLike[Any]) -> arrayOverallData:
+def analyzeTruePeak(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the true-peak trajectory of an audio file.
 
 	(AI generated docstring)
@@ -31,7 +31,7 @@ def analyzeTruePeak(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 	Returns
 	-------
-	truePeak : arrayOverallData
+	truePeak : ArrayOverallData
 		Framewise true-peak values in dBTP.
 
 	References
@@ -59,7 +59,7 @@ def analyzeTruePeakOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeLUFSMomentary(pathFilename: str | PathLike[Any]) -> arrayOverallData:
+def analyzeLUFSMomentary(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the LUFS momentary trajectory of an audio file.
 
 	(AI generated docstring)
@@ -73,7 +73,7 @@ def analyzeLUFSMomentary(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 	Returns
 	-------
-	LUFSmomentary : arrayOverallData
+	LUFSmomentary : ArrayOverallData
 		Framewise momentary loudness values in LUFS.
 
 	References
@@ -103,7 +103,7 @@ def analyzeLUFSMomentaryOverall(pathFilename: str | PathLike[Any]) -> float | No
 		aspect = None
 	return aspect
 
-def analyzeLUFSShortTerm(pathFilename: str | PathLike[Any]) -> arrayOverallData:
+def analyzeLUFSShortTerm(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the LUFS short-term trajectory of an audio file.
 
 	(AI generated docstring)
@@ -117,7 +117,7 @@ def analyzeLUFSShortTerm(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 	Returns
 	-------
-	LUFSshortTerm : arrayOverallData
+	LUFSshortTerm : ArrayOverallData
 		Framewise short-term loudness values in LUFS.
 
 	References
@@ -148,7 +148,7 @@ def analyzeLUFSShortTermOverall(pathFilename: str | PathLike[Any]) -> float | No
 		aspect = None
 	return aspect
 
-def analyzeLUFSIntegrated(pathFilename: str | PathLike[Any]) -> arrayOverallData:
+def analyzeLUFSIntegrated(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the integrated programme loudness of an audio file.
 
 	(AI generated docstring)
@@ -163,7 +163,7 @@ def analyzeLUFSIntegrated(pathFilename: str | PathLike[Any]) -> arrayOverallData
 
 	Returns
 	-------
-	integratedLoudness : arrayOverallData
+	integratedLoudness : ArrayOverallData
 		Framewise and cumulative integrated-loudness values in LUFS.
 
 	Mathematics
@@ -215,7 +215,7 @@ def analyzeLUFSIntegratedOverall(pathFilename: str | PathLike[Any]) -> float | N
 		aspect = None
 	return aspect
 
-def analyzeLRA(pathFilename: str | PathLike[Any]) -> arrayOverallData:
+def analyzeLRA(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the loudness range of an audio file.
 
 	(AI generated docstring)
@@ -230,7 +230,7 @@ def analyzeLRA(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 	Returns
 	-------
-	loudnessRange : arrayOverallData
+	loudnessRange : ArrayOverallData
 		Framewise and cumulative loudness-range values in loudness units.
 
 	Mathematics
@@ -283,7 +283,7 @@ def analyzeLRAOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> arrayOverallData:
+def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the lower loudness bound used in loudness-range measurement.
 
 	(AI generated docstring)
@@ -298,7 +298,7 @@ def analyzeLUFSlow(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 	Returns
 	-------
-	loudnessLow : arrayOverallData
+	loudnessLow : ArrayOverallData
 		Framewise and cumulative lower-bound loudness values in LUFS.
 
 	Mathematics
@@ -339,7 +339,7 @@ def analyzeLUFSlowOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		aspect = None
 	return aspect
 
-def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> arrayOverallData:
+def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the upper loudness bound used in loudness-range measurement.
 
 	(AI generated docstring)
@@ -354,7 +354,7 @@ def analyzeLUFShigh(pathFilename: str | PathLike[Any]) -> arrayOverallData:
 
 	Returns
 	-------
-	loudnessHigh : arrayOverallData
+	loudnessHigh : ArrayOverallData
 		Framewise and cumulative upper-bound loudness values in LUFS.
 
 	Mathematics
