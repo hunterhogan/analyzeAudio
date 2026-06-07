@@ -11,6 +11,8 @@ import numpy
 if TYPE_CHECKING:
 	from analyzeAudio import libturd, SpectrogramMagnitude, SpectrogramPower
 
+# TODO `analyzeRMSSpectrogram`, `librosa.feature.rms(S=spectrogramMagnitude)`.
+
 def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> libturd:
 	"""Compute octave-equivalent pitch-class energy over time.
 

@@ -22,3 +22,6 @@ def truncateTensors(listTensors: Sequence[Tensor]) -> tuple[Tensor, ...]:
 	"""
 	truncate: int = min(tensor.shape[-1] for tensor in listTensors)
 	return tuple(tensor[..., 0:truncate] for tensor in listTensors)
+
+# TODO create DRY `return 20 * numpy.log10(arrayRMS, where=(arrayRMS != 0), out=None)`
+# If possible, one function for in-place and copy variants.

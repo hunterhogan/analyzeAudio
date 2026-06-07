@@ -24,10 +24,10 @@ from __future__ import annotations
 from analyzeAudio.registry import audioAspects
 from concurrent.futures import as_completed, ProcessPoolExecutor
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
+from pathlib import Path, PurePath
 from typing import Any, TYPE_CHECKING
 import librosa
 import numpy
-import pathlib
 import soundfile
 import torch
 
@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 	from collections.abc import Sequence
 	from concurrent.futures import Future
 	from os import PathLike
+	from torch import Tensor
 
 def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequence[str]) -> list[str | float]:
 	"""
@@ -65,28 +66,33 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequenc
 	[1] `analyzeAudio.audioAspectsRegistry.audioAspects`
 
 	"""  # noqa: DOC501
-	pathlib.Path(pathFilename).stat()  # raises FileNotFoundError if the file does not exist
+	# raises FileNotFoundError if the file does not exist
+	Path(pathFilename).stat()
+	# TODO rethink that ^^^. I _think_ I created this as a form of "fail fast" before I knew the term
+	# "fail fast", but this doesn't fail fast with concurrency.
 	dictionaryAspectsAnalyzed: dict[str, str | float] = dict.fromkeys(listAspectNames, 'not found')
 	"""Despite returning a list, use a dictionary to preserve the order of the listAspectNames.
 	Similarly, 'not found' ensures the returned list length == len(listAspectNames)"""
 
+	# NOTE I don't use `hunterHearsPy.readAudioFile` here because it currently forces all mono into
+	# two channels, which it probably should not do. So check to see if I have changed it.
 	with soundfile.SoundFile(pathFilename) as readSoundFile:
 		sampleRate: int = readSoundFile.samplerate  # pyright: ignore[reportUnusedVariable]  # noqa: F841
 		waveform: Audio = readSoundFile.read(dtype='float32').astype(numpy.float32)
 		waveform = waveform.T
 
-	# I need "lazy" loading
 	tryAgain: bool = True
 	while tryAgain:
 		try:
-			tensorAudio: torch.Tensor = torch.from_numpy(waveform)  # pyright: ignore[reportUnusedVariable, reportUnknownMemberType] # memory-sharing  # noqa: F841
+			# memory-sharing
+			tensorAudio: Tensor = torch.from_numpy(waveform)  # pyright: ignore[reportUnusedVariable, reportUnknownMemberType] # noqa: F841
 			tryAgain = False
-		except RuntimeError as ERRORmessage:  # noqa: PERF203
+		except (RuntimeError, ValueError) as ERRORmessage:  # noqa: PERF203
 			if 'negative stride' in str(ERRORmessage):
 				waveform = waveform.copy()  # not memory-sharing
 				tryAgain = True
 			else:
-				raise ERRORmessage  # noqa: TRY201
+				raise RuntimeError from ERRORmessage
 
 	spectrogram: Spectrogram = librosa.stft(waveform)
 	spectrogramMagnitude: SpectrogramMagnitude = numpy.absolute(spectrogram)
@@ -176,7 +182,7 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 		for claimTicket in as_completed(dictionaryConcurrency):
 			listAspectValues: list[str | float] = claimTicket.result()
 			rowsListFilenameAspectValues.append(
-				[str(pathlib.PurePath(dictionaryConcurrency[claimTicket]).as_posix())]  # noqa: RUF005
+				[str(PurePath(dictionaryConcurrency[claimTicket]).as_posix())]  # noqa: RUF005
 				+ listAspectValues)
 
 	return rowsListFilenameAspectValues

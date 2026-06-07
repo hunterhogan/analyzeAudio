@@ -20,6 +20,141 @@ if TYPE_CHECKING:
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float | None, expected: float | None) -> None:
 	assert actual == expected, f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'
 
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeAbs_Peak_countTotal']])
+def test_analyzeAbs_Peak_countTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeAbs_Peak_countTotal(pathFilename)
+	_standardizedEqualScalars('analyzeAbs_Peak_countTotal', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeBit_depthMean']])
+def test_analyzeBit_depthMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeBit_depthMean(pathFilename)
+	_standardizedEqualScalars('analyzeBit_depthMean', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeCrest_factorMean']])
+def test_analyzeCrest_factorMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeCrest_factorMean(pathFilename)
+	_standardizedEqualScalars('analyzeCrest_factorMean', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeDC_offsetMean']])
+def test_analyzeDC_offsetMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeDC_offsetMean(pathFilename)
+	_standardizedEqualScalars('analyzeDC_offsetMean', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeDynamic_rangeOverall']])
+def test_analyzeDynamic_rangeOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeDynamic_rangeOverall(pathFilename)
+	_standardizedEqualScalars('analyzeDynamic_rangeOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeEntropyMean']])
+def test_analyzeEntropyMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeEntropyMean(pathFilename)
+	_standardizedEqualScalars('analyzeEntropyMean', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeFlat_factorMean']])
+def test_analyzeFlat_factorMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeFlat_factorMean(pathFilename)
+	_standardizedEqualScalars('analyzeFlat_factorMean', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLRAOverall']])
+def test_analyzeLRAOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeLRAOverall(pathFilename)
+	_standardizedEqualScalars('analyzeLRAOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSIntegratedOverall']])
+def test_analyzeLUFSIntegratedOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeLUFSIntegratedOverall(pathFilename)
+	_standardizedEqualScalars('analyzeLUFSIntegratedOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSMomentaryOverall']])
+def test_analyzeLUFSMomentaryOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeLUFSMomentaryOverall(pathFilename)
+	_standardizedEqualScalars('analyzeLUFSMomentaryOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSShortTermOverall']])
+def test_analyzeLUFSShortTermOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeLUFSShortTermOverall(pathFilename)
+	_standardizedEqualScalars('analyzeLUFSShortTermOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFShighOverall']])
+def test_analyzeLUFShighOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeLUFShighOverall(pathFilename)
+	_standardizedEqualScalars('analyzeLUFShighOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSlowOverall']])
+def test_analyzeLUFSlowOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeLUFSlowOverall(pathFilename)
+	_standardizedEqualScalars('analyzeLUFSlowOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMax_differenceOverall']])
+def test_analyzeMax_differenceOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeMax_differenceOverall(pathFilename)
+	_standardizedEqualScalars('analyzeMax_differenceOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMax_levelOverall']])
+def test_analyzeMax_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeMax_levelOverall(pathFilename)
+	_standardizedEqualScalars('analyzeMax_levelOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMean_differenceMean']])
+def test_analyzeMean_differenceMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeMean_differenceMean(pathFilename)
+	_standardizedEqualScalars('analyzeMean_differenceMean', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMin_differenceOverall']])
+def test_analyzeMin_differenceOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeMin_differenceOverall(pathFilename)
+	_standardizedEqualScalars('analyzeMin_differenceOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMin_levelOverall']])
+def test_analyzeMin_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeMin_levelOverall(pathFilename)
+	_standardizedEqualScalars('analyzeMin_levelOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeNoise_floor_countTotal']])
+def test_analyzeNoise_floor_countTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeNoise_floor_countTotal(pathFilename)
+	_standardizedEqualScalars('analyzeNoise_floor_countTotal', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeNoise_floorOverall']])
+def test_analyzeNoise_floorOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeNoise_floorOverall(pathFilename)
+	_standardizedEqualScalars('analyzeNoise_floorOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeNumber_of_samplesTotal']])
+def test_analyzeNumber_of_samplesTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeNumber_of_samplesTotal(pathFilename)
+	_standardizedEqualScalars('analyzeNumber_of_samplesTotal', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzePeak_countTotal']])
+def test_analyzePeak_countTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzePeak_countTotal(pathFilename)
+	_standardizedEqualScalars('analyzePeak_countTotal', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzePeak_levelOverall']])
+def test_analyzePeak_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzePeak_levelOverall(pathFilename)
+	_standardizedEqualScalars('analyzePeak_levelOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_differenceOverall']])
+def test_analyzeRMS_differenceOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeRMS_differenceOverall(pathFilename)
+	_standardizedEqualScalars('analyzeRMS_differenceOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_levelOverall']])
+def test_analyzeRMS_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeRMS_levelOverall(pathFilename)
+	_standardizedEqualScalars('analyzeRMS_levelOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_peakOverall']])
+def test_analyzeRMS_peakOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeRMS_peakOverall(pathFilename)
+	_standardizedEqualScalars('analyzeRMS_peakOverall', pathFilename, actual, expected[pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_troughOverall']])
+def test_analyzeRMS_troughOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeRMS_troughOverall(pathFilename)
+	_standardizedEqualScalars('analyzeRMS_troughOverall', pathFilename, actual, expected[pathFilename.name])
+
 @pytest.mark.parametrize('expected', [expectedByFilename['analyzeSpectralCentroidMean']])
 def test_analyzeSpectralCentroidMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
 	actual = analyzeSpectralCentroidMean(pathFilename)
@@ -85,110 +220,10 @@ def test_analyzeSpectralVarianceMean(pathFilename: Path, expected: dict[str, flo
 	actual = analyzeSpectralVarianceMean(pathFilename)
 	_standardizedEqualScalars('analyzeSpectralVarianceMean', pathFilename, actual, expected[pathFilename.name])
 
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeAbs_Peak_countTotal']])
-def test_analyzeAbs_Peak_countTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeAbs_Peak_countTotal(pathFilename)
-	_standardizedEqualScalars('analyzeAbs_Peak_countTotal', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeBit_depthMean']])
-def test_analyzeBit_depthMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeBit_depthMean(pathFilename)
-	_standardizedEqualScalars('analyzeBit_depthMean', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeCrest_factorMean']])
-def test_analyzeCrest_factorMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeCrest_factorMean(pathFilename)
-	_standardizedEqualScalars('analyzeCrest_factorMean', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeDC_offsetMean']])
-def test_analyzeDC_offsetMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeDC_offsetMean(pathFilename)
-	_standardizedEqualScalars('analyzeDC_offsetMean', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeDynamic_rangeOverall']])
-def test_analyzeDynamic_rangeOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeDynamic_rangeOverall(pathFilename)
-	_standardizedEqualScalars('analyzeDynamic_rangeOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeEntropyMean']])
-def test_analyzeEntropyMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeEntropyMean(pathFilename)
-	_standardizedEqualScalars('analyzeEntropyMean', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeFlat_factorMean']])
-def test_analyzeFlat_factorMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeFlat_factorMean(pathFilename)
-	_standardizedEqualScalars('analyzeFlat_factorMean', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMax_differenceOverall']])
-def test_analyzeMax_differenceOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeMax_differenceOverall(pathFilename)
-	_standardizedEqualScalars('analyzeMax_differenceOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMax_levelOverall']])
-def test_analyzeMax_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeMax_levelOverall(pathFilename)
-	_standardizedEqualScalars('analyzeMax_levelOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMean_differenceMean']])
-def test_analyzeMean_differenceMean(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeMean_differenceMean(pathFilename)
-	_standardizedEqualScalars('analyzeMean_differenceMean', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMin_differenceOverall']])
-def test_analyzeMin_differenceOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeMin_differenceOverall(pathFilename)
-	_standardizedEqualScalars('analyzeMin_differenceOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeMin_levelOverall']])
-def test_analyzeMin_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeMin_levelOverall(pathFilename)
-	_standardizedEqualScalars('analyzeMin_levelOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeNoise_floorOverall']])
-def test_analyzeNoise_floorOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeNoise_floorOverall(pathFilename)
-	_standardizedEqualScalars('analyzeNoise_floorOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeNoise_floor_countTotal']])
-def test_analyzeNoise_floor_countTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeNoise_floor_countTotal(pathFilename)
-	_standardizedEqualScalars('analyzeNoise_floor_countTotal', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeNumber_of_samplesTotal']])
-def test_analyzeNumber_of_samplesTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeNumber_of_samplesTotal(pathFilename)
-	_standardizedEqualScalars('analyzeNumber_of_samplesTotal', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzePeak_countTotal']])
-def test_analyzePeak_countTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzePeak_countTotal(pathFilename)
-	_standardizedEqualScalars('analyzePeak_countTotal', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzePeak_levelOverall']])
-def test_analyzePeak_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzePeak_levelOverall(pathFilename)
-	_standardizedEqualScalars('analyzePeak_levelOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_differenceOverall']])
-def test_analyzeRMS_differenceOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeRMS_differenceOverall(pathFilename)
-	_standardizedEqualScalars('analyzeRMS_differenceOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_levelOverall']])
-def test_analyzeRMS_levelOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeRMS_levelOverall(pathFilename)
-	_standardizedEqualScalars('analyzeRMS_levelOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_peakOverall']])
-def test_analyzeRMS_peakOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeRMS_peakOverall(pathFilename)
-	_standardizedEqualScalars('analyzeRMS_peakOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeRMS_troughOverall']])
-def test_analyzeRMS_troughOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeRMS_troughOverall(pathFilename)
-	_standardizedEqualScalars('analyzeRMS_troughOverall', pathFilename, actual, expected[pathFilename.name])
+@pytest.mark.parametrize('expected', [expectedByFilename['analyzeTruePeakOverall']])
+def test_analyzeTruePeakOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
+	actual = analyzeTruePeakOverall(pathFilename)
+	_standardizedEqualScalars('analyzeTruePeakOverall', pathFilename, actual, expected[pathFilename.name])
 
 @pytest.mark.parametrize('expected', [expectedByFilename['analyzeZero_crossingsTotal']])
 def test_analyzeZero_crossingsTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
@@ -199,38 +234,3 @@ def test_analyzeZero_crossingsTotal(pathFilename: Path, expected: dict[str, floa
 def test_analyzeZero_crossings_rateOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
 	actual = analyzeZero_crossings_rateOverall(pathFilename)
 	_standardizedEqualScalars('analyzeZero_crossings_rateOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeTruePeakOverall']])
-def test_analyzeTruePeakOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeTruePeakOverall(pathFilename)
-	_standardizedEqualScalars('analyzeTruePeakOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSMomentaryOverall']])
-def test_analyzeLUFSMomentaryOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeLUFSMomentaryOverall(pathFilename)
-	_standardizedEqualScalars('analyzeLUFSMomentaryOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSShortTermOverall']])
-def test_analyzeLUFSShortTermOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeLUFSShortTermOverall(pathFilename)
-	_standardizedEqualScalars('analyzeLUFSShortTermOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSIntegratedOverall']])
-def test_analyzeLUFSIntegratedOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeLUFSIntegratedOverall(pathFilename)
-	_standardizedEqualScalars('analyzeLUFSIntegratedOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLRAOverall']])
-def test_analyzeLRAOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeLRAOverall(pathFilename)
-	_standardizedEqualScalars('analyzeLRAOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFSlowOverall']])
-def test_analyzeLUFSlowOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeLUFSlowOverall(pathFilename)
-	_standardizedEqualScalars('analyzeLUFSlowOverall', pathFilename, actual, expected[pathFilename.name])
-
-@pytest.mark.parametrize('expected', [expectedByFilename['analyzeLUFShighOverall']])
-def test_analyzeLUFShighOverall(pathFilename: Path, expected: dict[str, float | None]) -> None:
-	actual = analyzeLUFShighOverall(pathFilename)
-	_standardizedEqualScalars('analyzeLUFShighOverall', pathFilename, actual, expected[pathFilename.name])

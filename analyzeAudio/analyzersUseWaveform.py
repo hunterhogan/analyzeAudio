@@ -1,3 +1,4 @@
+# ruff: noqa: D103
 """Analyzers that use the waveform of audio data."""
 from __future__ import annotations
 
@@ -8,6 +9,85 @@ import numpy
 
 if TYPE_CHECKING:
 	from analyzeAudio import Audio, libturd
+
+# TODO `librosa.zero_crossings`.
+
+def analyzeRMSWaveform(waveform: Audio, **keywordArguments: Any) -> libturd:
+	"""Compute root-mean-square level from the waveform in decibels.
+
+	(AI generated docstring)
+
+	You can use this function to summarize framewise signal level from
+	`waveform`. The function measures root-mean-square amplitude for each
+	analysis frame and expresses the result on a decibel scale [1][2].
+
+	Parameters
+	----------
+	waveform : Audio
+		Waveform whose framewise level is measured.
+	keywordArguments : Any
+		Additional RMS-analysis settings.
+
+	Returns
+	-------
+	rootMeanSquareDecibels : libturd
+		Framewise RMS level expressed in decibels.
+
+	Mathematics
+	-----------
+	root-mean-square amplitude : equation
+	```
+		Let xₜ[k] ≜ k-th waveform sample in frame t
+			N ≜ number of samples in frame t
+
+		RMS(t) = √((1 / N) ∑_(k = 0)^(N - 1) xₜ[k]²)
+	```
+
+	decibel mapping : equation
+	```
+		L_RMS(t) = 20 log10(RMS(t))
+	```
+
+	References
+	----------
+	[1] Constantinescu, C., & Brad, R. (2023). An overview on sound features
+		in time and frequency domain. International Journal of Advanced
+		Statistics and IT&C for Economics and Life Sciences, 13(1), 51–56.
+		https://reference-global.com/download/article/10.2478/ijasitels-2023-0006.pdf
+	[2] Panagiotakis, C., & Tziritas, G. (2005). A speech/music discriminator
+		based on RMS and zero-crossings. IEEE Transactions on Multimedia,
+		7(1), 155–166.
+		https://www.csd.uoc.gr/~tziritas/papers/07tmm01-panagiotakis-proof.pdf
+	"""
+	return librosa.feature.rms(y=waveform, **keywordArguments)
+
+@registrationAudioAspect('RMS Waveform mean')
+def analyzeRMSWaveformMean(waveform: Audio, **keywordArguments: Any) -> float:
+	"""Aspect 'RMS Waveform mean': mean framewise RMS level in decibels.
+
+	Returns
+	-------
+	rootMeanSquareMean : float
+		Mean value of the time-varying RMS level in decibels.
+
+	"""
+	return float(analyzeRMSWaveform(waveform, **keywordArguments).mean().item())
+
+def analyzeRMSWaveform_dB(waveform: Audio, **keywordArguments: Any) -> libturd:
+	arrayRMS: libturd = analyzeRMSWaveform(waveform, **keywordArguments)
+	return 20 * numpy.log10(arrayRMS, where=(arrayRMS != 0), out=None)
+
+@registrationAudioAspect('RMS Waveform dB mean')
+def analyzeRMSWaveform_dBMean(waveform: Audio, **keywordArguments: Any) -> float:
+	"""Aspect 'RMS Waveform dB mean': mean framewise RMS level in decibels.
+
+	Returns
+	-------
+	rootMeanSquare_dBMean : float
+		Mean value of the time-varying RMS level in decibels.
+
+	"""
+	return float(analyzeRMSWaveform_dB(waveform, **keywordArguments).mean().item())
 
 def analyzeTempogram(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> libturd:
 	"""Compute a local autocorrelation tempogram from the waveform.
@@ -79,69 +159,6 @@ def analyzeTempogramMean(waveform: Audio, sampleRate: int, **keywordArguments: A
 
 	"""
 	return float(analyzeTempogram(waveform, sampleRate, **keywordArguments).mean().item())
-
-# "RMS value from audio samples is faster ... However, ... spectrogram ... more accurate ... because ... windowed"
-def analyzeRMS(waveform: Audio, **keywordArguments: Any) -> libturd:
-	"""Compute root-mean-square level from the waveform in decibels.
-
-	(AI generated docstring)
-
-	You can use this function to summarize framewise signal level from
-	`waveform`. The function measures root-mean-square amplitude for each
-	analysis frame and expresses the result on a decibel scale [1][2].
-
-	Parameters
-	----------
-	waveform : Audio
-		Waveform whose framewise level is measured.
-	keywordArguments : Any
-		Additional RMS-analysis settings.
-
-	Returns
-	-------
-	rootMeanSquareDecibels : libturd
-		Framewise RMS level expressed in decibels.
-
-	Mathematics
-	-----------
-	root-mean-square amplitude : equation
-	```
-		Let xₜ[k] ≜ k-th waveform sample in frame t
-			N ≜ number of samples in frame t
-
-		RMS(t) = √((1 / N) ∑_(k = 0)^(N - 1) xₜ[k]²)
-	```
-
-	decibel mapping : equation
-	```
-		L_RMS(t) = 20 log10(RMS(t))
-	```
-
-	References
-	----------
-	[1] Constantinescu, C., & Brad, R. (2023). An overview on sound features
-		in time and frequency domain. International Journal of Advanced
-		Statistics and IT&C for Economics and Life Sciences, 13(1), 51–56.
-		https://reference-global.com/download/article/10.2478/ijasitels-2023-0006.pdf
-	[2] Panagiotakis, C., & Tziritas, G. (2005). A speech/music discriminator
-		based on RMS and zero-crossings. IEEE Transactions on Multimedia,
-		7(1), 155–166.
-		https://www.csd.uoc.gr/~tziritas/papers/07tmm01-panagiotakis-proof.pdf
-	"""
-	arrayRMS: libturd = librosa.feature.rms(y=waveform, **keywordArguments)
-	return 20 * numpy.log10(arrayRMS, where=(arrayRMS != 0), out=None)  # dB
-
-@registrationAudioAspect('RMS from waveform mean')
-def analyzeRMSMean(waveform: Audio, **keywordArguments: Any) -> float:
-	"""Aspect 'RMS from waveform mean': mean framewise RMS level in decibels.
-
-	Returns
-	-------
-	rootMeanSquareMean : float
-		Mean value of the time-varying RMS level in decibels.
-
-	"""
-	return float(analyzeRMS(waveform, **keywordArguments).mean().item())
 
 def analyzeTempo(waveform: Audio, sampleRate: int, **keywordArguments: Any) -> libturd:
 	"""Estimate tempo in beats per minute from waveform periodicity.
@@ -258,9 +275,9 @@ def analyzeZeroCrossingRate(waveform: Audio, **keywordArguments: Any) -> libturd
 	"""
 	return librosa.feature.zero_crossing_rate(y=waveform, **keywordArguments)
 
-@registrationAudioAspect('Zero-crossing rate mean')
+@registrationAudioAspect('Zero Crossing Rate mean')
 def analyzeZeroCrossingRateMean(waveform: Audio, **keywordArguments: Any) -> float:
-	"""Aspect 'Zero-crossing rate mean': mean framewise zero-crossing rate.
+	"""Aspect 'Zero Crossing Rate mean': mean framewise zero-crossing rate.
 
 	Returns
 	-------
