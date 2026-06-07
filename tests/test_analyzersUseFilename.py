@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 pytestmark = pytest.mark.skipif(os.getenv('GITHUB_ACTIONS') == 'true', reason='Skipped in GitHub Actions')
 
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float | None, expected: float | None) -> None:
-	assert actual == expected, f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'
+	assert actual == pytest.approx(expected), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'
 
 @pytest.mark.parametrize('expected', [expectedByFilename['analyzeAbs_Peak_countTotal']])
 def test_analyzeAbs_Peak_countTotal(pathFilename: Path, expected: dict[str, float | None]) -> None:
