@@ -51,6 +51,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: federicocarboni/setup-ffmpeg@v3.1
+        with:
+          github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.tests-python-versions }}
