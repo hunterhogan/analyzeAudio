@@ -6,10 +6,10 @@ from analyzeAudio._theSSOT import settingsPackage
 
 # isort: split
 from analyzeAudio._theTypes import (
-	analyzersAudioAspects as analyzersAudioAspects, Audio as Audio, BleedFull as BleedFull, BleedFullArray as BleedFullArray,
-	libturd as libturd, ParametersMelSpectrogram as ParametersMelSpectrogram, parameterSpecifications as parameterSpecifications,
-	Spectrogram as Spectrogram, SpectrogramMagnitude as SpectrogramMagnitude, SpectrogramPower as SpectrogramPower,
-	typeReturned as typeReturned)
+	analyzersAudioAspects as analyzersAudioAspects, arrayChannelData as arrayChannelData, arrayOverallData as arrayOverallData, Audio as Audio,
+	BleedFull as BleedFull, BleedFullArray as BleedFullArray, libturd as libturd, ParametersMelSpectrogram as ParametersMelSpectrogram,
+	parameterSpecifications as parameterSpecifications, Spectrogram as Spectrogram, SpectrogramMagnitude as SpectrogramMagnitude,
+	SpectrogramPower as SpectrogramPower, typeReturned as typeReturned)
 
 # isort: split
 from analyzeAudio._beDRY import truncateTensors as truncateTensors

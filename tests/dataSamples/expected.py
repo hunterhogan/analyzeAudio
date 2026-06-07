@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-dictionaryExpectedAnalyzersUseFilename: dict[str, dict[str, float | None]] = {
+expectedByFilename: dict[str, dict[str, float | None]] = {
 	'analyzeSpectralCentroidMean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 1149.3679444444444
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 1034.9696

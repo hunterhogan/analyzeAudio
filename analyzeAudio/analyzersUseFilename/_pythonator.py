@@ -1,5 +1,5 @@
 """Convert FFprobe output to a standardized Python object."""
-# ruff: noqa: D103 ERA001 D101
+# ruff: noqa: ERA001
 from __future__ import annotations
 
 from collections import defaultdict
