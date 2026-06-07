@@ -8,7 +8,7 @@ permissions:
 jobs:
 
   get-project-info:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tests-python-versions: ${{ steps.get-project-info.outputs.versions }}
 
@@ -44,17 +44,17 @@ jobs:
 
   make-testbeds:
     needs: get-project-info
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         tests-python-versions: ${{ fromJson(needs.get-project-info.outputs.tests-python-versions) }}
     steps:
       - uses: actions/checkout@v6
+      - uses: federicocarboni/setup-ffmpeg@v3.1
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.tests-python-versions }}
           cache: pip
           cache-dependency-path: pyproject.toml
-
       - run: pip install -e .[testing]
       - run: pytest
