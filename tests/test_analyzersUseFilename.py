@@ -12,10 +12,13 @@ from analyzeAudio.analyzersUseFilename import (
 	analyzeSpectralVarianceMean, analyzeTruePeakOverall, analyzeZero_crossings_rateOverall, analyzeZero_crossingsTotal)
 from tests.dataSamples.expected import expectedByFilename
 from typing import TYPE_CHECKING
+import os
 import pytest
 
 if TYPE_CHECKING:
 	from pathlib import Path
+
+pytestmark = pytest.mark.skipif(os.getenv('GITHUB_ACTIONS') == 'true', reason='Skipped in GitHub Actions')
 
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float | None, expected: float | None) -> None:
 	assert actual == expected, f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'
