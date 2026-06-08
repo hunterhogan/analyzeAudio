@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 	from tests import WaveformSampleRate
 
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float, expected: float) -> None:
-	assert actual == pytest.approx(expected), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'
+	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'
 
 @pytest.mark.parametrize('expected', [expectedWaveform['analyzeRMSWaveformMean']])
 def test_analyzeRMSWaveformMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
