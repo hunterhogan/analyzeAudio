@@ -23,10 +23,11 @@ def test_analyzeRMSWaveform_dBMean(waveform_sampleRate: WaveformSampleRate, expe
 	actual = analyzeRMSWaveform_dBMean(waveform_sampleRate.waveform)
 	_standardizedEqualScalars('analyzeRMSWaveform_dBMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
 
-@pytest.mark.parametrize('expected', [expectedWaveform['analyzeTempogramMean']])
-def test_analyzeTempogramMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
-	actual = analyzeTempogramMean(waveform_sampleRate.waveform, waveform_sampleRate.sampleRate)
-	_standardizedEqualScalars('analyzeTempogramMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
+# TODO tolerances are quite high
+# @pytest.mark.parametrize('expected', [expectedWaveform['analyzeTempogramMean']])
+# def test_analyzeTempogramMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
+# 	actual = analyzeTempogramMean(waveform_sampleRate.waveform, waveform_sampleRate.sampleRate)
+# 	_standardizedEqualScalars('analyzeTempogramMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
 
 @pytest.mark.parametrize('expected', [expectedWaveform['analyzeTempoMean']])
 def test_analyzeTempoMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:

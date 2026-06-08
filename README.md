@@ -6,6 +6,13 @@ Measure one or more aspects of one or more audio files.
 
 Some options to [download FFmpeg and FFprobe](https://www.ffmpeg.org/download.html) at ffmpeg.org.
 
+### Install FFmpeg on Google Colab
+
+```python
+from analyzeAudio.ffmpeg import verifyFFmpegColab
+verifyFFmpegColab()
+```
+
 [![pip install analyzeAudio](https://img.shields.io/badge/pip_install-analyzeAudio-gray.svg?labelColor=blue)](https://pypi.org/project/analyzeAudio/)
 [![uv add analyzeAudio](https://img.shields.io/badge/uv_add-analyzeAudio-gray.svg?labelColor=blue)](https://pypi.org/project/analyzeAudio/)
 
@@ -18,13 +25,13 @@ Some options to [download FFmpeg and FFprobe](https://www.ffmpeg.org/download.ht
 
 The main user workflows are:
 
-| What you want | Use |
-| --- | --- |
-| One value for each selected measurement on one file | `analyzeAudioFile` |
-| The same selected measurements for many files | `analyzeAudioListPathFilenames` |
-| A TSV, CSV, or other delimited output file | `dataTabularTOpathFilenameDelimited` |
-| One specific measurement or detailed frame data | Import a direct analyzer function |
-| One comparison score between two files | Import a filename contest function |
+| What you want                                            | Use                                             |
+| -------------------------------------------------------- | ----------------------------------------------- |
+| One value for each selected measurement on one file      | `analyzeAudioFile`                              |
+| The same selected measurements for many files            | `analyzeAudioListPathFilenames`                 |
+| A TSV, CSV, or other delimited output file               | `dataTabularTOpathFilenameDelimited`            |
+| One specific measurement or detailed frame data          | Import a direct analyzer function               |
+| One comparison score between two files                   | Import a filename contest function              |
 | One comparison score between two tensors or spectrograms | Import a tensor or spectrogram contest function |
 
 ### One-file measurements
@@ -34,78 +41,78 @@ Use these names with `analyzeAudioFile` or
 
 Loudness and true peak:
 
-| Name | What it measures |
-| --- | --- |
-| `LUFS integrated` | Whole-file integrated loudness. |
-| `LUFS momentary maximum` | Maximum momentary loudness. |
-| `LUFS short-term maximum` | Maximum short-term loudness. |
-| `LUFS loudness range` | Loudness range. |
-| `LUFS low` | Low loudness range boundary. |
-| `LUFS high` | High loudness range boundary. |
-| `true_peak maximum` | Maximum true peak level. |
+| Name                      | What it measures                |
+| ------------------------- | ------------------------------- |
+| `LUFS integrated`         | Whole-file integrated loudness. |
+| `LUFS momentary maximum`  | Maximum momentary loudness.     |
+| `LUFS short-term maximum` | Maximum short-term loudness.    |
+| `LUFS loudness range`     | Loudness range.                 |
+| `LUFS low`                | Low loudness range boundary.    |
+| `LUFS high`               | High loudness range boundary.   |
+| `true_peak maximum`       | Maximum true peak level.        |
 
 Signal level, dynamics, and samples:
 
-| Name | What it measures |
-| --- | --- |
-| `RMS_level overall` | Overall RMS level. |
-| `RMS_peak overall` | Overall RMS peak. |
-| `RMS_trough overall` | Overall RMS trough. |
-| `RMS_difference overall` | Overall RMS difference between adjacent samples. |
-| `Peak_level overall` | Overall peak level. |
-| `Peak_count total` | Total detected peak count. |
-| `Abs_Peak_count total` | Total absolute peak count. |
-| `Crest_factor mean` | Mean crest factor. |
-| `Dynamic_range overall` | Overall dynamic range. |
-| `DC_offset mean` | Mean DC offset. |
-| `Bit_depth mean` | Mean detected bit depth. |
-| `Entropy mean` | Mean signal entropy. |
-| `Flat_factor mean` | Mean flat factor. |
-| `Max_difference overall` | Maximum sample difference. |
-| `Max_level overall` | Maximum sample level. |
-| `Mean_difference mean` | Mean adjacent-sample difference. |
-| `Min_difference overall` | Minimum sample difference. |
-| `Min_level overall` | Minimum sample level. |
-| `Noise_floor overall` | Overall noise floor. |
-| `Noise_floor_count total` | Total noise-floor count. |
-| `Number_of_samples total` | Total samples. |
-| `Zero_crossings total` | Total zero crossings. |
-| `Zero_crossings_rate overall` | Overall zero-crossing rate. |
+| Name                          | What it measures                                 |
+| ----------------------------- | ------------------------------------------------ |
+| `RMS_level overall`           | Overall RMS level.                               |
+| `RMS_peak overall`            | Overall RMS peak.                                |
+| `RMS_trough overall`          | Overall RMS trough.                              |
+| `RMS_difference overall`      | Overall RMS difference between adjacent samples. |
+| `Peak_level overall`          | Overall peak level.                              |
+| `Peak_count total`            | Total detected peak count.                       |
+| `Abs_Peak_count total`        | Total absolute peak count.                       |
+| `Crest_factor mean`           | Mean crest factor.                               |
+| `Dynamic_range overall`       | Overall dynamic range.                           |
+| `DC_offset mean`              | Mean DC offset.                                  |
+| `Bit_depth mean`              | Mean detected bit depth.                         |
+| `Entropy mean`                | Mean signal entropy.                             |
+| `Flat_factor mean`            | Mean flat factor.                                |
+| `Max_difference overall`      | Maximum sample difference.                       |
+| `Max_level overall`           | Maximum sample level.                            |
+| `Mean_difference mean`        | Mean adjacent-sample difference.                 |
+| `Min_difference overall`      | Minimum sample difference.                       |
+| `Min_level overall`           | Minimum sample level.                            |
+| `Noise_floor overall`         | Overall noise floor.                             |
+| `Noise_floor_count total`     | Total noise-floor count.                         |
+| `Number_of_samples total`     | Total samples.                                   |
+| `Zero_crossings total`        | Total zero crossings.                            |
+| `Zero_crossings_rate overall` | Overall zero-crossing rate.                      |
 
 Spectral measurements:
 
-| Name | What it measures |
-| --- | --- |
-| `Power spectral density mean` | Mean power spectral density. |
-| `Spectral centroid mean` | Mean spectral center of mass from filename analysis. |
-| `Spectral crest mean` | Mean spectral crest. |
-| `Spectral decrease mean` | Mean spectral decrease. |
-| `Spectral entropy mean` | Mean spectral entropy. |
-| `Spectral flatness mean` | Mean spectral flatness from filename analysis. |
-| `Spectral flux mean` | Mean spectral flux. |
-| `Spectral kurtosis mean` | Mean spectral kurtosis. |
-| `Spectral rolloff mean` | Mean spectral rolloff. |
-| `Spectral skewness mean` | Mean spectral skewness. |
-| `Spectral slope mean` | Mean spectral slope. |
-| `Spectral spread mean` | Mean spectral spread. |
-| `Spectral variance mean` | Mean spectral variance. |
-| `Spectral Bandwidth mean` | Mean librosa spectral bandwidth. |
-| `Spectral Centroid mean` | Mean librosa spectral centroid. |
-| `Spectral Contrast mean` | Mean librosa spectral contrast. |
-| `Spectral Flatness mean` | Mean librosa spectral flatness ratio. |
-| `Spectral Flatness dB mean` | Mean librosa spectral flatness in decibels. |
-| `Chromagram mean` | Mean chroma energy across pitch classes. |
+| Name                          | What it measures                                     |
+| ----------------------------- | ---------------------------------------------------- |
+| `Power spectral density mean` | Mean power spectral density.                         |
+| `Spectral centroid mean`      | Mean spectral center of mass from filename analysis. |
+| `Spectral crest mean`         | Mean spectral crest.                                 |
+| `Spectral decrease mean`      | Mean spectral decrease.                              |
+| `Spectral entropy mean`       | Mean spectral entropy.                               |
+| `Spectral flatness mean`      | Mean spectral flatness from filename analysis.       |
+| `Spectral flux mean`          | Mean spectral flux.                                  |
+| `Spectral kurtosis mean`      | Mean spectral kurtosis.                              |
+| `Spectral rolloff mean`       | Mean spectral rolloff.                               |
+| `Spectral skewness mean`      | Mean spectral skewness.                              |
+| `Spectral slope mean`         | Mean spectral slope.                                 |
+| `Spectral spread mean`        | Mean spectral spread.                                |
+| `Spectral variance mean`      | Mean spectral variance.                              |
+| `Spectral Bandwidth mean`     | Mean librosa spectral bandwidth.                     |
+| `Spectral Centroid mean`      | Mean librosa spectral centroid.                      |
+| `Spectral Contrast mean`      | Mean librosa spectral contrast.                      |
+| `Spectral Flatness mean`      | Mean librosa spectral flatness ratio.                |
+| `Spectral Flatness dB mean`   | Mean librosa spectral flatness in decibels.          |
+| `Chromagram mean`             | Mean chroma energy across pitch classes.             |
 
 Waveform, rhythm, and speech measurements:
 
-| Name | What it measures |
-| --- | --- |
-| `RMS Waveform mean` | Mean waveform RMS amplitude. |
-| `RMS Waveform dB mean` | Mean waveform RMS level in decibels. |
-| `Tempogram mean` | Mean tempogram value. |
-| `Tempo mean` | Mean estimated tempo. |
-| `Zero Crossing Rate mean` | Mean waveform zero-crossing rate. |
-| `SRMR mean` | Mean speech-to-reverberation modulation energy ratio. |
+| Name                      | What it measures                                      |
+| ------------------------- | ----------------------------------------------------- |
+| `RMS Waveform mean`       | Mean waveform RMS amplitude.                          |
+| `RMS Waveform dB mean`    | Mean waveform RMS level in decibels.                  |
+| `Tempogram mean`          | Mean tempogram value.                                 |
+| `Tempo mean`              | Mean estimated tempo.                                 |
+| `Zero Crossing Rate mean` | Mean waveform zero-crossing rate.                     |
+| `SRMR mean`               | Mean speech-to-reverberation modulation energy ratio. |
 
 Some names intentionally differ only by capitalization or wording. For example,
 `Spectral flatness mean` and `Spectral Flatness mean` are different
@@ -246,14 +253,14 @@ chromagram = analyzeChromagramMean(spectrogramPower, sampleRate)
 
 Filename contests compare two audio files:
 
-| Function | What it compares |
-| --- | --- |
-| `analyzePSNRmean` | Mean peak signal-to-noise ratio. |
-| `analyzeSDRmean` | Mean signal-to-distortion ratio. |
-| `analyzeSI_SDRmean` | Mean scale-invariant signal-to-distortion ratio. |
-| `analyzeKPSNRmean` | Bounded score from PSNR. |
-| `analyzeKSDRmean` | Bounded score from SDR. |
-| `analyzeKSI_SDRmean` | Bounded score from SI-SDR. |
+| Function             | What it compares                                 |
+| -------------------- | ------------------------------------------------ |
+| `analyzePSNRmean`    | Mean peak signal-to-noise ratio.                 |
+| `analyzeSDRmean`     | Mean signal-to-distortion ratio.                 |
+| `analyzeSI_SDRmean`  | Mean scale-invariant signal-to-distortion ratio. |
+| `analyzeKPSNRmean`   | Bounded score from PSNR.                         |
+| `analyzeKSDRmean`    | Bounded score from SDR.                          |
+| `analyzeKSI_SDRmean` | Bounded score from SI-SDR.                       |
 
 ```python
 from analyzeAudio.analyzersUseFilename import (
@@ -272,25 +279,25 @@ si_sdr = analyzeSI_SDRmean(pathReference, pathEstimate)
 
 Tensor waveform contests usually compare two PyTorch waveform tensors:
 
-| Function | What it compares |
-| --- | --- |
-| `analyzeL1SNRMean` | Mean L1 signal-to-noise ratio. |
-| `analyzeL1SNRDBMean` | Mean L1 signal-to-noise ratio in decibels. |
-| `analyzeMultiL1SNRDBMean` | Multi-source L1 SNR in decibels. |
-| `analyzeSTFTL1SNRDBMean` | STFT-domain L1 SNR in decibels. |
-| `analyzeLogWMSEMean` | Mean log weighted MSE audio-quality score for reference, estimate, and mixture tensors. |
-| `analyzeDCLoss` | DC loss. |
-| `analyzeESRLoss` | Error-to-signal ratio loss. |
-| `analyzeLogCoshLoss` | Log-cosh loss. |
-| `analyzeSNRLoss` | Signal-to-noise ratio loss. |
-| `analyzeSISDRLoss` | Scale-invariant SDR loss. |
-| `analyzeSDSDRLoss` | Scale-dependent SDR loss. |
-| `analyzeSTFTLoss` | STFT loss. |
-| `analyzeMelSTFTLoss` | Mel-STFT loss. |
-| `analyzeChromaSTFTLoss` | Chroma-STFT loss. |
-| `analyzeMultiResolutionSTFTLoss` | Multi-resolution STFT loss. |
-| `analyzeRandomResolutionSTFTLoss` | Random-resolution STFT loss. |
-| `analyzeSumAndDifferenceSTFTLoss` | Sum-and-difference STFT loss. |
+| Function                          | What it compares                                                                        |
+| --------------------------------- | --------------------------------------------------------------------------------------- |
+| `analyzeL1SNRMean`                | Mean L1 signal-to-noise ratio.                                                          |
+| `analyzeL1SNRDBMean`              | Mean L1 signal-to-noise ratio in decibels.                                              |
+| `analyzeMultiL1SNRDBMean`         | Multi-source L1 SNR in decibels.                                                        |
+| `analyzeSTFTL1SNRDBMean`          | STFT-domain L1 SNR in decibels.                                                         |
+| `analyzeLogWMSEMean`              | Mean log weighted MSE audio-quality score for reference, estimate, and mixture tensors. |
+| `analyzeDCLoss`                   | DC loss.                                                                                |
+| `analyzeESRLoss`                  | Error-to-signal ratio loss.                                                             |
+| `analyzeLogCoshLoss`              | Log-cosh loss.                                                                          |
+| `analyzeSNRLoss`                  | Signal-to-noise ratio loss.                                                             |
+| `analyzeSISDRLoss`                | Scale-invariant SDR loss.                                                               |
+| `analyzeSDSDRLoss`                | Scale-dependent SDR loss.                                                               |
+| `analyzeSTFTLoss`                 | STFT loss.                                                                              |
+| `analyzeMelSTFTLoss`              | Mel-STFT loss.                                                                          |
+| `analyzeChromaSTFTLoss`           | Chroma-STFT loss.                                                                       |
+| `analyzeMultiResolutionSTFTLoss`  | Multi-resolution STFT loss.                                                             |
+| `analyzeRandomResolutionSTFTLoss` | Random-resolution STFT loss.                                                            |
+| `analyzeSumAndDifferenceSTFTLoss` | Sum-and-difference STFT loss.                                                           |
 
 ```python
 from analyzeAudio.contestsTensor import (
@@ -317,11 +324,11 @@ logwmse = analyzeLogWMSEMean(
 
 Tensor spectrogram contests compare two PyTorch magnitude spectrogram tensors:
 
-| Function | What it compares |
-| --- | --- |
+| Function                         | What it compares           |
+| -------------------------------- | -------------------------- |
 | `analyzeSpectralConvergenceLoss` | Spectral convergence loss. |
-| `analyzeSTFTMagnitudeLoss` | STFT magnitude loss. |
-| `analyzeL1FrequencyLoss` | L1 frequency score. |
+| `analyzeSTFTMagnitudeLoss`       | STFT magnitude loss.       |
+| `analyzeL1FrequencyLoss`         | L1 frequency score.        |
 
 ```python
 from analyzeAudio.contestsTensorSpectrogram import (
@@ -341,10 +348,10 @@ stftMagnitude = analyzeSTFTMagnitudeLoss(
 
 NumPy spectrogram helpers compare two magnitude spectrograms:
 
-| Function | What it returns |
-| --- | --- |
-| `analyzeBleedFullMelDB` | Arrays of added and missing mel-scaled dB content. |
-| `analyzeBleedFullMelDBMean` | Two scores: `bleed` and `full`. |
+| Function                    | What it returns                                    |
+| --------------------------- | -------------------------------------------------- |
+| `analyzeBleedFullMelDB`     | Arrays of added and missing mel-scaled dB content. |
+| `analyzeBleedFullMelDBMean` | Two scores: `bleed` and `full`.                    |
 
 ```python
 from analyzeAudio.contestsSpectrogram import analyzeBleedFullMelDBMean
@@ -355,18 +362,6 @@ bleedFull = analyzeBleedFullMelDBMean(
 )
 print(bleedFull.bleed, bleedFull.full)
 ```
-
-### Colab helper
-
-For Google Colab notebooks, the package includes `verifyFFmpegColab`:
-
-```python
-from analyzeAudio.ffmpeg import verifyFFmpegColab
-
-verifyFFmpegColab()
-```
-
-Run it before filename-based measurements in Colab.
 
 ### Exact-name checks
 
@@ -386,6 +381,11 @@ The terminal commands are:
 whatAspects
 whatContests
 ```
+
+## Wishlist
+
+- [] Install FFmpeg in GitHub Actions for testing.
+- [] Overhaul the semiotic system.
 
 ## Reference materials
 
