@@ -16,7 +16,19 @@ if TYPE_CHECKING:
 	from torch import nn, Tensor
 	from typing import Any
 
-# @registrationAudioContest('LogWMSE')
+def _unsqueezeLT4AxesBy1(tensorAudio: Tensor) -> Tensor:
+	if tensorAudio.ndim < 4:
+		return tensorAudio.unsqueeze(0)
+	return tensorAudio
+
+def _unsqueezeTo3axes(tensorAudio: Tensor) -> Tensor:
+	while tensorAudio.ndim < 3:
+		tensorAudio = tensorAudio.unsqueeze(0)
+	return tensorAudio
+
+#======== Reference and Reference and comparand ========================================
+
+@registrationAudioContest('LogWMSE')
 def analyzeLogWMSEMean(
 	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, tensorAudioMixture: Tensor, sampleRate: int, **keywordArguments: Any
 ) -> float:
@@ -99,43 +111,16 @@ def analyzeLogWMSEMean(
 	[2] Landschoot, C. `crlandsc/torch-log-wmse`.
 		https://github.com/crlandsc/torch-log-wmse
 	"""
-	tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture = truncateTensors([tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture])
+	tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture = map(_unsqueezeTo3axes, truncateTensors([tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture]))
 
 	dictionaryParameters: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
 	aspect = torch_log_wmse.LogWMSE(
 		audio_length=tensorAudioMixture.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryParameters
 	)
 
-	if tensorAudioAlfa.ndim == 1:
-		tensorAudioAlfa = tensorAudioAlfa.unsqueeze(0).unsqueeze(0).unsqueeze(2)
-	elif tensorAudioAlfa.ndim == 2:
-		tensorAudioAlfa = tensorAudioAlfa.unsqueeze(0).unsqueeze(2)
-	elif tensorAudioAlfa.ndim == 3:
-		tensorAudioAlfa = tensorAudioAlfa.unsqueeze(0)
+	return float(aspect(tensorAudioMixture, _unsqueezeLT4AxesBy1(tensorAudioBeta), _unsqueezeLT4AxesBy1(tensorAudioAlfa)).item())
 
-	if tensorAudioBeta.ndim == 1:
-		tensorAudioBeta = tensorAudioBeta.unsqueeze(0).unsqueeze(0).unsqueeze(2)
-	elif tensorAudioBeta.ndim == 2:
-		tensorAudioBeta = tensorAudioBeta.unsqueeze(0).unsqueeze(2)
-	elif tensorAudioBeta.ndim == 3:
-		tensorAudioBeta = tensorAudioBeta.unsqueeze(0)
-
-	return float(aspect(_unsqueezeTo3axes(tensorAudioMixture), tensorAudioBeta, tensorAudioAlfa).item())
-
-#======== Contests ========================================
-
-def _analyzeLoss(aspect: nn.Module, tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor) -> float:
-	return float(aspect(*map(_unsqueezeTo3axes, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
-
-def _unsqueezeLT4by1(tensorAudio: Tensor) -> Tensor:
-	if tensorAudio.ndim < 4:
-		return tensorAudio.unsqueeze(0)
-	return tensorAudio
-
-def _unsqueezeTo3axes(tensorAudio: Tensor) -> Tensor:
-	while tensorAudio.ndim < 3:
-		tensorAudio = tensorAudio.unsqueeze(0)
-	return tensorAudio
+#======== Reference and comparand ========================================
 
 @registrationAudioContest('L1SNR')
 def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -208,7 +193,7 @@ def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyword
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.L1SNRLoss('L1SNR', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
+	return -float(aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
 
 @registrationAudioContest('L1SNRDB')
 def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -295,7 +280,7 @@ def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.L1SNRDBLoss('L1SNRDB', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
+	return -float(aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
 
 @registrationAudioContest('MultiL1SNRDB')
 def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -389,7 +374,7 @@ def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.MultiL1SNRDBLoss('MultiL1SNRDB', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
+	return -float(aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
 
 @registrationAudioContest('STFTL1SNRDB')
 def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -490,7 +475,12 @@ def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **k
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.STFTL1SNRDBLoss('STFTL1SNRDB', **keywordArguments)
-	return -float(aspect(*map(_unsqueezeLT4by1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
+	return -float(aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa]))).item())
+
+#======== Analyze Loss ===============================================================================
+
+def _analyzeLoss(aspect: nn.Module, tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor) -> float:
+	return float(aspect(*map(_unsqueezeTo3axes, truncateTensors([tensorAudioAlfa, tensorAudioBeta]))).item())
 
 @registrationAudioContest('DCLoss')
 def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
