@@ -36,9 +36,6 @@ from analyzeAudio.analyzersUseFilename._astats import (
 	analyzeRMS_trough as analyzeRMS_trough, analyzeRMS_troughOverall as analyzeRMS_troughOverall,
 	analyzeZero_crossings as analyzeZero_crossings, analyzeZero_crossings_rate as analyzeZero_crossings_rate,
 	analyzeZero_crossings_rateOverall as analyzeZero_crossings_rateOverall, analyzeZero_crossingsTotal as analyzeZero_crossingsTotal)
-from analyzeAudio.analyzersUseFilename._contests import (
-	analyzeKPSNRmean as analyzeKPSNRmean, analyzeKSDRmean as analyzeKSDRmean, analyzeKSI_SDRmean as analyzeKSI_SDRmean,
-	analyzePSNRmean as analyzePSNRmean, analyzeSDRmean as analyzeSDRmean, analyzeSI_SDRmean as analyzeSI_SDRmean)
 from analyzeAudio.analyzersUseFilename._ebur128 import (
 	analyzeLRA as analyzeLRA, analyzeLRAOverall as analyzeLRAOverall, analyzeLUFShigh as analyzeLUFShigh,
 	analyzeLUFShighOverall as analyzeLUFShighOverall, analyzeLUFSIntegrated as analyzeLUFSIntegrated,

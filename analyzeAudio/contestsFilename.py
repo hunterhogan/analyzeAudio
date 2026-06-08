@@ -1,10 +1,9 @@
-# ty:ignore[invalid-return-type]
-# pyright: reportReturnType=false
 # ruff: noqa: DOC201
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
 from analyzeAudio.registry import registrationAudioContest
+from functools import cache
 from operator import neg
 from statistics import mean
 from typing import Any, TYPE_CHECKING
@@ -17,8 +16,12 @@ if TYPE_CHECKING:
 	from os import PathLike
 
 #======== FFmpeg ==============================================================
-
-def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], filterChain: str) -> float | None:
+# Why am I doing it this way?
+# Was I unable to get metadata insertion?
+# Was I unable to read it with FFprobe for some reason?
+# Is the last value of the inserted metadata the same as the Parsed_filter output?
+@cache
+def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], filterChain: str) -> float:
 	"""I use this shared comparison function to average one decibel-valued aspect across analysis frames.
 
 	(AI generated docstring)
@@ -37,7 +40,7 @@ def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathL
 
 	Returns
 	-------
-	meanDecibels : float | None
+	meanDecibels : float
 		Arithmetic mean of the extracted decibel values.
 	"""
 	regexPattern = regex.compile(rf"^\[Parsed_{filterChain}_.* (.*) dB", regex.MULTILINE)
@@ -53,7 +56,7 @@ def _meanDB(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathL
 	return mean(map(float, regexPattern.findall(stderrFFmpeg)))
 
 @registrationAudioContest('Peak Signal-to-Noise Ratio mean')
-def analyzePSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+def analyzePSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float:
 	"""Compute the mean peak signal-to-noise ratio between two audio files.
 
 	(AI generated docstring)
@@ -105,7 +108,7 @@ def analyzePSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
 @registrationAudioContest('SDR mean')
-def analyzeSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+def analyzeSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float:
 	"""Aspect 'SDR mean': mean signal-to-distortion ratio between two audio files [1].
 
 	Parameters
@@ -117,7 +120,7 @@ def analyzeSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str 
 
 	Returns
 	-------
-	SDRmean : float | None
+	SDRmean : float
 		Mean signal-to-distortion ratio in decibels.
 
 	Mathematics
@@ -153,7 +156,7 @@ def analyzeSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str 
 	return _meanDB(pathFilenameAlfa, pathFilenameBeta, filterChain)
 
 @registrationAudioContest('SI-SDR mean')
-def analyzeSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float | None:
+def analyzeSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any]) -> float:
 	"""Aspect 'SI-SDR mean': mean scale-invariant SDR between two audio files [1].
 
 	Parameters
@@ -165,7 +168,7 @@ def analyzeSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: s
 
 	Returns
 	-------
-	SI_SDRmean : float | None
+	SI_SDRmean : float
 		Mean scale-invariant signal-to-distortion ratio in decibels.
 
 	Mathematics
@@ -210,26 +213,17 @@ def _KValue(unscaled: float, K: float = 10.0) -> float:
 	unscaled = max(min(unscaled, K), neg(K) + 1e-6)
 	return 100.0 * math.log1p(unscaled + K) / math.log1p(2 * K)
 
-@registrationAudioContest('K Peak Signal-to-Noise Ratio mean')
-def analyzeKPSNRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], K: float = 10.0) -> float:
+@registrationAudioContest('Peak Signal-to-Noise Ratio mean K')
+def analyzePSNRmeanK(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], K: float = 10.0) -> float:
 	"""Normalize PSNR value using bounded logarithmic scaling."""
-	psnrMean = analyzePSNRmean(pathFilenameAlfa, pathFilenameBeta)
-	if psnrMean:
-		psnrMean = _KValue(psnrMean, K)
-	return psnrMean
+	return _KValue(analyzePSNRmean(pathFilenameAlfa, pathFilenameBeta), K)
 
-@registrationAudioContest('K SDR mean')
-def analyzeKSDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], K: float = 10.0) -> float:
+@registrationAudioContest('SDR mean K')
+def analyzeSDRmeanK(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], K: float = 10.0) -> float:
 	"""Normalize SDR value using bounded logarithmic scaling."""
-	sdrMean = analyzeSDRmean(pathFilenameAlfa, pathFilenameBeta)
-	if sdrMean:
-		sdrMean = _KValue(sdrMean, K)
-	return sdrMean
+	return _KValue(analyzeSDRmean(pathFilenameAlfa, pathFilenameBeta), K)
 
-@registrationAudioContest('K SI-SDR mean')
-def analyzeKSI_SDRmean(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], K: float = 10.0) -> float:
+@registrationAudioContest('SI-SDR mean K')
+def analyzeSI_SDRmeanK(pathFilenameAlfa: str | PathLike[Any], pathFilenameBeta: str | PathLike[Any], K: float = 10.0) -> float:
 	"""Normalize SI-SDR value using bounded logarithmic scaling."""
-	si_sdrMean = analyzeSI_SDRmean(pathFilenameAlfa, pathFilenameBeta)
-	if si_sdrMean:
-		si_sdrMean = _KValue(si_sdrMean, K)
-	return si_sdrMean
+	return _KValue(analyzeSI_SDRmean(pathFilenameAlfa, pathFilenameBeta), K)

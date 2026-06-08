@@ -1,7 +1,8 @@
-# ruff: noqa: D100
+# ruff: noqa: D100 D103
 from __future__ import annotations
 
 from analyzeAudio import BleedFull, BleedFullArray, ParametersMelSpectrogram
+from analyzeAudio.registry import registrationAudioContest
 from typing import TYPE_CHECKING
 from typing_extensions import Unpack
 import librosa
@@ -10,8 +11,13 @@ import numpy
 if TYPE_CHECKING:
 	from analyzeAudio import SpectrogramMagnitude
 
-def analyzeBleedFullMelDB(spectrogramMagnitudeAlfa: SpectrogramMagnitude, spectrogramMagnitudeBeta: SpectrogramMagnitude
-						, **keywordArguments: Unpack[ParametersMelSpectrogram]) -> BleedFullArray:
+# TODO Figure out how to cache intermediate objects in this module.
+
+def analyzeBleedFullMelDB(
+		spectrogramMagnitudeAlfa: SpectrogramMagnitude
+		, spectrogramMagnitudeBeta: SpectrogramMagnitude
+		, **keywordArguments: Unpack[ParametersMelSpectrogram]
+	) -> BleedFullArray:
 	"""Separate mel-scaled dB excess and deficit between two spectrograms.
 
 	You can use this function to compare two magnitude spectrograms as source-separation balance data.
@@ -125,7 +131,11 @@ def _bleedFullArrays(spectrogramAlfa: SpectrogramMagnitude, spectrogramBeta: Spe
 
 	return BleedFullArray(arrayBleed=arrayDifferences[0 < arrayDifferences], arrayFull=arrayDifferences[arrayDifferences < 0])
 
-def analyzeBleedFullMelDBMean(spectrogramMagnitudeAlfa: SpectrogramMagnitude, spectrogramMagnitudeBeta: SpectrogramMagnitude) -> BleedFull:
+def analyzeBleedFullMelDBMean(
+		spectrogramMagnitudeAlfa: SpectrogramMagnitude
+		, spectrogramMagnitudeBeta: SpectrogramMagnitude
+		, **keywordArguments: Unpack[ParametersMelSpectrogram]
+) -> BleedFull:
 	"""Score mean mel-scaled dB-magnitude excess and deficit between two spectrograms.
 
 	You can use this function to summarize source-separation balance as two higher-is-better scores.
@@ -180,7 +190,7 @@ def analyzeBleedFullMelDBMean(spectrogramMagnitudeAlfa: SpectrogramMagnitude, sp
 	[3] numpy.mean.
 		https://numpy.org/doc/stable/reference/generated/numpy.mean.html
 	"""
-	bf: BleedFullArray = analyzeBleedFullMelDB(spectrogramMagnitudeAlfa, spectrogramMagnitudeBeta)
+	bf: BleedFullArray = analyzeBleedFullMelDB(spectrogramMagnitudeAlfa, spectrogramMagnitudeBeta, **keywordArguments)
 
 	if 0 < bf.arrayBleed.size:
 		bleed: float = numpy.mean(bf.arrayBleed).item()
@@ -195,3 +205,19 @@ def analyzeBleedFullMelDBMean(spectrogramMagnitudeAlfa: SpectrogramMagnitude, sp
 		full = 0.0
 
 	return BleedFull(bleed=bleed, full=full)
+
+@registrationAudioContest('Bleedless Mel-scaled dB mean')
+def analyzeBleedlessMelDBMean(
+		spectrogramMagnitudeAlfa: SpectrogramMagnitude
+		, spectrogramMagnitudeBeta: SpectrogramMagnitude
+		, **keywordArguments: Unpack[ParametersMelSpectrogram]
+) -> float:
+	return analyzeBleedFullMelDBMean(spectrogramMagnitudeAlfa, spectrogramMagnitudeBeta, **keywordArguments).bleed
+
+@registrationAudioContest('Fullness Mel-scaled dB mean')
+def analyzeFullnessMelDBMean(
+		spectrogramMagnitudeAlfa: SpectrogramMagnitude
+		, spectrogramMagnitudeBeta: SpectrogramMagnitude
+		, **keywordArguments: Unpack[ParametersMelSpectrogram]
+) -> float:
+	return analyzeBleedFullMelDBMean(spectrogramMagnitudeAlfa, spectrogramMagnitudeBeta, **keywordArguments).full

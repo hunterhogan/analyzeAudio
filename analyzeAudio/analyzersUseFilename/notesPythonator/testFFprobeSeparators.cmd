@@ -10,5 +10,7 @@ ffprobe -hide_banner -loglevel 0 %pFn% -of flat=s='.' -show_entries packets:fram
 
 
 @REM Parse everything into a data frame: the parser is static and highly predictable.
+@REM Ha! 2026 June 8 I wrote ^^^^^^^^^^ before getting destroyed by dataframes in mapFolding,
+@REM astToolFactory, and estimates. I doubt I will want a dataframe.
 @REM To get data, 1) build a filtergraph that is compatible with FFprobe
 @REM 2) query the data frame
