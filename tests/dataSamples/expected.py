@@ -1574,6 +1574,41 @@ expectedSpectrogram: dict[str, dict[str, float]] = {
 	}
 }
 
+expectedTensor: dict[str, dict[str, float]] = {
+	'analyzeSRMRMean': {
+			'ch1_16000_09s_s32le_Clipping.wav': 74.3741325560484
+			, 'ch1_44100_01s_LUFS03_1kHz.wav': 217.90962408810182
+			, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 0.1760266625919166
+			, 'ch1_44100_83s_LUFS23_VoiceAndMusic.wav': 3.2757555123498094
+			, 'ch1_48000_120s_LUFS18_FrequencySweep.wav': 0.1826126042915381
+			, 'ch1_48000_300s_s24le.wav': 2.2628850082493415
+			, 'ch1_48000_83s_LUFS24_VoiceAndMusic.wav': 3.2360632841599553
+			, 'ch1_96000_12.1s_f32le.wav': 0.5396949230171086
+			, 'ch2_44100_04s_LUFS10_RelGate.wav': 8.556338073033968
+			, 'ch2_44100_04s_LUFS69.5_AbsGate.wav': 8.296085445119997
+			, 'ch2_44100_05s_s16le.wav': 193.19493490824635
+			, 'ch2_44100_09s_LUFS20_birdsPink.wav': 0.6845827083839237
+			, 'ch2_44100_29s_LUFS23_10000Hz.wav': 227.37542639163985
+			, 'ch2_44100_29s_LUFS23_1000Hz.wav': 217.63521706832896
+			, 'ch2_44100_29s_LUFS23_100Hz.wav': 216.50739957955693
+			, 'ch2_44100_29s_LUFS23_2000Hz.wav': 217.65211104025394
+			, 'ch2_44100_29s_LUFS23_25Hz.wav': 0.04228121161171442
+			, 'ch2_44100_29s_LUFS23_500Hz.wav': 217.6114858874251
+			, 'ch2_44100_60s_f32le_01RMS.wav': 0.38512174311658176
+			, 'ch2_44100_60s_f32le_20RMS.wav': 0.3851217432403752
+			, 'ch2_44100_60s_f32le_40RMS.wav': 0.3851217432359249
+			, 'ch2_44100_60s_f32le_60RMS.wav': 0.3851217431431413
+			, 'ch2_44100_7.1s_s16le.wav': 0.4034851226528005
+			, 'ch2_44100_83s_LUFS23_VoiceAndMusic.wav': 3.2569702141981027
+			, 'ch2_44100_83s_LUFS24_VoiceAndMusic.wav': 3.2569793204492825
+			, 'ch2_48000_04s_LUFS10_RelGate.wav': 8.404550136700948
+			, 'ch2_48000_04s_LUFS69.5_AbsGate.wav': 8.163724589773325
+			, 'ch2_48000_6.3s_s16le.wav': 0.6571333206391953
+			, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 3.2228757179840066
+			, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 3.2228795949211655
+	}
+}
+
 expectedWaveform: dict[str, dict[str, float]] = {
 	'analyzeTempogramMean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 0.25720634611221316

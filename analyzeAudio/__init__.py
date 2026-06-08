@@ -10,7 +10,7 @@ from analyzeAudio._theTypes import (
 	ArrayAspectSpectrogramFramewise as ArrayAspectSpectrogramFramewise, ArrayAspectWaveformFramewise as ArrayAspectWaveformFramewise,
 	ArrayChannelData as ArrayChannelData, ArrayOverallData as ArrayOverallData, Audio as Audio,
 	AuralossChromaSTFTLoss as AuralossChromaSTFTLoss, BleedFull as BleedFull, BleedFullArray as BleedFullArray,
-	ParametersMelSpectrogram as ParametersMelSpectrogram, parameterSpecifications as parameterSpecifications, Spectrogram as Spectrogram,
+	ParametersMelSpectrogram as ParametersMelSpectrogram, parameterSpecifications as parameterSpecifications,
 	SpectrogramMagnitude as SpectrogramMagnitude, SpectrogramPower as SpectrogramPower, typeReturned as typeReturned)
 
 # isort: split

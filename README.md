@@ -145,7 +145,7 @@ If a requested name is unavailable, that value is `"not found"`.
 from pathlib import Path
 from analyzeAudio import analyzeAudioListPathFilenames
 
-listPathFilenames = sorted(Path("audio").glob("*.wav"))
+listPathFilenames = tuple(Path("audio").glob("*.wav"))
 listAspectNames = [
     "LUFS integrated",
     "LUFS loudness range",

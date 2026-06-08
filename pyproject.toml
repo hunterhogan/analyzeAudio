@@ -48,7 +48,7 @@ classifiers = [
 ]
 dependencies = [
   "auraloss",
-  "hunterHearsPy",
+  "hunterHearsPy>=1.0.3",
   "hunterMakesPy>=0.7.0",
   "librosa",
   "numpy",

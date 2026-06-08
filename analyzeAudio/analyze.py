@@ -31,9 +31,10 @@ import soundfile
 import torch
 
 if TYPE_CHECKING:
-	from analyzeAudio import Audio, Spectrogram, SpectrogramMagnitude, SpectrogramPower
+	from analyzeAudio import Audio, SpectrogramMagnitude, SpectrogramPower
 	from collections.abc import Sequence
 	from concurrent.futures import Future
+	from hunterHearsPy import Spectrogram
 	from os import PathLike
 	from torch import Tensor
 	from typing import Any

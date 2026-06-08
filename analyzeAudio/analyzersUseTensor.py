@@ -90,7 +90,7 @@ def analyzeSRMR(tensorAudio: Tensor, sampleRate: int, *, pytorchOnCPU: bool | No
 		https://lightning.ai/docs/torchmetrics/stable/audio/speech_reverberation_modulation_energy_ratio.html
 
 	"""
-	keywordArguments['fast'] = keywordArguments.get('fast') or pytorchOnCPU or None
+	keywordArguments['fast'] = keywordArguments.get('fast', pytorchOnCPU) or False
 	return speech_reverberation_modulation_energy_ratio(tensorAudio, sampleRate, **keywordArguments)
 
 @registrationAudioAspect('SRMR mean')

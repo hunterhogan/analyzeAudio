@@ -41,7 +41,6 @@ class ParametersMelSpectrogram(TypedDict, total=False):
 
 Audio: TypeAlias = ndarray[tuple[int, ...], dtype[floating[Any]]]
 ArrayAspect: TypeAlias = ndarray[tuple[int, ...], dtype[floating[Any]]]
-Spectrogram: TypeAlias = ndarray[tuple[int, int, int], dtype[complexfloating[Any, Any]]]
 SpectrogramMagnitude: TypeAlias = ndarray[tuple[int, int, int], dtype[floating[Any]]]
 SpectrogramPower: TypeAlias = ndarray[tuple[int, int, int], dtype[floating[Any]]]
 ArrayAspectSpectrogramFramewise: TypeAlias = ndarray[tuple[int, Literal[1], int], dtype[floating[Any]]]
