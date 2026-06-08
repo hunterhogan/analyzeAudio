@@ -9,33 +9,35 @@ import pytest
 
 if TYPE_CHECKING:
 	from pathlib import Path
-	from tests import WaveformSampleRate
+	from tests import AspectWaveform
 
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float, expected: float) -> None:
 	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
 
 @pytest.mark.parametrize('expected', [expectedWaveform['analyzeRMSWaveformMean']])
-def test_analyzeRMSWaveformMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
-	actual = analyzeRMSWaveformMean(waveform_sampleRate.waveform)
-	_standardizedEqualScalars('analyzeRMSWaveformMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
+def test_analyzeRMSWaveformMean(aspectWaveform: AspectWaveform, expected: dict[str, float]) -> None:
+	actual = analyzeRMSWaveformMean(aspectWaveform.waveform)
+	_standardizedEqualScalars('analyzeRMSWaveformMean', aspectWaveform.pathFilename, actual, expected[aspectWaveform.pathFilename.name])
 
 @pytest.mark.parametrize('expected', [expectedWaveform['analyzeRMSWaveform_dBMean']])
-def test_analyzeRMSWaveform_dBMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
-	actual = analyzeRMSWaveform_dBMean(waveform_sampleRate.waveform)
-	_standardizedEqualScalars('analyzeRMSWaveform_dBMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
+def test_analyzeRMSWaveform_dBMean(aspectWaveform: AspectWaveform, expected: dict[str, float]) -> None:
+	actual = analyzeRMSWaveform_dBMean(aspectWaveform.waveform)
+	_standardizedEqualScalars('analyzeRMSWaveform_dBMean', aspectWaveform.pathFilename, actual, expected[aspectWaveform.pathFilename.name])
 
 # TODO tolerances are quite high
 # @pytest.mark.parametrize('expected', [expectedWaveform['analyzeTempogramMean']])
-# def test_analyzeTempogramMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
-# 	actual = analyzeTempogramMean(waveform_sampleRate.waveform, waveform_sampleRate.sampleRate)
-# 	_standardizedEqualScalars('analyzeTempogramMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
+# def test_analyzeTempogramMean(aspectWaveform: AspectWaveform, expected: dict[str, float]) -> None:
+# 	actual = analyzeTempogramMean(aspectWaveform.waveform, aspectWaveform.sampleRate)
+# 	_standardizedEqualScalars('analyzeTempogramMean', aspectWaveform.pathFilename, actual, expected[aspectWaveform.pathFilename.name])
 
 @pytest.mark.parametrize('expected', [expectedWaveform['analyzeTempoMean']])
-def test_analyzeTempoMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
-	actual = analyzeTempoMean(waveform_sampleRate.waveform, waveform_sampleRate.sampleRate)
-	_standardizedEqualScalars('analyzeTempoMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
+def test_analyzeTempoMean(aspectWaveform: AspectWaveform, expected: dict[str, float]) -> None:
+	actual = analyzeTempoMean(aspectWaveform.waveform, aspectWaveform.sampleRate)
+	_standardizedEqualScalars('analyzeTempoMean', aspectWaveform.pathFilename, actual, expected[aspectWaveform.pathFilename.name])
 
 @pytest.mark.parametrize('expected', [expectedWaveform['analyzeZeroCrossingRateMean']])
-def test_analyzeZeroCrossingRateMean(waveform_sampleRate: WaveformSampleRate, expected: dict[str, float]) -> None:
-	actual = analyzeZeroCrossingRateMean(waveform_sampleRate.waveform)
-	_standardizedEqualScalars('analyzeZeroCrossingRateMean', waveform_sampleRate.pathFilename, actual, expected[waveform_sampleRate.pathFilename.name])
+def test_analyzeZeroCrossingRateMean(aspectWaveform: AspectWaveform, expected: dict[str, float]) -> None:
+	actual = analyzeZeroCrossingRateMean(aspectWaveform.waveform)
+	_standardizedEqualScalars(
+		'analyzeZeroCrossingRateMean', aspectWaveform.pathFilename, actual, expected[aspectWaveform.pathFilename.name]
+	)

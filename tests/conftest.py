@@ -3,30 +3,29 @@ from __future__ import annotations
 
 from hunterHearsPy import parametersDEFAULT, readAudioFile, stft
 from tests import (
-	ContestFilenames, ContestSpectrogramMagnitudesSampleRates, ContestSpectrogramsSampleRates, ContestWaveformsSampleRates,
-	listPathFilenamesContests, listPathFilenamesDataSamples, randomSeed, SpectrogramMagnitudeSampleRate, SpectrogramPowerSampleRate,
-	SpectrogramSampleRate, TensorSampleRate, WaveformSampleRate)
-from tests.dataSamples.SpeakSoftly_BrokenMan60sec.expected import (
-	expectedFilename as dictionaryExpectedContestFilename, expectedSpectrogram as dictionaryExpectedContestSpectrogram)
+	AspectSpectrogram, AspectSpectrogramMagnitude, AspectSpectrogramPower, AspectWaveform, ContestFilename, ContestSpectrogram,
+	ContestSpectrogramMagnitude, ContestTensor, ContestWaveform, listPathFilenamesContests, listPathFilenamesDataSamples)
+from tests.dataSamples.SpeakSoftly_BrokenMan60sec import expected
 from typing import TYPE_CHECKING
 import librosa
 import numpy
 import pytest
 import soundfile
+import torch
 
 if TYPE_CHECKING:
 	from analyzeAudio import Audio, SpectrogramMagnitude, SpectrogramPower
 	from hunterHearsPy import Spectrogram, Waveform
 	from pathlib import Path
 
-# TODO abstract the expected values dictionaries into a fixture.
-# This `from tests.dataSamples.expected import expectedFilename` is not scalable.
-# Right now, the expected values are effectively indexed by keys: tests.dataSamples.expected,
-# expectedFilename, analyzeAbs_Peak_countTotal, pathFilename.
+# TODO abstract the expected values dictionaries into a fixture. This `from tests.dataSamples.expected
+# import expectedFilename` is not scalable. Right now, the expected values are effectively indexed by
+# keys: tests.dataSamples.expected, expectedFilename, analyzeAbs_Peak_countTotal, and pathFilename.
 # Therefore, abstract the keys to those that actually matter--analyzeAbs_Peak_countTotal and
-# pathFilename, the function being tested and the test parameters--and have the test function get
-# the value from a fixture.
-# The fixture will track the physical location of the expected values.
+# pathFilename, the function being tested and the test parameters--and have the test function get the
+# value from a fixture. The fixture will track the physical location of the expected values.
+
+# ================== Audio Aspects =================================================================
 
 @pytest.fixture(params=listPathFilenamesDataSamples, ids=lambda pathFilename: pathFilename.name, scope='session')
 def pathFilename(request: pytest.FixtureRequest) -> Path:
@@ -35,89 +34,97 @@ def pathFilename(request: pytest.FixtureRequest) -> Path:
 	return pathFilename
 
 @pytest.fixture(scope='session')
-def waveform_sampleRate(pathFilename: Path) -> WaveformSampleRate:
+def aspectWaveform(pathFilename: Path) -> AspectWaveform:
 	"""Return each static waveform with its source path and sample rate."""
 	with soundfile.SoundFile(pathFilename) as readSoundFile:
 		sampleRate: int = readSoundFile.samplerate
 		waveform: Audio = readSoundFile.read(dtype='float32').astype(numpy.float32)
 	waveform = waveform.T
-	return WaveformSampleRate(pathFilename, waveform, sampleRate)
+	return AspectWaveform(pathFilename, waveform, sampleRate)
 
 @pytest.fixture(scope='session')
-def spectrogram_sampleRate(waveform_sampleRate: WaveformSampleRate) -> SpectrogramSampleRate:
+def aspectSpectrogram(aspectWaveform: AspectWaveform) -> AspectSpectrogram:
 	"""Return each static spectrogram with its source path and sample rate."""
-	spectrogram: Spectrogram = librosa.stft(waveform_sampleRate.waveform)
-	return SpectrogramSampleRate(waveform_sampleRate.pathFilename, spectrogram, waveform_sampleRate.sampleRate)
+	spectrogram: Spectrogram = librosa.stft(aspectWaveform.waveform)
+	return AspectSpectrogram(aspectWaveform.pathFilename, spectrogram, aspectWaveform.sampleRate)
 
 @pytest.fixture(scope='session')
-def spectrogramMagnitude_sampleRate(spectrogram_sampleRate: SpectrogramSampleRate) -> SpectrogramMagnitudeSampleRate:
+def aspectSpectrogramMagnitude(aspectSpectrogram: AspectSpectrogram) -> AspectSpectrogramMagnitude:
 	"""Return each static spectrogram magnitude with its source path and sample rate."""
-	spectrogramMagnitude: SpectrogramMagnitude = numpy.absolute(spectrogram_sampleRate.spectrogram)
-	return SpectrogramMagnitudeSampleRate(spectrogram_sampleRate.pathFilename, spectrogramMagnitude, spectrogram_sampleRate.sampleRate)
+	spectrogramMagnitude: SpectrogramMagnitude = numpy.absolute(aspectSpectrogram.spectrogram)
+	return AspectSpectrogramMagnitude(aspectSpectrogram.pathFilename, spectrogramMagnitude, aspectSpectrogram.sampleRate)
 
 @pytest.fixture(scope='session')
-def spectrogramPower_sampleRate(spectrogramMagnitude_sampleRate: SpectrogramMagnitudeSampleRate) -> SpectrogramPowerSampleRate:
+def aspectSpectrogramPower(aspectSpectrogramMagnitude: AspectSpectrogramMagnitude) -> AspectSpectrogramPower:
 	"""Return each static spectrogram power with its source path and sample rate."""
-	spectrogramPower: SpectrogramPower = spectrogramMagnitude_sampleRate.spectrogramMagnitude**2
-	return SpectrogramPowerSampleRate(
-		spectrogramMagnitude_sampleRate.pathFilename, spectrogramPower, spectrogramMagnitude_sampleRate.sampleRate
-	)
+	spectrogramPower: SpectrogramPower = aspectSpectrogramMagnitude.spectrogramMagnitude**2
+	return AspectSpectrogramPower(aspectSpectrogramMagnitude.pathFilename, spectrogramPower, aspectSpectrogramMagnitude.sampleRate)
 
-def _idContestFilenames(pathFilenamesContest: ContestFilenames) -> str:
-	return f'{pathFilenamesContest.pathFilenameAlfa.stem}--{pathFilenamesContest.pathFilenameBeta.stem}'
+# ================== Contests ======================================================================
 
-@pytest.fixture(params=listPathFilenamesContests, ids=_idContestFilenames, scope='session')
-def pathFilenamesContest(request: pytest.FixtureRequest) -> ContestFilenames:
+def _idContestFilename(paths: ContestFilename) -> str:
+	return f'{paths.pathFilenameAlfa.stem}--{paths.pathFilenameBeta.stem}'
+
+@pytest.fixture(params=listPathFilenamesContests, ids=_idContestFilename, scope='session')
+def pathFilenamesContest(request: pytest.FixtureRequest) -> ContestFilename:
 	"""Return each matching reference and comparand audio-file pair."""
-	pathFilenamesContest: ContestFilenames = request.param
+	pathFilenamesContest: ContestFilename = request.param
 	return pathFilenamesContest
 
 @pytest.fixture(scope='session')
-def waveformsContestSampleRates(pathFilenamesContest: ContestFilenames) -> ContestWaveformsSampleRates:
+def contestWaveform(pathFilenamesContest: ContestFilename) -> ContestWaveform:
 	"""Return each contest waveform pair with its sample rates."""
+	# TODO Think about this.
 	sampleRate: int = int(parametersDEFAULT['sampleRate'])
 	waveformAlfa: Waveform = readAudioFile(pathFilenamesContest.pathFilenameAlfa, sampleRate=sampleRate)
 	waveformBeta: Waveform = readAudioFile(pathFilenamesContest.pathFilenameBeta, sampleRate=sampleRate)
-	return ContestWaveformsSampleRates(pathFilenamesContest, waveformAlfa, sampleRate, waveformBeta, sampleRate)
+	return ContestWaveform(pathFilenamesContest, waveformAlfa, sampleRate, waveformBeta, sampleRate)
 
 @pytest.fixture(scope='session')
-def spectrogramsContestSampleRates(waveformsContestSampleRates: ContestWaveformsSampleRates) -> ContestSpectrogramsSampleRates:
+def contestSpectrogram(contestWaveform: ContestWaveform) -> ContestSpectrogram:
 	"""Return each contest complex-valued spectrogram pair with its sample rates."""
-	spectrogramAlfa: Spectrogram = stft(waveformsContestSampleRates.waveformAlfa, sampleRate=waveformsContestSampleRates.sampleRateAlfa)
-	spectrogramBeta: Spectrogram = stft(waveformsContestSampleRates.waveformBeta, sampleRate=waveformsContestSampleRates.sampleRateBeta)
-	return ContestSpectrogramsSampleRates(
-		waveformsContestSampleRates.pathFilenamesContest
-		, spectrogramAlfa
-		, waveformsContestSampleRates.sampleRateAlfa
-		, spectrogramBeta
-		, waveformsContestSampleRates.sampleRateBeta
+	return ContestSpectrogram(
+		contestWaveform.paths
+		, stft(contestWaveform.waveformAlfa, sampleRate=contestWaveform.sampleRateAlfa)
+		, contestWaveform.sampleRateAlfa
+		, stft(contestWaveform.waveformBeta, sampleRate=contestWaveform.sampleRateBeta)
+		, contestWaveform.sampleRateBeta
 	)
 
 @pytest.fixture(scope='session')
-def spectrogramMagnitudesContestSampleRates(
-	spectrogramsContestSampleRates: ContestSpectrogramsSampleRates,
-) -> ContestSpectrogramMagnitudesSampleRates:
+def contestSpectrogramMagnitude(contestSpectrogram: ContestSpectrogram) -> ContestSpectrogramMagnitude:
 	"""Return each contest magnitude spectrogram pair with its sample rates."""
-	spectrogramMagnitudeAlfa: SpectrogramMagnitude = numpy.absolute(spectrogramsContestSampleRates.spectrogramAlfa)
-	spectrogramMagnitudeBeta: SpectrogramMagnitude = numpy.absolute(spectrogramsContestSampleRates.spectrogramBeta)
-	return ContestSpectrogramMagnitudesSampleRates(
-		spectrogramsContestSampleRates.pathFilenamesContest
-		, spectrogramMagnitudeAlfa
-		, spectrogramsContestSampleRates.sampleRateAlfa
-		, spectrogramMagnitudeBeta
-		, spectrogramsContestSampleRates.sampleRateBeta
+	return ContestSpectrogramMagnitude(
+		contestSpectrogram.paths
+		, numpy.absolute(contestSpectrogram.spectrogramAlfa)
+		, contestSpectrogram.sampleRateAlfa
+		, numpy.absolute(contestSpectrogram.spectrogramBeta)
+		, contestSpectrogram.sampleRateBeta
 	)
 
 @pytest.fixture(scope='session')
-def expectedContestFilename(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilenames) -> float:
+def contestTensor(contestWaveform: ContestWaveform) -> ContestTensor:
+	"""Return each contest complex-valued spectrogram pair with its sample rates."""
+	return ContestTensor(
+		contestWaveform.paths
+		, torch.from_numpy(contestWaveform.waveformAlfa)  # pyright: ignore[reportUnknownMemberType]
+		, contestWaveform.sampleRateAlfa
+		, torch.from_numpy(contestWaveform.waveformBeta)  # pyright: ignore[reportUnknownMemberType]
+		, contestWaveform.sampleRateBeta
+	)
+
+#------------------ Expected values ---------------------------------------------------------------
+
+@pytest.fixture(scope='session')
+def expectedContestFilename(request: pytest.FixtureRequest, paths: ContestFilename) -> float:
 	"""Return the stored expected value for the current contest function and path pair."""
 	analyzer: str = request.param
-	pairFilenames = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
-	return dictionaryExpectedContestFilename[analyzer][pairFilenames]
+	pairFilenames = (paths.pathFilenameAlfa.name, paths.pathFilenameBeta.name)
+	return expected.expectedFilename[analyzer][pairFilenames]
 
 @pytest.fixture(scope='session')
-def expectedContestSpectrogram(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilenames) -> float:
+def expectedContestSpectrogram(request: pytest.FixtureRequest, paths: ContestFilename) -> float:
 	"""Return the stored expected spectrogram value for the current contest function and path pair."""
 	analyzer: str = request.param
-	pairFilenames = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
-	return dictionaryExpectedContestSpectrogram[analyzer][pairFilenames]
+	pairFilenames = (paths.pathFilenameAlfa.name, paths.pathFilenameBeta.name)
+	return expected.expectedSpectrogram[analyzer][pairFilenames]
