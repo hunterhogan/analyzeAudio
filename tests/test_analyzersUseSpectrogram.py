@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 	from tests import SpectrogramMagnitudeSampleRate, SpectrogramPowerSampleRate
 
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float, expected: float) -> None:
-	assert actual == pytest.approx(expected), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'
+	assert actual == pytest.approx(expected), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
 
 @pytest.mark.parametrize('expected', [expectedSpectrogram['analyzeChromagramMean']])
 def test_analyzeChromagramMean(spectrogramPower_sampleRate: SpectrogramPowerSampleRate, expected: dict[str, float]) -> None:

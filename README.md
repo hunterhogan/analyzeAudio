@@ -384,8 +384,10 @@ whatContests
 
 ## Wishlist
 
-- [] Install FFmpeg in GitHub Actions for testing.
-- [] Overhaul the semiotic system.
+- [ ] Overhaul the semiotic system.
+- [ ] Install FFmpeg in GitHub Actions for testing.
+- [ ] Improve speed
+  - [ ] Sophisticated caching of large objects and un-hashable objects.
 
 ## Reference materials
 
