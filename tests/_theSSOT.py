@@ -12,6 +12,7 @@ pathDataSamples: Path = settingsPackage.pathPackage.parent / 'tests' / 'dataSamp
 pathAudioFractions: Path = pathDataSamples / 'SpeakSoftly_BrokenMan60sec'
 listPathFilenamesDataSamples: tuple[Path, ...] = tuple(pathDataSamples.glob('*.wav'))
 
+pathFilenameMixture: Path = pathAudioFractions / 'reference_mixture.wav'
 listPathFilenamesContests: list[ContestFilename] = []
 for pathFilenameReference in pathAudioFractions.glob('reference_*.wav'):
 	for pathFilenameComparand in pathAudioFractions.glob(f'{pathFilenameReference.stem.replace("reference_", "comparand_")}*.wav'):
