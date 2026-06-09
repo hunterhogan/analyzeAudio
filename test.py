@@ -3,20 +3,27 @@ from __future__ import annotations
 
 from analyzeAudio import audioContests, dataTabularTOpathFilenameDelimited, getListAvailableAudioAspects, settingsPackage
 from analyzeAudio.analyze import analyzeAudioListPathFilenames
+from pathlib import Path
 import pathlib
 
 if __name__ == "__main__":
 
-	listPathFilenames: list[pathlib.Path] = (list(pathlib.Path("/apps/analyzeAudio/tests/dataSamples").glob("*Pink.wav")))
-	listAspectNames: list[str] = ['Crest factor', 'Spectral kurtosis mean', 'Signal entropy', 'Spectral flatness mean']
-	listAspectNames: list[str] = getListAvailableAudioAspects()
-	listAspectNames: list[str] = ['Tempogram mean']
-	rows: list[list[str | float]] = analyzeAudioListPathFilenames(listPathFilenames, listAspectNames)
+	listPathFilenames: list[pathlib.Path] = (list(pathlib.Path("/apps/analyzeAudio/tests/dataSamples").glob("ch2*.wav")))
 
-	dataTabularTOpathFilenameDelimited(settingsPackage.pathPackage.parent / 'aspects.tab', rows, ['pathFilename', *listAspectNames])
+	if True:
+		listAspectNames: list[str] = ['Crest factor', 'Spectral kurtosis mean', 'Signal entropy', 'Spectral flatness mean']
+		listAspectNames: list[str] = ['Tempogram mean']
+		listAspectNames: list[str] = getListAvailableAudioAspects()
+		rows: list[list[str | float]] = analyzeAudioListPathFilenames(listPathFilenames, listAspectNames)
+
+		dataTabularTOpathFilenameDelimited(settingsPackage.pathPackage.parent / 'aspects.tab', rows, ['pathFilename', *listAspectNames])
 
 	if False:
-		PSNR_channelsMean = audioContests['Peak Signal-to-Noise Ratio mean']['analyzer'](listPathFilenames[0], listPathFilenames[1])
+		alfa = Path('/apps/analyzeAudio/tests/dataSamples/SpeakSoftly_BrokenMan60sec/reference_vocals.wav')
+		beta = Path('/apps/analyzeAudio/tests/dataSamples/SpeakSoftly_BrokenMan60sec/comparand_vocals_bad.wav')
+		contest = 'Peak Signal-to-Noise Ratio mean'
+		contest = 'SI-SDR mean'
+		PSNR_channelsMean = audioContests[contest]['analyzer'](alfa, beta)
 		print(PSNR_channelsMean)
-		PSNR_channelsMean = audioContests['Peak Signal-to-Noise Ratio mean']['analyzer'](listPathFilenames[1], listPathFilenames[0])
+		PSNR_channelsMean = audioContests[contest]['analyzer'](beta, alfa)
 		print(PSNR_channelsMean)

@@ -9,7 +9,8 @@ import pytest
 if TYPE_CHECKING:
 	from tests import ContestFilename
 
-pytestmark: pytest.MarkDecorator = pytest.mark.skipif(os.getenv('GITHUB_ACTIONS') == 'true', reason='Skipped in GitHub Actions')
+pytestmark: pytest.MarkDecorator = pytest.mark.skip(reason="Deprecated.")
+pytestmark1: pytest.MarkDecorator = pytest.mark.skipif(os.getenv('GITHUB_ACTIONS') == 'true', reason='Skipped in GitHub Actions')
 
 def _standardizedEqualScalars(
 	analyzer: str, pathFilenamesContest: ContestFilename, actual: float, expected: float, K: float | None = None

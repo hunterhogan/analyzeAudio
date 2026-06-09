@@ -12,14 +12,16 @@ if TYPE_CHECKING:
 	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from os import PathLike
 
+# https://ffmpeg.org/ffmpeg-filters.html#drmeter
+# Potential aspect, but it doesn't work.
+# ffmpeg -hide_banner -i /data/MusicDemixingBenchmarks/synthetic/melody_000_mixture.wav -filter_complex "[0]ebur128,drmeter,astats" -map 0 -f null -
+
 @cache
 def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, ArrayChannelData | ArrayOverallData]:
-	"""I use this shared extractor to collect scalar audio aspects from one analysis pass.
+	"""I use this shared extractor to collect audio aspects from one analysis pass.
 
-	(AI generated docstring)
-
-	I use this function to convert one structured analysis result into a dictionary of scalar and
-	array audio aspects.
+	I use this function to convert one structured analysis result into a dictionary of array audio
+	aspects.
 
 	Parameters
 	----------
@@ -81,6 +83,9 @@ def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, Arr
 
 		# TODO Bit_depth: 'Bit_depth', 'Bit_depth2', 'Bit_depth3', 'Bit_depth4',
 
-		# If I ran two passes of the filter, I could force per-frame values for all aspects with `reset=1`. astats is pretty fast because there are no transformations.
+		# If I ran two passes of the filter, I could force per-frame values for all aspects with
+		# `reset=1`. astats is pretty fast because there are no transformations. But I would need to
+		# change pythonator because it will use the same key names for both passes, overwriting the
+		# first pass.
 
 	return dictionaryAspects
