@@ -8,13 +8,13 @@ import pathlib
 
 if __name__ == "__main__":
 
-	listPathFilenames: list[pathlib.Path] = (list(pathlib.Path("/apps/analyzeAudio/tests/dataSamples").glob("ch2*.wav")))
+	listPathFilenames: list[pathlib.Path] = (list(pathlib.Path("/apps/analyzeAudio/tests/dataSamples").glob("ch2_44*.wav")))
 
 	if True:
 		listAspectNames: list[str] = ['Crest factor', 'Spectral kurtosis mean', 'Signal entropy', 'Spectral flatness mean']
 		listAspectNames: list[str] = ['Tempogram mean']
 		listAspectNames: list[str] = getListAvailableAudioAspects()
-		rows: list[list[str | float]] = analyzeAudioListPathFilenames(listPathFilenames, listAspectNames)
+		rows: list[list[str | float]] = analyzeAudioListPathFilenames(listPathFilenames, listAspectNames, CPUlimit=.5)
 
 		dataTabularTOpathFilenameDelimited(settingsPackage.pathPackage.parent / 'aspects.tab', rows, ['pathFilename', *listAspectNames])
 

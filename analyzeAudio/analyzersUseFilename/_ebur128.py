@@ -1,5 +1,9 @@
-# ty:ignore[invalid-return-type]
+# pyright: reportArgumentType=false
+# pyright: reportAssignmentType=false
 # pyright: reportReturnType=false
+# ty:ignore[invalid-argument-type]
+# ty:ignore[invalid-assignment]
+# ty:ignore[invalid-return-type]
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
@@ -9,13 +13,25 @@ from typing import Any, TYPE_CHECKING
 import numpy
 
 if TYPE_CHECKING:
-	from analyzeAudio import ArrayOverallData
+	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from os import PathLike
 
 arrayOverallDataEmpty: ArrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)
 
-# TODO 'true_peaks_ch0', 'true_peaks_ch1', etc.
-# TODO one function ro return one array with all LUFS aspects.
+# TODO one function to return one array with all LUFS aspects.
+
+def analyzeTruePeakChannel(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+	keepGoing: bool = True
+	channel: int = 0
+	listAspectChannels: list[ArrayOverallData] = [ffprobeAllInclusiveCache(pathFilename).get(f'true_peaks_ch{channel}', arrayOverallDataEmpty)]
+	while keepGoing:
+		channel += 1
+		aspectChannel = ffprobeAllInclusiveCache(pathFilename).get(f'true_peaks_ch{channel}', None)
+		if aspectChannel is not None:
+			listAspectChannels.append(aspectChannel)
+		else:
+			keepGoing = False
+	return numpy.stack(listAspectChannels, axis=0)
 
 def analyzeTruePeak(pathFilename: str | PathLike[Any]) -> ArrayOverallData:
 	"""Compute the true-peak trajectory of an audio file.

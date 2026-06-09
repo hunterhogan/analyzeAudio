@@ -2,6 +2,7 @@
 
 - Semiotics-first: identifiers, structure, formatting, and paradigm choices are the primary semantic layer.
 - Model domain concepts directly. Use domain-canonical terms as atomic vocabulary; avoid near-synonyms.
+- For analyzer and contest code, standardized API shape outranks dependency signature fidelity. Registered analyzers are dispatched by inspected parameter names; agents must never add bespoke keyword-only parameters such as DNSMOS `personalized`, `device`, `num_threads`, or `cache_session` to public analyzer signatures. Keep fixed library defaults internal or use the established `**keywordArguments` pass-through pattern, and keep base analyzer plus `Mean`/`Overall` wrappers aligned.
 - Prefer functional/transformational style: pure functions, immutable transformations, explicit state changes.
 - Use established Python/library capabilities before custom algorithms: standard library, `itertools`, `more_itertools`, `toolz`, `numpy`, `pandas`, etc., when available and appropriate.
 - Loops need a reason: algorithmically essential, existential early-exit semantics, or measured performance need. Avoid `while-break`; put exit logic in the `while` condition.

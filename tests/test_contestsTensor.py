@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from analyzeAudio.contestsTensor import (
-	analyzeChromaSTFTLoss, analyzeDCLoss, analyzeESRLoss, analyzeL1SNRDBMean, analyzeL1SNRMean, analyzeLogCoshLoss, analyzeLogWMSEMean,
-	analyzeMelSTFTLoss, analyzeMultiL1SNRDBMean, analyzeMultiResolutionSTFTLoss, analyzeRandomResolutionSTFTLoss, analyzeSDSDRLoss,
-	analyzeSISDRLoss, analyzeSNRLoss, analyzeSTFTL1SNRDBMean, analyzeSTFTLoss, analyzeSumAndDifferenceSTFTLoss)
+	analyzeChromaSTFTLossMean, analyzeDCLossMean, analyzeESRLossMean, analyzeL1SNRDBMean, analyzeL1SNRMean, analyzeLogCoshLossMean,
+	analyzeLogWMSEMean, analyzeMelSTFTLossMean, analyzeMultiL1SNRDBMean, analyzeMultiResolutionSTFTLossMean,
+	analyzeRandomResolutionSTFTLossMean, analyzeSDSDRLossMean, analyzeSISDRLossMean, analyzeSNRLossMean, analyzeSTFTL1SNRDBMean,
+	analyzeSTFTLossMean, analyzeSumAndDifferenceSTFTLossMean)
 from typing import TYPE_CHECKING
 import numpy
 import pytest
@@ -43,70 +44,70 @@ def test_analyzeSTFTL1SNRDBMean(contestTensor: ContestTensor, expectedContestTen
 	actual = analyzeSTFTL1SNRDBMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	_standardizedEqualScalars('analyzeSTFTL1SNRDBMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeDCLoss'], indirect=True)
-def test_analyzeDCLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeDCLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
-	_standardizedEqualScalars('analyzeDCLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeDCLossMean'], indirect=True)
+def test_analyzeDCLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeDCLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	_standardizedEqualScalars('analyzeDCLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeESRLoss'], indirect=True)
-def test_analyzeESRLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeESRLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
-	_standardizedEqualScalars('analyzeESRLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeESRLossMean'], indirect=True)
+def test_analyzeESRLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeESRLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	_standardizedEqualScalars('analyzeESRLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeLogCoshLoss'], indirect=True)
-def test_analyzeLogCoshLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeLogCoshLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
-	_standardizedEqualScalars('analyzeLogCoshLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeLogCoshLossMean'], indirect=True)
+def test_analyzeLogCoshLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeLogCoshLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	_standardizedEqualScalars('analyzeLogCoshLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeSNRLoss'], indirect=True)
-def test_analyzeSNRLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeSNRLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
-	_standardizedEqualScalars('analyzeSNRLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeSNRLossMean'], indirect=True)
+def test_analyzeSNRLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeSNRLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	_standardizedEqualScalars('analyzeSNRLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeSISDRLoss'], indirect=True)
-def test_analyzeSISDRLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeSISDRLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
-	_standardizedEqualScalars('analyzeSISDRLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeSISDRLossMean'], indirect=True)
+def test_analyzeSISDRLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeSISDRLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	_standardizedEqualScalars('analyzeSISDRLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeSDSDRLoss'], indirect=True)
-def test_analyzeSDSDRLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeSDSDRLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
-	_standardizedEqualScalars('analyzeSDSDRLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeSDSDRLossMean'], indirect=True)
+def test_analyzeSDSDRLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeSDSDRLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	_standardizedEqualScalars('analyzeSDSDRLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeSTFTLoss'], indirect=True)
-def test_analyzeSTFTLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeSTFTLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
-	_standardizedEqualScalars('analyzeSTFTLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeSTFTLossMean'], indirect=True)
+def test_analyzeSTFTLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeSTFTLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	_standardizedEqualScalars('analyzeSTFTLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeMelSTFTLoss'], indirect=True)
-def test_analyzeMelSTFTLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeMelSTFTLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta, contestTensor.sampleRateAlfa)
-	_standardizedEqualScalars('analyzeMelSTFTLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeMelSTFTLossMean'], indirect=True)
+def test_analyzeMelSTFTLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeMelSTFTLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta, contestTensor.sampleRateAlfa)
+	_standardizedEqualScalars('analyzeMelSTFTLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeChromaSTFTLoss'], indirect=True)
-def test_analyzeChromaSTFTLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeChromaSTFTLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta, contestTensor.sampleRateAlfa)
-	_standardizedEqualScalars('analyzeChromaSTFTLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeChromaSTFTLossMean'], indirect=True)
+def test_analyzeChromaSTFTLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeChromaSTFTLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta, contestTensor.sampleRateAlfa)
+	_standardizedEqualScalars('analyzeChromaSTFTLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeMultiResolutionSTFTLoss'], indirect=True)
-def test_analyzeMultiResolutionSTFTLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeMultiResolutionSTFTLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeMultiResolutionSTFTLossMean'], indirect=True)
+def test_analyzeMultiResolutionSTFTLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeMultiResolutionSTFTLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	_standardizedEqualScalars(
-		'analyzeMultiResolutionSTFTLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa
+		'analyzeMultiResolutionSTFTLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa
 	)
 
 @pytest.mark.parametrize('randomSeed', [1597])
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeRandomResolutionSTFTLoss'], indirect=True)
-def test_analyzeRandomResolutionSTFTLoss(contestTensor: ContestTensor, randomSeed: int, expectedContestTensor: float) -> None:
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeRandomResolutionSTFTLossMean'], indirect=True)
+def test_analyzeRandomResolutionSTFTLossMean(contestTensor: ContestTensor, randomSeed: int, expectedContestTensor: float) -> None:
 	numpy.random.seed(randomSeed)  # noqa: NPY002
-	actual = analyzeRandomResolutionSTFTLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	actual = analyzeRandomResolutionSTFTLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	_standardizedEqualScalars(
-		'analyzeRandomResolutionSTFTLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa
+		'analyzeRandomResolutionSTFTLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa
 	)
 
-@pytest.mark.parametrize('expectedContestTensor', ['analyzeSumAndDifferenceSTFTLoss'], indirect=True)
-def test_analyzeSumAndDifferenceSTFTLoss(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
-	actual = analyzeSumAndDifferenceSTFTLoss(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+@pytest.mark.parametrize('expectedContestTensor', ['analyzeSumAndDifferenceSTFTLossMean'], indirect=True)
+def test_analyzeSumAndDifferenceSTFTLossMean(contestTensor: ContestTensor, expectedContestTensor: float) -> None:
+	actual = analyzeSumAndDifferenceSTFTLossMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	_standardizedEqualScalars(
-		'analyzeSumAndDifferenceSTFTLoss', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa
+		'analyzeSumAndDifferenceSTFTLossMean', contestTensor.paths, actual, expectedContestTensor, contestTensor.sampleRateAlfa
 	)

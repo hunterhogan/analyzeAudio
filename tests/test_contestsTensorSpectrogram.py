@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio.contestsTensorSpectrogram import analyzeL1FrequencyLoss, analyzeSpectralConvergenceLoss, analyzeSTFTMagnitudeLoss
+from analyzeAudio.contestsTensorSpectrogram import analyzeL1FrequencyLoss, analyzeSpectralConvergenceLossMean, analyzeSTFTMagnitudeLossMean
 from typing import TYPE_CHECKING
 import pytest
 
@@ -14,28 +14,28 @@ def _standardizedEqualScalars(analyzer: str, paths: ContestFilename, actual: flo
 	message = f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'
 	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8, nan_ok=True), message  # pyright: ignore[reportUnknownMemberType]
 
-@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeSpectralConvergenceLoss'], indirect=True)
-def test_analyzeSpectralConvergenceLoss(
+@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeSpectralConvergenceLossMean'], indirect=True)
+def test_analyzeSpectralConvergenceLossMean(
 	contestTensorSpectrogram: ContestTensorSpectrogram, expectedContestTensorSpectrogram: float
 ) -> None:
-	actual = analyzeSpectralConvergenceLoss(
+	actual = analyzeSpectralConvergenceLossMean(
 		contestTensorSpectrogram.tensorSpectrogramMagnitudeAlfa, contestTensorSpectrogram.tensorSpectrogramMagnitudeBeta
 	)
 	_standardizedEqualScalars(
-		'analyzeSpectralConvergenceLoss'
+		'analyzeSpectralConvergenceLossMean'
 		, contestTensorSpectrogram.paths
 		, actual
 		, expectedContestTensorSpectrogram
 		, contestTensorSpectrogram.sampleRateAlfa
 	)
 
-@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeSTFTMagnitudeLoss'], indirect=True)
-def test_analyzeSTFTMagnitudeLoss(contestTensorSpectrogram: ContestTensorSpectrogram, expectedContestTensorSpectrogram: float) -> None:
-	actual = analyzeSTFTMagnitudeLoss(
+@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeSTFTMagnitudeLossMean'], indirect=True)
+def test_analyzeSTFTMagnitudeLossMean(contestTensorSpectrogram: ContestTensorSpectrogram, expectedContestTensorSpectrogram: float) -> None:
+	actual = analyzeSTFTMagnitudeLossMean(
 		contestTensorSpectrogram.tensorSpectrogramMagnitudeAlfa, contestTensorSpectrogram.tensorSpectrogramMagnitudeBeta
 	)
 	_standardizedEqualScalars(
-		'analyzeSTFTMagnitudeLoss'
+		'analyzeSTFTMagnitudeLossMean'
 		, contestTensorSpectrogram.paths
 		, actual
 		, expectedContestTensorSpectrogram

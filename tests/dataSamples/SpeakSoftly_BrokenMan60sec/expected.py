@@ -87,7 +87,7 @@ expectedSpectrogram: dict[str, dict[tuple[str, str], float]] = {
 }
 
 expectedTensorSpectrogram: dict[str, dict[tuple[str, str], float]] = {
-	'analyzeSpectralConvergenceLoss': {
+	'analyzeSpectralConvergenceLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 0.49862650987447693
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 0.09664411783810202
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.49332971700303835
@@ -97,7 +97,7 @@ expectedTensorSpectrogram: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 0.6765516349711842
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.16145100004937493
 	}
-	, 'analyzeSTFTMagnitudeLoss': {
+	, 'analyzeSTFTMagnitudeLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): float('inf')
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): float('inf')
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.4184487937812349
@@ -170,7 +170,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 1.1550732851028442
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 10.0505952835083
 	}
-	, 'analyzeDCLoss': {
+	, 'analyzeDCLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 3.317744631203823e-05
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 6.772154392820084e-07
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 3.677475319818768e-07
@@ -180,7 +180,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 0.00015759942471049726
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 6.712416844578684e-09
 	}
-	, 'analyzeESRLoss': {
+	, 'analyzeESRLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 0.7958458065986633
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 0.011416871100664139
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.31020841002464294
@@ -190,7 +190,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.1816067695617676
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.03403443843126297
 	}
-	, 'analyzeLogCoshLoss': {
+	, 'analyzeLogCoshLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 0.0009930550586432219
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 3.8210149796213955e-05
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.0004933620220981538
@@ -200,7 +200,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 0.0003983236674685031
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 3.0722731025889516e-05
 	}
-	, 'analyzeSNRLoss': {
+	, 'analyzeSNRLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): -0.9918630123138428
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): -19.424732208251953
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): -5.083654880523682
@@ -210,7 +210,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 3.387661933898926
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): -14.685417175292969
 	}
-	, 'analyzeSISDRLoss': {
+	, 'analyzeSISDRLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): -9.397436141967773
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): -24.659942626953125
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): -4.031733512878418
@@ -220,7 +220,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): -2.382457733154297
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): -14.581550598144531
 	}
-	, 'analyzeSDSDRLoss': {
+	, 'analyzeSDSDRLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): -5.5250725746154785
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): -20.140735626220703
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): -3.7292299270629883
@@ -230,7 +230,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): -1.2540323734283447
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): -14.221287727355957
 	}
-	, 'analyzeSTFTLoss': {
+	, 'analyzeSTFTLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 3.618062973022461
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 1.7366775274276733
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.9208869934082031
@@ -240,7 +240,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 3.1323206424713135
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.5556097626686096
 	}
-	, 'analyzeMelSTFTLoss': {
+	, 'analyzeMelSTFTLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 4.484622955322266
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 2.61906099319458
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 1.1782201528549194
@@ -250,7 +250,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.774911403656006
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.6293095350265503
 	}
-	, 'analyzeChromaSTFTLoss': {
+	, 'analyzeChromaSTFTLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 4.729008674621582
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 3.3564698696136475
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.936657190322876
@@ -260,7 +260,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.221552848815918
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.5959670543670654
 	}
-	, 'analyzeMultiResolutionSTFTLoss': {
+	, 'analyzeMultiResolutionSTFTLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 3.4856860637664795
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 1.634264349937439
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.9149762988090515
@@ -270,7 +270,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 3.0544726848602295
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.5202409625053406
 	}
-	, 'analyzeRandomResolutionSTFTLoss': {
+	, 'analyzeRandomResolutionSTFTLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 3.267380952835083
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 1.5489872694015503
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 1.0312467813491821
@@ -280,7 +280,7 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.813610315322876
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.5937129855155945
 	}
-	, 'analyzeSumAndDifferenceSTFTLoss': {
+	, 'analyzeSumAndDifferenceSTFTLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 4.635570049285889
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 2.9572482109069824
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.9904137849807739

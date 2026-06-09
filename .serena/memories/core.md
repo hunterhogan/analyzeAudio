@@ -2,6 +2,7 @@
 
 - Python package for measuring named audio aspects from audio/video filenames or decoded audio arrays.
 - Public API re-exported from `analyzeAudio/__init__.py`: `analyzeAudioFile`, `analyzeAudioListPathFilenames`, `audioAspects`, `getListAvailableAudioAspects`.
+- API standardization is a top package priority. Analyzer and contest function signatures are public dispatch contracts; prefer the established dispatcher input vocabulary over dependency-specific option lists.
 - Importing `analyzeAudio` imports analyzer modules for registration side effects. New analyzers should use `registrationAudioAspect(aspectName)` so `audioAspects` receives the callable and its inspected parameter list.
 - `audioAspectsRegistry.py` is the orchestration center:
   - `audioAspects`: mapping from public aspect names to `{analyzer, analyzerParameters}`.

@@ -11,7 +11,78 @@ if TYPE_CHECKING:
 	from analyzeAudio import ArrayAspect, ArrayAspectSpectrogramFramewise, SpectrogramMagnitude, SpectrogramPower
 	from numpy import float32
 
-# TODO `analyzeRMSSpectrogram`, `librosa.feature.rms(S=spectrogramMagnitude)`.
+def analyzeRMSSpectrogram(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
+	"""Compute framewise root-mean-square magnitude from a spectrogram.
+
+	(AI generated docstring)
+
+	You can use this function to compute per-frame root-mean-square (RMS) magnitude from
+	`spectrogramMagnitude`. This is a thin wrapper around `librosa.feature.rms` that uses the
+	spectrogram input path instead of deriving a spectrogram from a waveform.
+
+	Parameters
+	----------
+	spectrogramMagnitude : SpectrogramMagnitude
+		Magnitude-domain spectral representation whose framewise RMS magnitude is measured.
+	keywordArguments : Any
+		Additional keyword arguments passed to `librosa.feature.rms`.
+
+	Returns
+	-------
+	rootMeanSquare : ArrayAspectSpectrogramFramewise
+		Framewise root-mean-square magnitude.
+
+	"""
+	return librosa.feature.rms(S=spectrogramMagnitude, **keywordArguments)
+
+@registrationAudioAspect('RMS Spectrogram mean')
+def analyzeRMSSpectrogramMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
+	"""Aspect 'RMS Spectrogram mean': mean framewise RMS magnitude.
+
+	Returns
+	-------
+	rmsMean : float
+		Arithmetic mean of the framewise RMS magnitude.
+
+	"""
+	return float(analyzeRMSSpectrogram(spectrogramMagnitude, **keywordArguments).mean().item())
+
+def analyzeRMSSpectrogram_dB(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
+	"""Compute framewise RMS spectrogram magnitude in decibels.
+
+	(AI generated docstring)
+
+	You can use this function to convert framewise RMS spectrogram magnitudes into decibel units
+	using a 20 * log10 mapping. The function obtains linear RMS values from
+	`analyzeRMSSpectrogram` and applies a logarithmic mapping.
+
+	Parameters
+	----------
+	spectrogramMagnitude : SpectrogramMagnitude
+		Magnitude-domain spectral representation whose framewise RMS magnitude is measured.
+	keywordArguments : Any
+		Additional arguments forwarded to `analyzeRMSSpectrogram`.
+
+	Returns
+	-------
+	rootMeanSquare_dB : ArrayAspectSpectrogramFramewise
+		Framewise RMS spectrogram magnitude in decibels.
+
+	"""
+	rootMeanSquare: ArrayAspectSpectrogramFramewise = analyzeRMSSpectrogram(spectrogramMagnitude, **keywordArguments)
+	return 20 * numpy.log10(rootMeanSquare, where=(rootMeanSquare != 0), out=None)
+
+@registrationAudioAspect('RMS Spectrogram dB mean')
+def analyzeRMSSpectrogram_dBMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
+	"""Aspect 'RMS Spectrogram dB mean': mean framewise RMS spectrogram magnitude in decibels.
+
+	Returns
+	-------
+	rootMeanSquare_dBMean : float
+		Mean value of the time-varying RMS spectrogram magnitude in decibels.
+
+	"""
+	return float(analyzeRMSSpectrogram_dB(spectrogramMagnitude, **keywordArguments).mean().item())
 
 def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> ndarray[tuple[int, int, int], dtype[float32]]:
 	"""Compute octave-equivalent pitch-class energy over time.

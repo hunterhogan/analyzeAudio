@@ -382,6 +382,14 @@ whatAspects
 whatContests
 ```
 
+## API standardization
+
+A top priority for this package is a public API that is as standardized as
+possible across filename, waveform, spectrogram, tensor, and contest analyzers.
+The package wraps libraries with very different calling conventions, but analyzer
+function signatures should model this package's dispatcher inputs, not every
+underlying library option.
+
 ## Wishlist
 
 - [ ] Overhaul the semiotic system.
@@ -537,7 +545,6 @@ whatContests
 - Free author PDF: [Jonathan Le Roux](https://www.jonathanleroux.org/pdf/LeRoux2019ICASSP05sdr.pdf)
 - Implementations:
   - [Lightning-AI/torchmetrics](https://github.com/Lightning-AI/torchmetrics)
-  - [FFprobe `asisdr` filter](https://ffmpeg.org/ffprobe-all.html#asisdr)
 
 ### Loudness Metering: EBU Mode Metering to Supplement Loudness Normalisation
 
