@@ -20,6 +20,11 @@ if TYPE_CHECKING:
 	from pathlib import Path
 	from torch import Tensor
 
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+	"""Sort collected tests by node id for stable fixture-cache access patterns."""
+	items.sort(key=lambda item: item.nodeid)
+
 # TODO abstract the expected values dictionaries into a fixture. This `from tests.dataSamples.expected
 # import expectedFilename` is not scalable. Right now, the expected values are effectively indexed by
 # keys: tests.dataSamples.expected, expectedFilename, analyzeAbs_Peak_countTotal, and pathFilename.
