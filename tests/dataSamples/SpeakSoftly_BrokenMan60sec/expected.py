@@ -87,7 +87,27 @@ expectedSpectrogram: dict[str, dict[tuple[str, str], float]] = {
 }
 
 expectedTensorSpectrogram: dict[str, dict[tuple[str, str], float]] = {
-	'analyzeSpectralConvergenceLossMean': {
+	'analyzeComplexScaleInvariantSignalNoiseRatioMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 9.40150153294742
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 24.68523997975782
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 4.041322407630274
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 21.039971168750732
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 3.7286285787439426
+		, ('reference_other.wav', 'comparand_other_good.wav'): 19.95769929201618
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.3727428521471943
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 14.581540431964726
+	}
+	, 'analyzeComplexScaleInvariantSignalNoiseRatioLossMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): -9.40150153294742
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): -24.68523997975782
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): -4.041322407630274
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): -21.039971168750732
+		, ('reference_other.wav', 'comparand_other_bad.wav'): -3.7286285787439426
+		, ('reference_other.wav', 'comparand_other_good.wav'): -19.95769929201618
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): -2.3727428521471943
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): -14.581540431964726
+	}
+	, 'analyzeSpectralConvergenceLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 0.49862650987447693
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 0.09664411783810202
 		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.49332971700303835

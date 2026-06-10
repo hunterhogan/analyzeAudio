@@ -1,6 +1,6 @@
 # pyright: reportArgumentType=false
 # ty:ignore[invalid-argument-type]
-# ruff: noqa: D100
+# ruff: noqa: D100 D103
 from __future__ import annotations
 
 from analyzeAudio.registry import registrationAudioAspect
@@ -10,10 +10,51 @@ from torchmetrics.functional.audio.nisqa import non_intrusive_speech_quality_ass
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 from typing import TYPE_CHECKING
 import sys
+import warnings
 
 if TYPE_CHECKING:
 	from torch import Tensor
 	from typing import Any
+
+# TODO Requires a lot of memory, and concurrency is causing crashes.
+def analyzeDNSMOS(tensorAudio: Tensor, sampleRate: int, **keywordArguments: Any) -> Tensor:
+	defaults: dict[str, bool] = {'personalized': False}
+	return deep_noise_suppression_mean_opinion_score(tensorAudio, sampleRate, {**defaults, **keywordArguments})
+
+# @registrationAudioAspect('DNSMOS mean')
+def analyzeDNSMOSMean(tensorAudio: Tensor, sampleRate: int) -> float:
+	"""Aspect 'DNSMOS mean': mean Deep Noise Suppression MOS score.
+
+	Returns
+	-------
+	dnsmosMean : float
+		Mean DNSMOS component score.
+
+	"""
+	return float(analyzeDNSMOS(tensorAudio, sampleRate).mean().item())
+
+def analyzeNISQA(tensorAudio: Tensor, sampleRate: int) -> Tensor:
+	try:
+		return non_intrusive_speech_quality_assessment(tensorAudio, sampleRate)
+	except RuntimeError as ERRORmessage:
+		message: str = f'I could not compute `analyzeNISQA({tensorAudio.shape = }, {sampleRate = })` because "{ERRORmessage}".'
+		sys.stderr.write(message + '\n')
+		return tensor([])
+
+@registrationAudioAspect('NISQA mean')
+def analyzeNISQAMean(tensorAudio: Tensor, sampleRate: int) -> float | None:
+	"""Aspect 'NISQA mean': mean non-intrusive speech quality score.
+
+	Returns
+	-------
+	nisqaMean : float | None
+		Mean NISQA component score.
+
+	"""
+	tensorAspect: Tensor = analyzeNISQA(tensorAudio, sampleRate)
+	if len(tensorAspect) == 0:
+		return None
+	return float(tensorAspect.mean().item())
 
 def analyzeSRMR(tensorAudio: Tensor, sampleRate: int, *, pytorchOnCPU: bool | None, **keywordArguments: Any) -> Tensor:
 	"""Compute speech-to-reverberation modulation energy ratio values from `tensorAudio`.
@@ -97,6 +138,7 @@ def analyzeSRMR(tensorAudio: Tensor, sampleRate: int, *, pytorchOnCPU: bool | No
 
 	"""
 	keywordArguments['fast'] = keywordArguments.get('fast', pytorchOnCPU) or False
+	warnings.filterwarnings('ignore', category=UserWarning, module='torchmetrics', message='.*fast=True.*')
 	return speech_reverberation_modulation_energy_ratio(tensorAudio, sampleRate, **keywordArguments)
 
 @registrationAudioAspect('SRMR mean')
@@ -110,43 +152,3 @@ def analyzeSRMRMean(tensorAudio: Tensor, sampleRate: int, pytorchOnCPU: bool | N
 
 	"""
 	return float(analyzeSRMR(tensorAudio, sampleRate, pytorchOnCPU=pytorchOnCPU, **keywordArguments).mean().item())
-
-# TODO Requires a lot of memory, and concurrency is causing crashes.
-def analyzeDNSMOS(tensorAudio: Tensor, sampleRate: int, **keywordArguments: Any) -> Tensor:
-	defaults: dict[str, bool] = {'personalized': False}
-	return deep_noise_suppression_mean_opinion_score(tensorAudio, sampleRate, {**defaults, **keywordArguments})
-
-# @registrationAudioAspect('DNSMOS mean')
-def analyzeDNSMOSMean(tensorAudio: Tensor, sampleRate: int) -> float:
-	"""Aspect 'DNSMOS mean': mean Deep Noise Suppression MOS score.
-
-	Returns
-	-------
-	dnsmosMean : float
-		Mean DNSMOS component score.
-
-	"""
-	return float(analyzeDNSMOS(tensorAudio, sampleRate).mean().item())
-
-def analyzeNISQA(tensorAudio: Tensor, sampleRate: int) -> Tensor:
-	try:
-		return non_intrusive_speech_quality_assessment(tensorAudio, sampleRate)
-	except RuntimeError as ERRORmessage:
-		message: str = f'I could not compute `analyzeNISQA({tensorAudio.shape = }, {sampleRate = })` because "{ERRORmessage}".'
-		sys.stderr.write(message + '\n')
-		return tensor([])
-
-@registrationAudioAspect('NISQA mean')
-def analyzeNISQAMean(tensorAudio: Tensor, sampleRate: int) -> float | None:
-	"""Aspect 'NISQA mean': mean non-intrusive speech quality score.
-
-	Returns
-	-------
-	nisqaMean : float | None
-		Mean NISQA component score.
-
-	"""
-	tensorAspect: Tensor = analyzeNISQA(tensorAudio, sampleRate)
-	if len(tensorAspect) == 0:
-		return None
-	return float(tensorAspect.mean().item())

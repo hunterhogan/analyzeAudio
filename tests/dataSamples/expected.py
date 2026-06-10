@@ -1574,8 +1574,72 @@ expectedSpectrogram: dict[str, dict[str, float]] = {
 	}
 }
 
-expectedTensor: dict[str, dict[str, float]] = {
-	'analyzeSRMRMean': {
+expectedTensor: dict[str, dict[str, float | None]] = {
+	'analyzeDNSMOSMean': {
+		'ch1_16000_09s_s32le_Clipping.wav': 2.433563033827369
+		, 'ch1_44100_01s_LUFS03_1kHz.wav': 2.5705678874374858
+		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 2.441001148894575
+		, 'ch1_44100_83s_LUFS23_VoiceAndMusic.wav': 2.5932416334182053
+		, 'ch1_48000_120s_LUFS18_FrequencySweep.wav': 2.440559376167304
+		, 'ch1_48000_300s_s24le.wav': 2.3636117057136476
+		, 'ch1_48000_83s_LUFS24_VoiceAndMusic.wav': 2.6090347392075213
+		, 'ch1_96000_12.1s_f32le.wav': 2.1775120079991246
+		, 'ch2_44100_04s_LUFS10_RelGate.wav': 2.9667994713960235
+		, 'ch2_44100_04s_LUFS69.5_AbsGate.wav': 2.6994023361797534
+		, 'ch2_44100_05s_s16le.wav': 2.119205551722766
+		, 'ch2_44100_09s_LUFS20_birdsPink.wav': 2.0624622789906892
+		, 'ch2_44100_29s_LUFS23_10000Hz.wav': 2.8840878488269763
+		, 'ch2_44100_29s_LUFS23_1000Hz.wav': 2.03716211089689
+		, 'ch2_44100_29s_LUFS23_100Hz.wav': 2.5255040133928772
+		, 'ch2_44100_29s_LUFS23_2000Hz.wav': 2.2990753678535487
+		, 'ch2_44100_29s_LUFS23_25Hz.wav': 2.2392355120599072
+		, 'ch2_44100_29s_LUFS23_500Hz.wav': 2.3615466755602808
+		, 'ch2_44100_60s_f32le_01RMS.wav': 2.0176392716537594
+		, 'ch2_44100_60s_f32le_20RMS.wav': 1.975162742259022
+		, 'ch2_44100_60s_f32le_40RMS.wav': 2.2819827782241164
+		, 'ch2_44100_60s_f32le_60RMS.wav': 2.556875658719246
+		, 'ch2_44100_7.1s_s16le.wav': 2.031003442407778
+		, 'ch2_44100_83s_LUFS23_VoiceAndMusic.wav': 2.6588548952983797
+		, 'ch2_44100_83s_LUFS24_VoiceAndMusic.wav': 2.672897463121939
+		, 'ch2_48000_04s_LUFS10_RelGate.wav': 3.0352919125389723
+		, 'ch2_48000_04s_LUFS69.5_AbsGate.wav': 2.741377080701745
+		, 'ch2_48000_6.3s_s16le.wav': 2.135489753167402
+		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 2.658934483443724
+		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 2.673101028552849
+	}
+	, 'analyzeNISQAMean': {
+		'ch1_16000_09s_s32le_Clipping.wav': 1.7939847707748413
+		, 'ch1_44100_01s_LUFS03_1kHz.wav': 1.9085638523101807
+		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': None
+		, 'ch1_44100_83s_LUFS23_VoiceAndMusic.wav': None
+		, 'ch1_48000_120s_LUFS18_FrequencySweep.wav': None
+		, 'ch1_48000_300s_s24le.wav': None
+		, 'ch1_48000_83s_LUFS24_VoiceAndMusic.wav': None
+		, 'ch1_96000_12.1s_f32le.wav': 1.4978138208389282
+		, 'ch2_44100_04s_LUFS10_RelGate.wav': 2.322068452835083
+		, 'ch2_44100_04s_LUFS69.5_AbsGate.wav': 2.4528636932373047
+		, 'ch2_44100_05s_s16le.wav': 2.0309224128723145
+		, 'ch2_44100_09s_LUFS20_birdsPink.wav': 1.5603325366973877
+		, 'ch2_44100_29s_LUFS23_10000Hz.wav': 1.6019954681396484
+		, 'ch2_44100_29s_LUFS23_1000Hz.wav': 1.7183444499969482
+		, 'ch2_44100_29s_LUFS23_100Hz.wav': 2.084264039993286
+		, 'ch2_44100_29s_LUFS23_2000Hz.wav': 1.7361643314361572
+		, 'ch2_44100_29s_LUFS23_25Hz.wav': 1.9633432626724243
+		, 'ch2_44100_29s_LUFS23_500Hz.wav': 2.0967888832092285
+		, 'ch2_44100_60s_f32le_01RMS.wav': None
+		, 'ch2_44100_60s_f32le_20RMS.wav': None
+		, 'ch2_44100_60s_f32le_40RMS.wav': None
+		, 'ch2_44100_60s_f32le_60RMS.wav': None
+		, 'ch2_44100_7.1s_s16le.wav': 1.6315581798553467
+		, 'ch2_44100_83s_LUFS23_VoiceAndMusic.wav': None
+		, 'ch2_44100_83s_LUFS24_VoiceAndMusic.wav': None
+		, 'ch2_48000_04s_LUFS10_RelGate.wav': 2.3232760429382324
+		, 'ch2_48000_04s_LUFS69.5_AbsGate.wav': 2.453896999359131
+		, 'ch2_48000_6.3s_s16le.wav': 1.5022516250610352
+		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': None
+		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': None
+	}
+	, 'analyzeSRMRMean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 74.3741325560484
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 217.90962408810182
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 0.1760266625919166

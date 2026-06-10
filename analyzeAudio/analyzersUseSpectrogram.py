@@ -6,10 +6,85 @@ from numpy import dtype, ndarray
 from typing import Any, TYPE_CHECKING
 import librosa
 import numpy
+import sys
+import warnings
 
 if TYPE_CHECKING:
 	from analyzeAudio import ArrayAspect, ArrayAspectSpectrogramFramewise, SpectrogramMagnitude, SpectrogramPower
 	from numpy import float32
+
+def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> ndarray[tuple[int, int, int], dtype[float32]]:
+	"""Compute octave-equivalent pitch-class energy over time.
+
+	(AI generated docstring)
+
+	You can use this function to summarize tonal content as one chroma vector per analysis frame. The
+	function folds octave-equivalent spectral energy into a 12-class pitch representation so that
+	notes separated by octaves contribute to the same chroma bin [1][2].
+
+	Parameters
+	----------
+	spectrogramPower : SpectrogramPower
+		Power-domain spectral representation whose energy is folded into pitch classes.
+	sampleRate : int
+		Sampling rate of the analyzed signal in hertz.
+	keywordArguments : Any
+		Additional keyword arguments forwarded to ``librosa.feature.chroma_stft``.
+
+	Returns
+	-------
+	chromagram : numpy.ndarray
+		Time-varying chroma representation with shape (12, n_frames) and dtype float32. Each column is
+		a pitch-class (chroma) vector for a single analysis frame.
+
+	Mathematics
+	-----------
+	pitch-class folding : equation
+	```
+		Let C(p, t) ≜ chromagram at pitch class p and frame t
+			Q(q, t) ≜ pitch-resolved spectral energy
+			M ≜ number of octave copies
+
+		C(p, t) = ∑_(m = 0)^(M - 1) Q(p + 12m, t)
+		p ∈ {0, …, 11}
+	```
+
+	References
+	----------
+	[1] Fujishima, T. (1999). Realtime chord recognition of musical sound:
+		A system using Common Lisp Music. Proceedings of the International Computer Music Conference,
+		464–467. https://ccrma.stanford.edu/~jos/mus423h/Real_Time_Chord_Recognition_Musical.html
+	[2] Lee, K., & Slaney, M. (2006). Automatic chord recognition from audio
+		using a HMM with supervised learning. Proceedings of the International Society for Music
+		Information Retrieval, 133–137. https://ccrma.stanford.edu/~kglee/pubs/klee-ismir06.pdf
+	"""
+	with warnings.catch_warnings(record=True) as warningMessages:
+		warnings.simplefilter('always', UserWarning)
+		chromagram = librosa.feature.chroma_stft(S=spectrogramPower, sr=sampleRate, **keywordArguments)
+
+	for warningMessage in warningMessages:
+		if str(warningMessage.message) == 'Trying to estimate tuning from empty frequency set.':
+			message: str = (
+				f'I could not estimate chroma tuning in `analyzeChromagram({spectrogramPower.shape = }, {sampleRate = })` '
+				'because librosa found no usable pitch frequencies. The chromagram was still computed.'
+			)
+			sys.stderr.write(message + '\n')
+		else:
+			warnings.warn(str(warningMessage.message), warningMessage.category, stacklevel=2)
+
+	return chromagram
+
+@registrationAudioAspect('Chromagram mean')
+def analyzeChromagramMean(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> float:
+	"""Aspect 'Chromagram mean': mean of the framewise chromagram.
+
+	Returns
+	-------
+	chromagramMean : float
+		Mean value of the time-varying chromagram.
+
+	"""
+	return float(analyzeChromagram(spectrogramPower, sampleRate, **keywordArguments).mean().item())
 
 def analyzeRMSSpectrogram(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
 	"""Compute framewise root-mean-square magnitude from a spectrogram.
@@ -83,128 +158,6 @@ def analyzeRMSSpectrogram_dBMean(spectrogramMagnitude: SpectrogramMagnitude, **k
 
 	"""
 	return float(analyzeRMSSpectrogram_dB(spectrogramMagnitude, **keywordArguments).mean().item())
-
-def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> ndarray[tuple[int, int, int], dtype[float32]]:
-	"""Compute octave-equivalent pitch-class energy over time.
-
-	(AI generated docstring)
-
-	You can use this function to summarize tonal content as one chroma vector per analysis frame. The
-	function folds octave-equivalent spectral energy into a 12-class pitch representation so that
-	notes separated by octaves contribute to the same chroma bin [1][2].
-
-	Parameters
-	----------
-	spectrogramPower : SpectrogramPower
-		Power-domain spectral representation whose energy is folded into pitch classes.
-	sampleRate : int
-		Sampling rate of the analyzed signal in hertz.
-	keywordArguments : Any
-		Additional keyword arguments forwarded to ``librosa.feature.chroma_stft``.
-
-	Returns
-	-------
-	chromagram : numpy.ndarray
-		Time-varying chroma representation with shape (12, n_frames) and dtype float32. Each column is
-		a pitch-class (chroma) vector for a single analysis frame.
-
-	Mathematics
-	-----------
-	pitch-class folding : equation
-	```
-		Let C(p, t) ≜ chromagram at pitch class p and frame t
-			Q(q, t) ≜ pitch-resolved spectral energy
-			M ≜ number of octave copies
-
-		C(p, t) = ∑_(m = 0)^(M - 1) Q(p + 12m, t)
-		p ∈ {0, …, 11}
-	```
-
-	References
-	----------
-	[1] Fujishima, T. (1999). Realtime chord recognition of musical sound:
-		A system using Common Lisp Music. Proceedings of the International Computer Music Conference,
-		464–467. https://ccrma.stanford.edu/~jos/mus423h/Real_Time_Chord_Recognition_Musical.html
-	[2] Lee, K., & Slaney, M. (2006). Automatic chord recognition from audio
-		using a HMM with supervised learning. Proceedings of the International Society for Music
-		Information Retrieval, 133–137. https://ccrma.stanford.edu/~kglee/pubs/klee-ismir06.pdf
-	"""
-	return librosa.feature.chroma_stft(S=spectrogramPower, sr=sampleRate, **keywordArguments)
-
-@registrationAudioAspect('Chromagram mean')
-def analyzeChromagramMean(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> float:
-	"""Aspect 'Chromagram mean': mean of the framewise chromagram.
-
-	Returns
-	-------
-	chromagramMean : float
-		Mean value of the time-varying chromagram.
-
-	"""
-	return float(analyzeChromagram(spectrogramPower, sampleRate, **keywordArguments).mean().item())
-
-def analyzeSpectralContrast(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspect:
-	"""Compute octave-band peak-to-valley contrast.
-
-	(AI generated docstring)
-
-	You can use this function to measure how strongly spectral peaks stand above spectral valleys in
-	each octave band. High values indicate narrow-band, harmonic structure, while lower values
-	indicate flatter or noisier spectral content [1].
-
-	Parameters
-	----------
-	spectrogramMagnitude : SpectrogramMagnitude
-		Magnitude-domain spectral representation to be analyzed in octave bands.
-	keywordArguments : Any
-		Additional keyword arguments forwarded to ``librosa.feature.spectral_contrast``.
-
-	Returns
-	-------
-	spectralContrast : numpy.ndarray
-		Framewise contrast values for each octave band with shape (n_bands + 1, n_frames). Each row
-		corresponds to one octave band.
-
-	Mathematics
-	-----------
-	octave-band partition : equation
-	```
-		Let Bᵢ ≜ i-th octave band
-			f_min ≜ lower cutoff of the first band
-
-		Bᵢ = [2^(i - 1) f_min, 2^i f_min)
-	```
-
-	peak-valley contrast : equation
-	```
-		Let Xᵢ ≜ magnitudes in octave band Bᵢ
-			α ∈ (0, 1) ≜ neighborhood factor
-			Pᵢ ≜ mean of the largest α|Xᵢ| values in Xᵢ
-			Vᵢ ≜ mean of the smallest α|Xᵢ| values in Xᵢ
-
-		SCᵢ = log(Pᵢ) - log(Vᵢ)
-	```
-
-	References
-	----------
-	[1] Jiang, D.-N., Lu, L., Zhang, H.-J., Tao, J.-H., & Cai, L.-H. (2002).
-		Music type classification by spectral contrast feature. Proceedings of the IEEE International
-		Conference on Multimedia and Expo, 113–116.
-		https://hcsi.cs.tsinghua.edu.cn/Paper/Paper02/200218.pdf
-	"""
-	return librosa.feature.spectral_contrast(S=spectrogramMagnitude, **keywordArguments)
-
-@registrationAudioAspect('Spectral Contrast mean')
-def analyzeSpectralContrastMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
-	"""Aspect 'Spectral Contrast mean': mean of the framewise spectral contrast.
-
-	Returns
-	-------
-	spectralContrastMean : float
-		Mean value of the time-varying spectral contrast.
-
-	"""
-	return float(analyzeSpectralContrast(spectrogramMagnitude, **keywordArguments).mean().item())
 
 def analyzeSpectralBandwidth(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
 	"""Compute spectral spread around the framewise centroid.
@@ -323,6 +276,69 @@ def analyzeSpectralCentroidMean(spectrogramMagnitude: SpectrogramMagnitude, **ke
 
 	"""
 	return float(analyzeSpectralCentroid(spectrogramMagnitude, **keywordArguments).mean().item())
+
+def analyzeSpectralContrast(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspect:
+	"""Compute octave-band peak-to-valley contrast.
+
+	(AI generated docstring)
+
+	You can use this function to measure how strongly spectral peaks stand above spectral valleys in
+	each octave band. High values indicate narrow-band, harmonic structure, while lower values
+	indicate flatter or noisier spectral content [1].
+
+	Parameters
+	----------
+	spectrogramMagnitude : SpectrogramMagnitude
+		Magnitude-domain spectral representation to be analyzed in octave bands.
+	keywordArguments : Any
+		Additional keyword arguments forwarded to ``librosa.feature.spectral_contrast``.
+
+	Returns
+	-------
+	spectralContrast : numpy.ndarray
+		Framewise contrast values for each octave band with shape (n_bands + 1, n_frames). Each row
+		corresponds to one octave band.
+
+	Mathematics
+	-----------
+	octave-band partition : equation
+	```
+		Let Bᵢ ≜ i-th octave band
+			f_min ≜ lower cutoff of the first band
+
+		Bᵢ = [2^(i - 1) f_min, 2^i f_min)
+	```
+
+	peak-valley contrast : equation
+	```
+		Let Xᵢ ≜ magnitudes in octave band Bᵢ
+			α ∈ (0, 1) ≜ neighborhood factor
+			Pᵢ ≜ mean of the largest α|Xᵢ| values in Xᵢ
+			Vᵢ ≜ mean of the smallest α|Xᵢ| values in Xᵢ
+
+		SCᵢ = log(Pᵢ) - log(Vᵢ)
+	```
+
+	References
+	----------
+	[1] Jiang, D.-N., Lu, L., Zhang, H.-J., Tao, J.-H., & Cai, L.-H. (2002).
+		Music type classification by spectral contrast feature. Proceedings of the IEEE International
+		Conference on Multimedia and Expo, 113–116.
+		https://hcsi.cs.tsinghua.edu.cn/Paper/Paper02/200218.pdf
+	"""
+	return librosa.feature.spectral_contrast(S=spectrogramMagnitude, **keywordArguments)
+
+@registrationAudioAspect('Spectral Contrast mean')
+def analyzeSpectralContrastMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
+	"""Aspect 'Spectral Contrast mean': mean of the framewise spectral contrast.
+
+	Returns
+	-------
+	spectralContrastMean : float
+		Mean value of the time-varying spectral contrast.
+
+	"""
+	return float(analyzeSpectralContrast(spectrogramMagnitude, **keywordArguments).mean().item())
 
 def analyzeSpectralFlatness(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> ArrayAspectSpectrogramFramewise:
 	"""Compute the spectral flatness ratio for each analysis frame.

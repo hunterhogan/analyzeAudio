@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseTensor import analyzeSRMRMean
+from analyzeAudio.analyzersUseTensor import analyzeDNSMOSMean, analyzeNISQAMean, analyzeSRMRMean
 from tests.dataSamples.expected import expectedTensor
 from typing import TYPE_CHECKING
 import pytest
@@ -9,12 +9,26 @@ if TYPE_CHECKING:
 	from pathlib import Path
 	from tests import AspectTensor
 
-def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float, expected: float, pytorchOnCPU: bool) -> None:
-	parameters = f'pathFilename={pathFilename.name!r}, pytorchOnCPU={pytorchOnCPU!r}'
+def _standardizedEqualScalars(
+	analyzer: str, pathFilename: Path, actual: float | None, expected: float | None, pytorchOnCPU: bool | None = None
+) -> None:
+	parameters = f'pathFilename={pathFilename.name!r}'
+	if pytorchOnCPU is not None:
+		parameters = f'{parameters}, pytorchOnCPU={pytorchOnCPU!r}'
 	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8), f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
+
+@pytest.mark.parametrize('expected', [expectedTensor['analyzeDNSMOSMean']])
+def test_analyzeDNSMOSMean(aspectTensor: AspectTensor, expected: dict[str, float | None]) -> None:
+	actual = analyzeDNSMOSMean(aspectTensor.tensorAudio, aspectTensor.sampleRate)
+	_standardizedEqualScalars('analyzeDNSMOSMean', aspectTensor.pathFilename, actual, expected[aspectTensor.pathFilename.name])
+
+@pytest.mark.parametrize('expected', [expectedTensor['analyzeNISQAMean']])
+def test_analyzeNISQAMean(aspectTensor: AspectTensor, expected: dict[str, float | None]) -> None:
+	actual = analyzeNISQAMean(aspectTensor.tensorAudio, aspectTensor.sampleRate)
+	_standardizedEqualScalars('analyzeNISQAMean', aspectTensor.pathFilename, actual, expected[aspectTensor.pathFilename.name])
 
 @pytest.mark.parametrize('pytorchOnCPU', [True])
 @pytest.mark.parametrize('expected', [expectedTensor['analyzeSRMRMean']])
-def test_analyzeSRMRMean(aspectTensor: AspectTensor, pytorchOnCPU: bool, expected: dict[str, float]) -> None:
+def test_analyzeSRMRMean(aspectTensor: AspectTensor, pytorchOnCPU: bool, expected: dict[str, float | None]) -> None:
 	actual = analyzeSRMRMean(aspectTensor.tensorAudio, aspectTensor.sampleRate, pytorchOnCPU)
 	_standardizedEqualScalars('analyzeSRMRMean', aspectTensor.pathFilename, actual, expected[aspectTensor.pathFilename.name], pytorchOnCPU)

@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 from typing_extensions import Unpack
 import librosa
 import numpy
+import sys
+import warnings
 
 if TYPE_CHECKING:
 	from analyzeAudio import SpectrogramMagnitude
@@ -119,8 +121,18 @@ def analyzeBleedFullMelDB(
 
 	top_db: float | None = keywordArguments.get('top_db', 80.0)
 
-	spectrogramMagnitudeAlfa = librosa.feature.melspectrogram(S=spectrogramMagnitudeAlfa, **parametersMelSpectrogram)
-	spectrogramMagnitudeBeta = librosa.feature.melspectrogram(S=spectrogramMagnitudeBeta, **parametersMelSpectrogram)
+	with warnings.catch_warnings(record=True) as warningMessages:
+		warnings.simplefilter('always', UserWarning)
+		spectrogramMagnitudeAlfa = librosa.feature.melspectrogram(S=spectrogramMagnitudeAlfa, **parametersMelSpectrogram)
+		spectrogramMagnitudeBeta = librosa.feature.melspectrogram(S=spectrogramMagnitudeBeta, **parametersMelSpectrogram)
+	for warningMessage in warningMessages:
+		if str(warningMessage.message).startswith('Empty filters detected in mel frequency basis.'):
+			message: str = (
+				f'While computing `analyzeBleedFullMelDB({spectrogramMagnitudeAlfa.shape = }, {spectrogramMagnitudeBeta.shape = })` because the difference between the maximum frequency and minimum frequency is too small for the number of mel bands, some mel bands were empty.'
+			)
+			sys.stderr.write(message + '\n')
+		else:
+			warnings.warn(str(warningMessage.message), warningMessage.category, stacklevel=2)
 	spectrogramMagnitudeAlfa = librosa.amplitude_to_db(spectrogramMagnitudeAlfa, ref=1.0, top_db=top_db)  # pyright: ignore[reportUnknownMemberType]
 	spectrogramMagnitudeBeta = librosa.amplitude_to_db(spectrogramMagnitudeBeta, ref=1.0, top_db=top_db)  # pyright: ignore[reportUnknownMemberType]
 

@@ -53,6 +53,13 @@ class ContestSpectrogramMagnitude(NamedTuple):
 
 class ContestTensorSpectrogram(NamedTuple):
 	paths: ContestFilename
+	tensorSpectrogramAlfa: Tensor
+	sampleRateAlfa: int
+	tensorSpectrogramBeta: Tensor
+	sampleRateBeta: int
+
+class ContestTensorSpectrogramMagnitude(NamedTuple):
+	paths: ContestFilename
 	tensorSpectrogramMagnitudeAlfa: Tensor
 	sampleRateAlfa: int
 	tensorSpectrogramMagnitudeBeta: Tensor

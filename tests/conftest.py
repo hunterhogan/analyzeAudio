@@ -4,8 +4,8 @@ from __future__ import annotations
 from hunterHearsPy import parametersDEFAULT, readAudioFile, stft
 from tests import (
 	AspectSpectrogram, AspectSpectrogramMagnitude, AspectSpectrogramPower, AspectTensor, AspectWaveform, ContestFilename, ContestSpectrogram,
-	ContestSpectrogramMagnitude, ContestTensor, ContestTensorSpectrogram, ContestWaveform, listPathFilenamesContests,
-	listPathFilenamesDataSamples, pathFilenameMixture)
+	ContestSpectrogramMagnitude, ContestTensor, ContestTensorSpectrogram, ContestTensorSpectrogramMagnitude, ContestWaveform,
+	listPathFilenamesContests, listPathFilenamesDataSamples, pathFilenameMixture)
 from tests.dataSamples.SpeakSoftly_BrokenMan60sec import expected
 from typing import TYPE_CHECKING
 import librosa
@@ -110,9 +110,20 @@ def contestSpectrogramMagnitude(contestSpectrogram: ContestSpectrogram) -> Conte
 	)
 
 @pytest.fixture(scope='session')
-def contestTensorSpectrogram(contestSpectrogramMagnitude: ContestSpectrogramMagnitude) -> ContestTensorSpectrogram:
-	"""Return each contest magnitude spectrogram tensor pair with its sample rates."""
+def contestTensorSpectrogram(contestSpectrogram: ContestSpectrogram) -> ContestTensorSpectrogram:
+	"""Return each contest complex-valued spectrogram tensor pair with its sample rates."""
 	return ContestTensorSpectrogram(
+		contestSpectrogram.paths
+		, torch.view_as_real(torch.from_numpy(contestSpectrogram.spectrogramAlfa))  # pyright: ignore[reportUnknownMemberType]
+		, contestSpectrogram.sampleRateAlfa
+		, torch.view_as_real(torch.from_numpy(contestSpectrogram.spectrogramBeta))  # pyright: ignore[reportUnknownMemberType]
+		, contestSpectrogram.sampleRateBeta
+	)
+
+@pytest.fixture(scope='session')
+def contestTensorSpectrogramMagnitude(contestSpectrogramMagnitude: ContestSpectrogramMagnitude) -> ContestTensorSpectrogramMagnitude:
+	"""Return each contest magnitude spectrogram tensor pair with its sample rates."""
+	return ContestTensorSpectrogramMagnitude(
 		contestSpectrogramMagnitude.paths
 		, torch.from_numpy(contestSpectrogramMagnitude.spectrogramMagnitudeAlfa)  # pyright: ignore[reportUnknownMemberType]
 		, contestSpectrogramMagnitude.sampleRateAlfa
@@ -153,10 +164,10 @@ def expectedContestSpectrogram(request: pytest.FixtureRequest, pathFilenamesCont
 	return expected.expectedSpectrogram[analyzer][pairFilenames]
 
 @pytest.fixture(scope='session')
-def expectedContestTensorSpectrogram(request: pytest.FixtureRequest, contestTensorSpectrogram: ContestTensorSpectrogram) -> float:
+def expectedContestTensorSpectrogram(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilename) -> float:
 	"""Return the stored expected tensor-spectrogram value for the current contest function and path pair."""
 	analyzer: str = request.param
-	pairFilenames = (contestTensorSpectrogram.paths.pathFilenameAlfa.name, contestTensorSpectrogram.paths.pathFilenameBeta.name)
+	pairFilenames = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
 	return expected.expectedTensorSpectrogram[analyzer][pairFilenames]
 
 @pytest.fixture(scope='session')

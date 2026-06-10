@@ -25,7 +25,6 @@ from multiprocessing import set_start_method as multiprocessing_set_start_method
 from typing import TYPE_CHECKING
 import contextlib
 import inspect
-import warnings
 
 if TYPE_CHECKING:
 	from analyzeAudio import analyzersAudioAspects, parameterSpecifications, typeReturned
@@ -33,8 +32,6 @@ if TYPE_CHECKING:
 
 with contextlib.suppress(RuntimeError):
 	multiprocessing_set_start_method('spawn')
-
-warnings.filterwarnings('ignore', category=UserWarning, module='torchmetrics', message='.*fast=True.*')
 
 audioAspects: dict[str, analyzersAudioAspects] = {}
 """Store analyzer metadata by registered audio aspect name.
@@ -207,9 +204,9 @@ def getListAvailableAudioContests() -> list[str]:
 	"""
 	return sorted(audioContests.keys())
 
-# isort: split
-# pyright: reportUnusedImport=false
 # NOTE Importing the modules triggers the registration of analyzer functions.
-from analyzeAudio import (  # noqa: E402
-	analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform, contestsSpectrogram,
-	contestsTensor, contestsTensorSpectrogram)
+# isort: split
+from analyzeAudio import analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform  # pyright: ignore[reportUnusedImport] # noqa: E402
+
+# isort: split
+from analyzeAudio import contestsSpectrogram, contestsTensor, contestsTensorSpectrogram  # pyright: ignore[reportUnusedImport] # noqa: E402
