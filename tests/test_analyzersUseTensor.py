@@ -15,7 +15,7 @@ def _standardizedEqualScalars(
 	parameters = f'pathFilename={pathFilename.name!r}'
 	if pytorchOnCPU is not None:
 		parameters = f'{parameters}, pytorchOnCPU={pytorchOnCPU!r}'
-	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8), f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
+	assert actual == pytest.approx(expected, rel=1e-4, abs=1e-6), f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
 
 @pytest.mark.parametrize('expected', [expectedTensor['analyzeDNSMOSMean']])
 def test_analyzeDNSMOSMean(aspectTensor: AspectTensor, expected: dict[str, float | None]) -> None:

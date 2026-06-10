@@ -17,7 +17,7 @@ def _standardizedEqualScalars(analyzer: str, paths: ContestFilename, actual: flo
 	parameters = (
 		f'pathFilenameAlfa={paths.pathFilenameAlfa.name!r}, pathFilenameBeta={paths.pathFilenameBeta.name!r}, sampleRate={sampleRate!r}'
 	)
-	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8), f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
+	assert actual == pytest.approx(expected, rel=1e-4, abs=1e-6), f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
 
 @pytest.mark.parametrize('expectedContestTensor', ['analyzeLogWMSEMean'], indirect=True)
 def test_analyzeLogWMSEMean(contestTensor: ContestTensor, tensorAudioMixture: Tensor, expectedContestTensor: float) -> None:

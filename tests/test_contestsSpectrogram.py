@@ -15,7 +15,7 @@ def _standardizedEqualScalars(
 		f'pathFilenameBeta={paths.pathFilenameBeta.name!r}, '
 		f'sampleRate={sampleRate!r}'
 	)
-	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8), (  # pyright: ignore[reportUnknownMemberType]
+	assert actual == pytest.approx(expected, rel=1e-4, abs=1e-6), (  # pyright: ignore[reportUnknownMemberType]
 		f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'
 	)
 

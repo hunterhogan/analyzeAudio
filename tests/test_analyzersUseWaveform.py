@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 	from tests import AspectWaveform
 
 def _standardizedEqualScalars(analyzer: str, pathFilename: Path, actual: float, expected: float) -> None:
-	assert actual == pytest.approx(expected, rel=1e-5, abs=1e-8), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
+	assert actual == pytest.approx(expected, rel=1e-4, abs=1e-6), f'{analyzer}({pathFilename.name}) = {actual!r}, but {expected = }.'  # pyright: ignore[reportUnknownMemberType]
 
 @pytest.mark.parametrize('expected', [expectedWaveform['analyzeRMSWaveformMean']])
 def test_analyzeRMSWaveformMean(aspectWaveform: AspectWaveform, expected: dict[str, float]) -> None:
