@@ -5,18 +5,19 @@ from __future__ import annotations
 
 from analyzeAudio.analyzersUseFilename._wideRange import ffprobeAllInclusiveCache
 from analyzeAudio.registry import registrationAudioAspect
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import numpy
 
 if TYPE_CHECKING:
 	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from collections.abc import Callable
 	from os import PathLike
+	from typing import Any
 
 arrayChannelDataEmpty: ArrayChannelData = numpy.array([], dtype=numpy.float64).reshape(0, 0)
 arrayOverallDataEmpty: ArrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)
 
-def analyzeSpectralCentroid(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_centroid(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral centroid trajectory of an audio file.
 
 	(AI generated docstring)
@@ -54,7 +55,7 @@ def analyzeSpectralCentroid(pathFilename: str | PathLike[Any]) -> ArrayChannelDa
 	return ffprobeAllInclusiveCache(pathFilename).get('centroid', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral centroid mean')
-def analyzeSpectralCentroidMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_centroid_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral centroid mean': mean framewise spectral centroid.
 
 	Returns
@@ -63,10 +64,10 @@ def analyzeSpectralCentroidMean(pathFilename: str | PathLike[Any]) -> float:
 		Mean value of the framewise spectral centroid.
 
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralCentroid
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_centroid
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralCrest(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_crest(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral crest of an audio file.
 
 	(AI generated docstring)
@@ -105,7 +106,7 @@ def analyzeSpectralCrest(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	return ffprobeAllInclusiveCache(pathFilename).get('crest', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral crest mean')
-def analyzeSpectralCrestMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_crest_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral crest mean': mean framewise spectral crest.
 
 	Returns
@@ -114,10 +115,10 @@ def analyzeSpectralCrestMean(pathFilename: str | PathLike[Any]) -> float:
 		Mean value of the framewise spectral crest.
 
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralCrest
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_crest
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralDecrease(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_decrease(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral decrease trajectory of an audio file.
 
 	(AI generated docstring)
@@ -155,7 +156,7 @@ def analyzeSpectralDecrease(pathFilename: str | PathLike[Any]) -> ArrayChannelDa
 	return ffprobeAllInclusiveCache(pathFilename).get('decrease', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral decrease mean')
-def analyzeSpectralDecreaseMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_decrease_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral decrease mean': mean framewise spectral decrease.
 
 	Parameters
@@ -168,10 +169,10 @@ def analyzeSpectralDecreaseMean(pathFilename: str | PathLike[Any]) -> float:
 	spectralDecreaseMean : float
 		Mean spectral decrease across analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralDecrease
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_decrease
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_entropy(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral entropy trajectory of an audio file.
 
 	(AI generated docstring)
@@ -207,7 +208,7 @@ def analyzeSpectralEntropy(pathFilename: str | PathLike[Any]) -> ArrayChannelDat
 	return ffprobeAllInclusiveCache(pathFilename).get('entropy', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral entropy mean')
-def analyzeSpectralEntropyMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_entropy_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral entropy mean': mean framewise spectral entropy.
 
 	Parameters
@@ -220,10 +221,10 @@ def analyzeSpectralEntropyMean(pathFilename: str | PathLike[Any]) -> float:
 	spectralEntropyMean : float
 		Mean spectral entropy across analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralEntropy
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_entropy
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralFlatness(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_flatness(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral flatness trajectory of an audio file.
 
 	(AI generated docstring)
@@ -260,7 +261,7 @@ def analyzeSpectralFlatness(pathFilename: str | PathLike[Any]) -> ArrayChannelDa
 	return ffprobeAllInclusiveCache(pathFilename).get('flatness', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral flatness mean')
-def analyzeSpectralFlatnessMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_flatness_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral flatness mean': mean framewise spectral flatness.
 
 	Returns
@@ -269,10 +270,10 @@ def analyzeSpectralFlatnessMean(pathFilename: str | PathLike[Any]) -> float:
 		Mean value of the framewise spectral flatness.
 
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralFlatness
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_flatness
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralFlux(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_flux(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral flux trajectory of an audio file.
 
 	(AI generated docstring)
@@ -309,7 +310,7 @@ def analyzeSpectralFlux(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	return ffprobeAllInclusiveCache(pathFilename).get('flux', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral flux mean')
-def analyzeSpectralFluxMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_flux_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral flux mean': mean framewise spectral flux.
 
 	Parameters
@@ -322,10 +323,10 @@ def analyzeSpectralFluxMean(pathFilename: str | PathLike[Any]) -> float:
 	spectralFluxMean : float
 		Mean spectral flux across analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralFlux
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_flux
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralKurtosis(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_kurtosis(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral kurtosis trajectory of an audio file.
 
 	(AI generated docstring)
@@ -365,7 +366,7 @@ def analyzeSpectralKurtosis(pathFilename: str | PathLike[Any]) -> ArrayChannelDa
 	return ffprobeAllInclusiveCache(pathFilename).get('kurtosis', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral kurtosis mean')
-def analyzeSpectralKurtosisMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_kurtosis_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral kurtosis mean': mean framewise spectral kurtosis.
 
 	Parameters
@@ -379,10 +380,10 @@ def analyzeSpectralKurtosisMean(pathFilename: str | PathLike[Any]) -> float:
 		Mean spectral kurtosis across analyzed frames.
 
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralKurtosis
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_kurtosis
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralMean(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_mean(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the power spectral density trajectory of an audio file.
 
 	(AI generated docstring)
@@ -412,7 +413,7 @@ def analyzeSpectralMean(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	return ffprobeAllInclusiveCache(pathFilename).get('mean', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Power spectral density mean')
-def analyzeSpectralMeanMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_mean_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Power spectral density mean': mean framewise power spectral density.
 
 	Parameters
@@ -425,10 +426,10 @@ def analyzeSpectralMeanMean(pathFilename: str | PathLike[Any]) -> float:
 	powerSpectralDensityMean : float
 		Mean power spectral density across all frequency bins and analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralMean
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_mean
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralRolloff(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_rolloff(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral rolloff trajectory of an audio file.
 
 	(AI generated docstring)
@@ -466,7 +467,7 @@ def analyzeSpectralRolloff(pathFilename: str | PathLike[Any]) -> ArrayChannelDat
 	return ffprobeAllInclusiveCache(pathFilename).get('rolloff', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral rolloff mean')
-def analyzeSpectralRolloffMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_rolloff_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral rolloff mean': mean framewise spectral rolloff frequency.
 
 	Parameters
@@ -479,10 +480,10 @@ def analyzeSpectralRolloffMean(pathFilename: str | PathLike[Any]) -> float:
 	spectralRolloffMean : float
 		Mean spectral rolloff frequency across analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralRolloff
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_rolloff
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralSkewness(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_skewness(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral skewness trajectory of an audio file.
 
 	(AI generated docstring)
@@ -521,7 +522,7 @@ def analyzeSpectralSkewness(pathFilename: str | PathLike[Any]) -> ArrayChannelDa
 	return ffprobeAllInclusiveCache(pathFilename).get('skewness', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral skewness mean')
-def analyzeSpectralSkewnessMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_skewness_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral skewness mean': mean framewise spectral skewness.
 
 	Parameters
@@ -534,10 +535,10 @@ def analyzeSpectralSkewnessMean(pathFilename: str | PathLike[Any]) -> float:
 	spectralSkewnessMean : float
 		Mean spectral skewness across analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralSkewness
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_skewness
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralSlope(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_slope(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral slope trajectory of an audio file.
 
 	(AI generated docstring)
@@ -576,7 +577,7 @@ def analyzeSpectralSlope(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	return ffprobeAllInclusiveCache(pathFilename).get('slope', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral slope mean')
-def analyzeSpectralSlopeMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_slope_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral slope mean': mean framewise spectral slope.
 
 	Parameters
@@ -589,10 +590,10 @@ def analyzeSpectralSlopeMean(pathFilename: str | PathLike[Any]) -> float:
 	spectralSlopeMean : float
 		Mean spectral slope across analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralSlope
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_slope
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralSpread(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_spread(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral spread trajectory of an audio file.
 
 	(AI generated docstring)
@@ -630,7 +631,7 @@ def analyzeSpectralSpread(pathFilename: str | PathLike[Any]) -> ArrayChannelData
 	return ffprobeAllInclusiveCache(pathFilename).get('spread', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral spread mean')
-def analyzeSpectralSpreadMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_spread_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral spread mean': mean framewise spectral spread.
 
 	Returns
@@ -639,10 +640,10 @@ def analyzeSpectralSpreadMean(pathFilename: str | PathLike[Any]) -> float:
 		Mean value of the framewise spectral spread.
 
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralSpread
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_spread
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)
 
-def analyzeSpectralVariance(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
+def analyzeSpectral_variance(pathFilename: str | PathLike[Any]) -> ArrayChannelData:
 	"""Compute the spectral variance trajectory of an audio file.
 
 	(AI generated docstring)
@@ -681,7 +682,7 @@ def analyzeSpectralVariance(pathFilename: str | PathLike[Any]) -> ArrayChannelDa
 	return ffprobeAllInclusiveCache(pathFilename).get('variance', arrayChannelDataEmpty)
 
 @registrationAudioAspect('Spectral variance mean')
-def analyzeSpectralVarianceMean(pathFilename: str | PathLike[Any]) -> float:
+def analyzeSpectral_variance_mean(pathFilename: str | PathLike[Any]) -> float:
 	"""Aspect 'Spectral variance mean': mean framewise spectral variance.
 
 	Parameters
@@ -694,5 +695,5 @@ def analyzeSpectralVarianceMean(pathFilename: str | PathLike[Any]) -> float:
 	spectralVarianceMean : float
 		Mean spectral variance across analyzed frames.
 	"""
-	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectralVariance
+	theArrayCallable: Callable[[str | PathLike[Any]], ArrayChannelData] = analyzeSpectral_variance
 	return numpy.mean(theArrayCallable(pathFilename)).astype(float)

@@ -4,8 +4,8 @@
 - Model domain concepts directly. Use domain-canonical terms as atomic vocabulary; avoid near-synonyms.
 - For analyzer and contest code, standardized API shape outranks dependency signature fidelity. Registered analyzers are dispatched by inspected parameter names; agents must never add bespoke keyword-only parameters such as DNSMOS `personalized`, `device`, `num_threads`, or `cache_session` to public analyzer signatures. Keep fixed library defaults internal or use the established `**keywordArguments` pass-through pattern, and keep base analyzer plus `Mean`/`Overall` wrappers aligned.
 - Prefer functional/transformational style: pure functions, immutable transformations, explicit state changes.
-- Use established Python/library capabilities before custom algorithms: standard library, `itertools`, `more_itertools`, `toolz`, `numpy`, `pandas`, etc., when available and appropriate.
-- Loops need a reason: algorithmically essential, existential early-exit semantics, or measured performance need. Avoid `while-break`; put exit logic in the `while` condition.
+- Use established project abstractions, standard-library APIs, test-framework features, and trusted library APIs before custom algorithms or concepts. Do not invent dispatch schemes, registries, selector mappings, or other conceptual machinery when an existing mechanism can express the behavior.
+- Do not write `for` loops or comprehensions containing `for` unless the user pre-approves that specific loop. If a loop or comprehension seems necessary, stop coding and ask before adding it. Avoid `while-break`; put exit logic in the `while` condition.
 - Preserve semantic abstractions. Do not inline a named domain function/predicate just because the expression is short.
 - No superfluous bindings that only rename an existing expression used once. Use the original expression directly unless the binding carries new semantics.
 - Python-native boundaries: use `pathlib`/Python APIs for filesystem/text/data work. Use `subprocess` only for canonical external tools such as `git`, FFmpeg, or FFprobe.

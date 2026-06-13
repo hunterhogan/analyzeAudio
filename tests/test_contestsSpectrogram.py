@@ -7,44 +7,32 @@ import pytest
 if TYPE_CHECKING:
 	from tests import ContestFilename, ContestSpectrogramMagnitude
 
-def _standardizedEqualScalars(
-	analyzer: str, paths: ContestFilename, actual: float, expected: float, sampleRate: int
-) -> None:
-	parameters = (
-		f'pathFilenameAlfa={paths.pathFilenameAlfa.name!r}, '
-		f'pathFilenameBeta={paths.pathFilenameBeta.name!r}, '
-		f'sampleRate={sampleRate!r}'
+def _standardizedEqualScalars(analyzer: str, paths: ContestFilename, actual: float, expected: float, sampleRate: int) -> None:
+	parameters: str = (
+		f'pathFilenameAlfa={paths.pathFilenameAlfa.name!r}, pathFilenameBeta={paths.pathFilenameBeta.name!r}, sampleRate={sampleRate!r}'
 	)
 	assert actual == pytest.approx(expected, rel=1e-4, abs=1e-6), (  # pyright: ignore[reportUnknownMemberType]
 		f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'
 	)
 
-@pytest.mark.parametrize('expectedContestSpectrogram', ['analyzeBleedlessMelDBMean'], indirect=True)
-def test_analyzeBleedlessMelDBMean(contestSpectrogramMagnitude: ContestSpectrogramMagnitude, expectedContestSpectrogram: float) -> None:
+@pytest.mark.parametrize('expectedContest', ['analyzeBleedlessMelDBMean'], indirect=True)
+def test_analyzeBleedlessMelDBMean(contestSpectrogramMagnitude: ContestSpectrogramMagnitude, expectedContest: float) -> None:
 	actual = analyzeBleedlessMelDBMean(
 		contestSpectrogramMagnitude.spectrogramMagnitudeAlfa
 		, contestSpectrogramMagnitude.spectrogramMagnitudeBeta
 		, sr=contestSpectrogramMagnitude.sampleRateAlfa
 	)
 	_standardizedEqualScalars(
-		'analyzeBleedlessMelDBMean'
-		, contestSpectrogramMagnitude.paths
-		, actual
-		, expectedContestSpectrogram
-		, contestSpectrogramMagnitude.sampleRateAlfa
+		'analyzeBleedlessMelDBMean', contestSpectrogramMagnitude.paths, actual, expectedContest, contestSpectrogramMagnitude.sampleRateAlfa
 	)
 
-@pytest.mark.parametrize('expectedContestSpectrogram', ['analyzeFullnessMelDBMean'], indirect=True)
-def test_analyzeFullnessMelDBMean(contestSpectrogramMagnitude: ContestSpectrogramMagnitude, expectedContestSpectrogram: float) -> None:
+@pytest.mark.parametrize('expectedContest', ['analyzeFullnessMelDBMean'], indirect=True)
+def test_analyzeFullnessMelDBMean(contestSpectrogramMagnitude: ContestSpectrogramMagnitude, expectedContest: float) -> None:
 	actual = analyzeFullnessMelDBMean(
 		contestSpectrogramMagnitude.spectrogramMagnitudeAlfa
 		, contestSpectrogramMagnitude.spectrogramMagnitudeBeta
 		, sr=contestSpectrogramMagnitude.sampleRateAlfa
 	)
 	_standardizedEqualScalars(
-		'analyzeFullnessMelDBMean'
-		, contestSpectrogramMagnitude.paths
-		, actual
-		, expectedContestSpectrogram
-		, contestSpectrogramMagnitude.sampleRateAlfa
+		'analyzeFullnessMelDBMean', contestSpectrogramMagnitude.paths, actual, expectedContest, contestSpectrogramMagnitude.sampleRateAlfa
 	)

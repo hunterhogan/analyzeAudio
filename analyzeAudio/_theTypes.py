@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from numpy import complexfloating, dtype, float64, floating, ndarray
+from numpy import dtype, float64, floating, ndarray
 from typing import Any, Literal, NamedTuple, ParamSpec, Protocol, TYPE_CHECKING, TypedDict, TypeVar
 
 if TYPE_CHECKING:

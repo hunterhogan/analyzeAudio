@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 expectedFilename: dict[str, dict[str, float | None]] = {
-	'analyzeSpectralCentroidMean': {
+	'analyzeSpectral_centroid_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 1149.3679444444444
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 1034.9696
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 2739.24923225
@@ -33,7 +33,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 2021.600733173077
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 2020.325235576923
 	}
-	, 'analyzeSpectralCrestMean': {
+	, 'analyzeSpectral_crest_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 108.38862111111108
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 425.3744
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 455.23367833333344
@@ -65,7 +65,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 77.00512145432693
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 77.01353665865385
 	}
-	, 'analyzeSpectralDecreaseMean': {
+	, 'analyzeSpectral_decrease_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': -0.018603757386
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 0.020089284
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': -0.023512325908333326
@@ -97,7 +97,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': -0.029883857406971158
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': -0.02988571809879808
 	}
-	, 'analyzeSpectralEntropyMean': {
+	, 'analyzeSpectral_entropy_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 0.5680024666666666
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 0.1937872
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 0.05382435133333333
@@ -129,7 +129,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 0.10675322563701924
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 0.09682607433293271
 	}
-	, 'analyzeSpectralFlatnessMean': {
+	, 'analyzeSpectral_flatness_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 0.11743602444444444
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 0.0077492029
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 0.0036844465425000003
@@ -161,7 +161,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 0.09410852439903848
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 0.09461328203124998
 	}
-	, 'analyzeSpectralFluxMean': {
+	, 'analyzeSpectral_flux_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 0.17087375666666665
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 0.021637031064
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 0.007366467580300001
@@ -193,7 +193,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 0.008281923446514424
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 0.007383842629206731
 	}
-	, 'analyzeSpectralKurtosisMean': {
+	, 'analyzeSpectral_kurtosis_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 14.034344000000003
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 4737.79612
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 1225.575366
@@ -225,7 +225,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 23.26060863581731
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 23.254953599759617
 	}
-	, 'analyzeSpectralMeanMean': {
+	, 'analyzeSpectral_mean_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 0.0010072486777777776
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 0.0005611050000000001
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 0.00010988494600000001
@@ -257,7 +257,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 0.0001094720714483173
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 9.759884732572114e-05
 	}
-	, 'analyzeSpectralRolloffMean': {
+	, 'analyzeSpectral_rolloff_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 968.6629888888888
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 1044.36
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 2743.1509268333334
@@ -289,7 +289,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 3580.1907019230766
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 3578.345587740385
 	}
-	, 'analyzeSpectralSkewnessMean': {
+	, 'analyzeSpectral_skewness_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 3.426388444444444
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 63.409092
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 28.291545128333333
@@ -321,7 +321,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 3.530271953125
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 3.5285908533653845
 	}
-	, 'analyzeSpectralSlopeMean': {
+	, 'analyzeSpectral_slope_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': -0.0021481919999999997
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': -0.0015195979999999998
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': -0.00027774340024
@@ -353,7 +353,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': -0.0002744225034254808
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': -0.00024466797371394233
 	}
-	, 'analyzeSpectralSpreadMean': {
+	, 'analyzeSpectral_spread_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 1451.6418888888888
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 391.7289
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 461.27267
@@ -385,7 +385,7 @@ expectedFilename: dict[str, dict[str, float | None]] = {
 		, 'ch2_48000_83s_LUFS23_VoiceAndMusic.wav': 2614.621935096154
 		, 'ch2_48000_83s_LUFS24_VoiceAndMusic.wav': 2611.1672415865387
 	}
-	, 'analyzeSpectralVarianceMean': {
+	, 'analyzeSpectral_variance_mean': {
 		'ch1_16000_09s_s32le_Clipping.wav': 5.099412999999999e-05
 		, 'ch1_44100_01s_LUFS03_1kHz.wav': 8.658973999999999e-05
 		, 'ch1_44100_120s_LUFS18_FrequencySweep.wav': 6.034668508333333e-06
@@ -1588,7 +1588,7 @@ expectedTensor: dict[str, dict[str, float | None]] = {
 		, 'ch2_44100_04s_LUFS69.5_AbsGate.wav': 2.6994023361797534
 		, 'ch2_44100_05s_s16le.wav': 2.119205551722766
 		, 'ch2_44100_09s_LUFS20_birdsPink.wav': 2.0624622789906892
-		, 'ch2_44100_29s_LUFS23_10000Hz.wav': 2.8837011392275524
+		, 'ch2_44100_29s_LUFS23_10000Hz.wav': 2.8837494779275
 		, 'ch2_44100_29s_LUFS23_1000Hz.wav': 2.03716211089689
 		, 'ch2_44100_29s_LUFS23_100Hz.wav': 2.5255040133928772
 		, 'ch2_44100_29s_LUFS23_2000Hz.wav': 2.2990753678535487

@@ -1,6 +1,6 @@
 [project]
 name = "analyzeAudio"
-version = "0.4.0"
+version = "0.5.0"
 description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -38,6 +38,9 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Topic :: Multimedia :: Sound/Audio",
   "Topic :: Multimedia :: Sound/Audio :: Analysis",
@@ -60,7 +63,7 @@ dependencies = [
   "tqdm"
 ]
 optional-dependencies = { development = ["pytest-cov", "scipy-stubs"], testing = [
-  "pytest"
+  "pytest", "pytest-xdist"
 ] }
 
 [project.urls]
@@ -87,7 +90,7 @@ run = { branch = true, data_file = "tests/coverage/.coverage", omit = [
 ], parallel = true, source = ["."] }
 
 [tool.pytest]
-addopts = ["--color=auto"]
+addopts = ["--color=auto", "-n 4"]
 log_auto_indent = "On"
 testpaths = ["tests"]
 

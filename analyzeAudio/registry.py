@@ -206,7 +206,8 @@ def getListAvailableAudioContests() -> list[str]:
 
 # NOTE Importing the modules triggers the registration of analyzer functions.
 # isort: split
-from analyzeAudio import analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform  # pyright: ignore[reportUnusedImport] # noqa: E402
+from analyzeAudio import (  # pyright: ignore[reportUnusedImport] # noqa: E402
+	analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform)
 
 # isort: split
 from analyzeAudio import contestsSpectrogram, contestsTensor, contestsTensorSpectrogram  # pyright: ignore[reportUnusedImport] # noqa: E402

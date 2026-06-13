@@ -1,12 +1,14 @@
 # ruff: noqa: DOC201
 from __future__ import annotations
 
-from hunterHearsPy import parametersDEFAULT, readAudioFile, stft
+from collections import ChainMap
+from hunterHearsPy import readAudioFile, stft
 from tests import (
 	AspectSpectrogram, AspectSpectrogramMagnitude, AspectSpectrogramPower, AspectTensor, AspectWaveform, ContestFilename, ContestSpectrogram,
 	ContestSpectrogramMagnitude, ContestTensor, ContestTensorSpectrogram, ContestTensorSpectrogramMagnitude, ContestWaveform,
 	listPathFilenamesContests, listPathFilenamesDataSamples, pathFilenameMixture)
-from tests.dataSamples.SpeakSoftly_BrokenMan60sec import expected
+from tests.dataSamples import expected
+from tests.dataSamples.SpeakSoftly_BrokenMan60sec import expected as contestExpected
 from typing import TYPE_CHECKING
 import librosa
 import numpy
@@ -24,13 +26,6 @@ if TYPE_CHECKING:
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 	"""Sort collected tests by node id for stable fixture-cache access patterns."""
 	items.sort(key=lambda item: item.nodeid)
-
-# TODO abstract the expected values dictionaries into a fixture. This `from tests.dataSamples.expected
-# import expectedFilename` is not scalable. Right now, the expected values are effectively indexed by
-# keys: tests.dataSamples.expected, expectedFilename, analyzeAbs_Peak_countTotal, and pathFilename.
-# Therefore, abstract the keys to those that actually matter--analyzeAbs_Peak_countTotal and
-# pathFilename, the function being tested and the test parameters--and have the test function get the
-# value from a fixture. The fixture will track the physical location of the expected values.
 
 # ================== Audio Aspects =================================================================
 
@@ -72,6 +67,14 @@ def aspectTensor(aspectWaveform: AspectWaveform) -> AspectTensor:
 	"""Return each static audio tensor with its source path and sample rate."""
 	return AspectTensor(aspectWaveform.pathFilename, torch.from_numpy(aspectWaveform.waveform), aspectWaveform.sampleRate)  # pyright: ignore[reportUnknownMemberType]
 
+@pytest.fixture(scope='session')
+def expectedAspect(request: pytest.FixtureRequest, pathFilename: Path) -> float | None:
+	"""Return the stored expected aspect value for the current aspect fixture, function, and path."""
+	analyzer: str = request.param
+	dictionaryExpected: ChainMap[str, dict[str, float | None]] = ChainMap(
+		expected.expectedFilename, expected.expectedSpectrogram, expected.expectedTensor, expected.expectedWaveform)  # pyright: ignore[reportArgumentType] # ty:ignore[invalid-assignment, invalid-argument-type]
+	return dictionaryExpected[analyzer][pathFilename.name]  # pyright: ignore[reportReturnType]
+
 # ================== Contests ======================================================================
 
 def _idContestFilename(paths: ContestFilename) -> str:
@@ -86,10 +89,9 @@ def pathFilenamesContest(request: pytest.FixtureRequest) -> ContestFilename:
 @pytest.fixture(scope='session')
 def contestWaveform(pathFilenamesContest: ContestFilename) -> ContestWaveform:
 	"""Return each contest waveform pair with its sample rates."""
-	# TODO Think about this.
-	sampleRate: int = int(parametersDEFAULT['sampleRate'])
-	waveformAlfa: Waveform = readAudioFile(pathFilenamesContest.pathFilenameAlfa, sampleRate=sampleRate)
-	waveformBeta: Waveform = readAudioFile(pathFilenamesContest.pathFilenameBeta, sampleRate=sampleRate)
+	waveformAlfa: Waveform = readAudioFile(pathFilenamesContest.pathFilenameAlfa)
+	waveformBeta: Waveform = readAudioFile(pathFilenamesContest.pathFilenameBeta)
+	sampleRate = 44100
 	return ContestWaveform(pathFilenamesContest, waveformAlfa, sampleRate, waveformBeta, sampleRate)
 
 @pytest.fixture(scope='session')
@@ -152,32 +154,12 @@ def tensorAudioMixture(aPathFilename: Path = pathFilenameMixture) -> Tensor:
 	"""Return the audio mixture tensor with its sample rate."""
 	return torch.from_numpy(readAudioFile(aPathFilename))  # pyright: ignore[reportUnknownMemberType]
 
-#------------------ Expected values ---------------------------------------------------------------
-
 @pytest.fixture(scope='session')
-def expectedContestFilename(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilename) -> float:
-	"""Return the stored expected value for the current contest function and path pair."""
+def expectedContest(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilename) -> float:
+	"""Return the stored expected contest value for the current contest fixture, function, and path pair."""
 	analyzer: str = request.param
-	pairFilenames = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
-	return expected.expectedFilename[analyzer][pairFilenames]
-
-@pytest.fixture(scope='session')
-def expectedContestSpectrogram(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilename) -> float:
-	"""Return the stored expected spectrogram value for the current contest function and path pair."""
-	analyzer: str = request.param
-	pairFilenames = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
-	return expected.expectedSpectrogram[analyzer][pairFilenames]
-
-@pytest.fixture(scope='session')
-def expectedContestTensorSpectrogram(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilename) -> float:
-	"""Return the stored expected tensor-spectrogram value for the current contest function and path pair."""
-	analyzer: str = request.param
-	pairFilenames = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
-	return expected.expectedTensorSpectrogram[analyzer][pairFilenames]
-
-@pytest.fixture(scope='session')
-def expectedContestTensor(request: pytest.FixtureRequest, contestTensor: ContestTensor) -> float:
-	"""Return the stored expected tensor value for the current contest function and path pair."""
-	analyzer: str = request.param
-	pairFilenames = (contestTensor.paths.pathFilenameAlfa.name, contestTensor.paths.pathFilenameBeta.name)
-	return expected.expectedTensor[analyzer][pairFilenames]
+	dictionaryExpectedContest = ChainMap(
+		contestExpected.expectedTensorSpectrogram, contestExpected.expectedSpectrogram, contestExpected.expectedTensor
+	)
+	keyName = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
+	return dictionaryExpectedContest[analyzer][keyName]

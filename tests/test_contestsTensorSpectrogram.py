@@ -10,15 +10,15 @@ if TYPE_CHECKING:
 	from tests import ContestFilename, ContestTensorSpectrogram, ContestTensorSpectrogramMagnitude
 
 def _standardizedEqualScalars(analyzer: str, paths: ContestFilename, actual: float, expected: float, sampleRate: int) -> None:
-	parameters = (
+	parameters: str = (
 		f'pathFilenameAlfa={paths.pathFilenameAlfa.name!r}, pathFilenameBeta={paths.pathFilenameBeta.name!r}, sampleRate={sampleRate!r}'
 	)
-	message = f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'
+	message: str = f'{analyzer}({parameters}) = {actual!r}, but {expected = }.'
 	assert actual == pytest.approx(expected, rel=1e-4, abs=1e-6, nan_ok=True), message  # pyright: ignore[reportUnknownMemberType]
 
-@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeComplexScaleInvariantSignalNoiseRatioMean'], indirect=True)
+@pytest.mark.parametrize('expectedContest', ['analyzeComplexScaleInvariantSignalNoiseRatioMean'], indirect=True)
 def test_analyzeComplexScaleInvariantSignalNoiseRatioMean(
-	contestTensorSpectrogram: ContestTensorSpectrogram, expectedContestTensorSpectrogram: float
+	contestTensorSpectrogram: ContestTensorSpectrogram, expectedContest: float
 ) -> None:
 	actual = analyzeComplexScaleInvariantSignalNoiseRatioMean(
 		contestTensorSpectrogram.tensorSpectrogramAlfa, contestTensorSpectrogram.tensorSpectrogramBeta
@@ -27,13 +27,13 @@ def test_analyzeComplexScaleInvariantSignalNoiseRatioMean(
 		'analyzeComplexScaleInvariantSignalNoiseRatioMean'
 		, contestTensorSpectrogram.paths
 		, actual
-		, expectedContestTensorSpectrogram
+		, expectedContest
 		, contestTensorSpectrogram.sampleRateAlfa
 	)
 
-@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeComplexScaleInvariantSignalNoiseRatioLossMean'], indirect=True)
+@pytest.mark.parametrize('expectedContest', ['analyzeComplexScaleInvariantSignalNoiseRatioLossMean'], indirect=True)
 def test_analyzeComplexScaleInvariantSignalNoiseRatioLossMean(
-	contestTensorSpectrogram: ContestTensorSpectrogram, expectedContestTensorSpectrogram: float
+	contestTensorSpectrogram: ContestTensorSpectrogram, expectedContest: float
 ) -> None:
 	actual = analyzeComplexScaleInvariantSignalNoiseRatioLossMean(
 		contestTensorSpectrogram.tensorSpectrogramAlfa, contestTensorSpectrogram.tensorSpectrogramBeta
@@ -42,13 +42,13 @@ def test_analyzeComplexScaleInvariantSignalNoiseRatioLossMean(
 		'analyzeComplexScaleInvariantSignalNoiseRatioLossMean'
 		, contestTensorSpectrogram.paths
 		, actual
-		, expectedContestTensorSpectrogram
+		, expectedContest
 		, contestTensorSpectrogram.sampleRateAlfa
 	)
 
-@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeSpectralConvergenceLossMean'], indirect=True)
+@pytest.mark.parametrize('expectedContest', ['analyzeSpectralConvergenceLossMean'], indirect=True)
 def test_analyzeSpectralConvergenceLossMean(
-	contestTensorSpectrogramMagnitude: ContestTensorSpectrogramMagnitude, expectedContestTensorSpectrogram: float
+	contestTensorSpectrogramMagnitude: ContestTensorSpectrogramMagnitude, expectedContest: float
 ) -> None:
 	actual = analyzeSpectralConvergenceLossMean(
 		contestTensorSpectrogramMagnitude.tensorSpectrogramMagnitudeAlfa, contestTensorSpectrogramMagnitude.tensorSpectrogramMagnitudeBeta
@@ -57,14 +57,12 @@ def test_analyzeSpectralConvergenceLossMean(
 		'analyzeSpectralConvergenceLossMean'
 		, contestTensorSpectrogramMagnitude.paths
 		, actual
-		, expectedContestTensorSpectrogram
+		, expectedContest
 		, contestTensorSpectrogramMagnitude.sampleRateAlfa
 	)
 
-@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeSTFTMagnitudeLossMean'], indirect=True)
-def test_analyzeSTFTMagnitudeLossMean(
-	contestTensorSpectrogramMagnitude: ContestTensorSpectrogramMagnitude, expectedContestTensorSpectrogram: float
-) -> None:
+@pytest.mark.parametrize('expectedContest', ['analyzeSTFTMagnitudeLossMean'], indirect=True)
+def test_analyzeSTFTMagnitudeLossMean(contestTensorSpectrogramMagnitude: ContestTensorSpectrogramMagnitude, expectedContest: float) -> None:
 	actual = analyzeSTFTMagnitudeLossMean(
 		contestTensorSpectrogramMagnitude.tensorSpectrogramMagnitudeAlfa, contestTensorSpectrogramMagnitude.tensorSpectrogramMagnitudeBeta
 	)
@@ -72,14 +70,12 @@ def test_analyzeSTFTMagnitudeLossMean(
 		'analyzeSTFTMagnitudeLossMean'
 		, contestTensorSpectrogramMagnitude.paths
 		, actual
-		, expectedContestTensorSpectrogram
+		, expectedContest
 		, contestTensorSpectrogramMagnitude.sampleRateAlfa
 	)
 
-@pytest.mark.parametrize('expectedContestTensorSpectrogram', ['analyzeL1FrequencyLoss'], indirect=True)
-def test_analyzeL1FrequencyLoss(
-	contestTensorSpectrogramMagnitude: ContestTensorSpectrogramMagnitude, expectedContestTensorSpectrogram: float
-) -> None:
+@pytest.mark.parametrize('expectedContest', ['analyzeL1FrequencyLoss'], indirect=True)
+def test_analyzeL1FrequencyLoss(contestTensorSpectrogramMagnitude: ContestTensorSpectrogramMagnitude, expectedContest: float) -> None:
 	actual = analyzeL1FrequencyLoss(
 		contestTensorSpectrogramMagnitude.tensorSpectrogramMagnitudeAlfa, contestTensorSpectrogramMagnitude.tensorSpectrogramMagnitudeBeta
 	)
@@ -87,6 +83,6 @@ def test_analyzeL1FrequencyLoss(
 		'analyzeL1FrequencyLoss'
 		, contestTensorSpectrogramMagnitude.paths
 		, actual
-		, expectedContestTensorSpectrogram
+		, expectedContest
 		, contestTensorSpectrogramMagnitude.sampleRateAlfa
 	)
