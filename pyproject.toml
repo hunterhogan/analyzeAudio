@@ -46,7 +46,6 @@ classifiers = [
   "Topic :: Multimedia :: Sound/Audio :: Analysis",
   "Topic :: Multimedia :: Sound/Audio :: Conversion",
   "Topic :: Scientific/Engineering :: Information Analysis",
-  "Topic :: Software Development :: Libraries :: Python Modules",
   "Typing :: Typed",
 ]
 dependencies = [

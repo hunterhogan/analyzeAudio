@@ -2,17 +2,21 @@
 
 - Pytest configuration belongs in `pyproject.toml`; fixtures/shared setup belong in `tests/conftest.py`.
 - Never create fixtures outside `tests/conftest.py`.
+- Import-only support modules such as `tests/_theTypes.py` and `tests/_theSSOT.py` may contain shared type carriers, static path inventories, aliases, and constants. They must not contain fixtures, factories, file I/O, or behavioral setup.
 - One test function per function/class being tested.
 - All test functions use `@pytest.mark.parametrize`. Single-case parametrization is acceptable.
 - Every test is assumed to use fixtures. If a test has no fixture, justify this in the response.
 - Fixture names use camelCase, descriptive names; `temp` for temporary resources, `mock` for mocked dependencies.
-- Share expensive operations via fixtures rather than repeating setup.
+- Share expensive operations via fixtures rather than repeating setup. Prefer session-scoped fixture chains for immutable real sample data, such as path -> waveform -> spectrogram -> tensor.
+- Use fixture `params=[...]` with stable `ids=...` for reusable sample dimensions.
+- Use indirect expected fixtures when many tests share the same sample fixture and differ by the target expectation key: `@pytest.mark.parametrize('expectedAspect', ['analyzeFoo'], indirect=True)`.
 - Do not create faux-fixtures, fixture registries, dispatch tables, selector mappings, or other custom test-support objects when pytest has a native mechanism. Use `@pytest.fixture`, fixture dependencies, `request.getfixturevalue`, fixture params, `pytest.param`, marks, and hooks.
-- In test modules, avoid custom non-pytest concepts. If a new object is not a pytest fixture, pytest parameter, pytest mark, pytest hook, assertion helper, imported implementation under test, or static test datum, stop and ask before adding it.
+- In `test_*.py` modules, avoid custom non-pytest concepts. If a new object is not a pytest fixture, pytest parameter, pytest mark, pytest hook, assertion helper, imported implementation under test, or static test datum, stop and ask before adding it.
 - Combine related assertions over the same result into one test function when setup is shared and properties are related.
 - Test data must be deterministic. Prefer static samples from `tests/dataSamples/` when available.
 - `tests/dataSamples/` should contain only data, not executable functions/classes.
 - Never use random/faker data for tests.
+- If a target uses randomness, parametrize a deterministic seed and keep it visible in the test signature or data setup.
 - Synthetic values should be distinctive and non-contiguous; avoid boundary/sentinel values unless boundary behavior is explicitly under test: avoid `0`, `1`, `-1`, `''`, `' '`, `[]`, `[[]]`, `[0]`, alphabetical edge letters.
 - Every assertion includes a descriptive message with feature/function under test, actual and expected values, relevant inputs, and final full stop.
 - Centralize multi-parameter scenario configuration through pytest parametrization, fixture params, or static test-data modules; avoid scattered pickers, fragmented dictionaries, and pseudo-fixture registries.
