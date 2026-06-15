@@ -49,39 +49,28 @@ def approx_abs(request: pytest.FixtureRequest) -> float:
 
 def uniformMessageTestFailure(function: str, actual: Any, expected: Any, *arguments: Any, **keywordArguments: Any) -> str:
 	"""Format assertion message for any test comparison."""
-	parameters: list[str] = list(map(str, arguments))
-	parameters.extend([f'{key}={value}' for key, value in keywordArguments.items()])
-	return f'{function}({", ".join(parameters)}) = {actual}, but {expected = }'
-
-def _assertMessage(function: str, actual: float | None, expected: float | None
-	, *
-	, pathFilename: str | None = None
-	, pytorchOnCPU: bool | None = None
-	, paths: str | None = None
-	, sampleRate: str | None = None
-) -> str:
-	parameters: list[str] = []
-	if pathFilename is not None:
-		parameters.append(f'{pathFilename=}')
-	if pytorchOnCPU is not None:
-		parameters.append(f'{pytorchOnCPU=}')
-	if paths is not None:
-		parameters.append(paths)
-	if sampleRate is not None:
-		parameters.append(sampleRate)
-	return f'{function}({", ".join(parameters)}) = {actual!r}, but {expected = }.'
+	parameters: list[str] = list(map(repr, arguments))
+	parameters.extend(f'{keyAndValue[0]}={keyAndValue[1]!r}' for keyAndValue in keywordArguments.items())
+	return f'{function}({", ".join(parameters)}) = {actual!r}, but {expected = }'
 
 def assert_approx(
 	actual: float | None, expected: float | None, rel: float, abs: float, analyzer: str, pathFilename: Path, pytorchOnCPU: bool | None = None,
 ) -> None:
-	message = _assertMessage(analyzer, actual, expected, pathFilename=pathFilename.name, pytorchOnCPU=pytorchOnCPU)
-	assert actual == pytest.approx(expected, rel=rel, abs=abs, nan_ok=True), message  # pyright: ignore[reportUnknownMemberType]
+	assert actual == pytest.approx(expected, rel=rel, abs=abs, nan_ok=True), uniformMessageTestFailure(  # pyright: ignore[reportUnknownMemberType]
+		analyzer, actual, expected, pathFilename=pathFilename.name, **({} if pytorchOnCPU is None else {'pytorchOnCPU': pytorchOnCPU})
+	)
 
 def assert_contest(
 	actual: float | None, expected: float | None, rel: float, abs: float, analyzer: str, paths: ContestFilename, sampleRate: int
 ) -> None:
-	message = _assertMessage(analyzer, actual, expected, paths=f'pathFilenameAlfa={paths.pathFilenameAlfa.name!r}, pathFilenameBeta={paths.pathFilenameBeta.name!r}', sampleRate=f'{sampleRate=}')
-	assert actual == pytest.approx(expected, rel=rel, abs=abs, nan_ok=True), message  # pyright: ignore[reportUnknownMemberType]
+	assert actual == pytest.approx(expected, rel=rel, abs=abs, nan_ok=True), uniformMessageTestFailure(  # pyright: ignore[reportUnknownMemberType]
+		analyzer
+		, actual
+		, expected
+		, pathFilenameAlfa=paths.pathFilenameAlfa.name
+		, pathFilenameBeta=paths.pathFilenameBeta.name
+		, sampleRate=sampleRate
+	)
 
 # ================== Audio Aspects =================================================================
 

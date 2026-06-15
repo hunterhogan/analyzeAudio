@@ -1,7 +1,9 @@
 """Install FFmpeg."""
 from __future__ import annotations
 
+from operator import getitem
 from pathlib import Path
+import contextlib
 import os
 import shutil
 import subprocess  # noqa: S404
@@ -9,68 +11,56 @@ import sys
 import tempfile
 import urllib.request
 
+if sys.platform == 'linux':
+	import fcntl
+
 def FFmpegGitHub() -> None:
 	if os.getenv('GITHUB_ACTIONS') == 'true' and sys.platform == 'linux':
 
-		import fcntl
+		pathFFmpeg: Path = Path(tempfile.gettempdir(), 'ffmpeg')
+		pathFFmpeg.mkdir(parents=True, exist_ok=True)
+		if str(pathFFmpeg) not in os.environ.get('PATH', '').split(os.pathsep):
+			os.environ['PATH'] = f"{pathFFmpeg}{os.pathsep}{os.environ.get('PATH', '')}"
 
-		pathDirectoryFFmpeg: Path = Path(os.environ.get('RUNNER_TEMP', tempfile.gettempdir())) / 'analyzeAudio-ffmpeg'
-		pathDirectoryFFmpeg.mkdir(parents=True, exist_ok=True)
-		if str(pathDirectoryFFmpeg) not in os.environ.get('PATH', '').split(os.pathsep):
-			os.environ['PATH'] = f"{pathDirectoryFFmpeg}{os.pathsep}{os.environ.get('PATH', '')}"
-
-		with (pathDirectoryFFmpeg / 'install.lock').open('w') as fileLock:
-			fcntl.flock(fileLock.fileno(), fcntl.LOCK_EX)
-			versionFFmpeg: str = ''
-			majorVersionFFmpeg: int = 0
-			try:
-				systemProcessFFprobeVersion: subprocess.CompletedProcess[str] = subprocess.run(
+		with (pathFFmpeg / 'install.lock').open('w') as writeStream:
+			fcntl.flock(writeStream.fileno(), fcntl.LOCK_EX)
+			versionMajor: int = 0
+			with contextlib.suppress(FileNotFoundError):
+				processFFprobeVersion: subprocess.CompletedProcess[str] = subprocess.run(
 					['ffprobe', '-hide_banner', '-show_entries', 'program_version=version', '-of', 'csv=p=0']  # noqa: S607
 					, check=False
 					, stdout=subprocess.PIPE
 					, stderr=subprocess.DEVNULL
 					, text=True
 				)
-			except FileNotFoundError:
-				pass
-			else:
-				if systemProcessFFprobeVersion.returncode == 0:
-					versionFFmpeg = systemProcessFFprobeVersion.stdout.strip()
-					if versionFFmpeg:
-						majorVersionFFmpeg = int(versionFFmpeg.split('.', maxsplit=1)[0])
+				versionMajor = int(getitem(processFFprobeVersion.stdout.strip().split('.', maxsplit=1), 0))
 
-			if majorVersionFFmpeg < 7:
-				with tempfile.TemporaryDirectory(prefix='analyzeAudio-ffmpeg-') as pathDirectoryTemporaryString:
-					pathDirectoryTemporary: Path = Path(pathDirectoryTemporaryString)
-					pathFilenameFFmpegReleaseArchive: Path = pathDirectoryTemporary / 'ffmpeg-release.tar.xz'
-					urllib.request.urlretrieve(
-						'https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz'
-						, pathFilenameFFmpegReleaseArchive
-					)
-					subprocess.run(['/usr/bin/tar', '-xf', str(pathFilenameFFmpegReleaseArchive), '-C', str(pathDirectoryTemporary)], check=True)
-					pathDirectoryFFmpegStaticBuild: Path = next(pathDirectoryTemporary.glob('ffmpeg-*-static'))
-					shutil.copy2(pathDirectoryFFmpegStaticBuild / 'ffmpeg', pathDirectoryFFmpeg / 'ffmpeg')
-					shutil.copy2(pathDirectoryFFmpegStaticBuild / 'ffprobe', pathDirectoryFFmpeg / 'ffprobe')
-					(pathDirectoryFFmpeg / 'ffmpeg').chmod(0o755)
-					(pathDirectoryFFmpeg / 'ffprobe').chmod(0o755)
-
+			if versionMajor < 7:
+				pathFilename_xz: Path = pathFFmpeg / 'ffmpeg-release.tar.xz'
+				url: str = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-linux64-gpl-8.1.tar.xz'
+				with urllib.request.urlopen(url) as responseFFmpegReleaseArchive, pathFilename_xz.open('wb') as writeStreamBinary:
+					shutil.copyfileobj(responseFFmpegReleaseArchive, writeStreamBinary)
+				subprocess.run(['/usr/bin/tar', '-xf', str(pathFilename_xz), '-C', str(pathFFmpeg)], check=True)
+				pathFFmpegExecutables: Path = next(pathFFmpeg.glob('ffmpeg-*/bin'), next(pathFFmpeg.glob('ffmpeg-*-static')))
+				shutil.copy2(pathFFmpegExecutables / 'ffmpeg', pathFFmpeg / 'ffmpeg')
+				shutil.copy2(pathFFmpegExecutables / 'ffprobe', pathFFmpeg / 'ffprobe')
+				(pathFFmpeg / 'ffmpeg').chmod(0o755)
+				(pathFFmpeg / 'ffprobe').chmod(0o755)
 
 def verifyFFmpegColab() -> None:
 	"""Upgrade FFmpeg if needed."""
 	if 'google.colab' in sys.modules:
 		versionFFmpeg: str = ''
 		if Path('/usr/bin/dpkg-query').exists():
-			systemProcessLinuxFFmpegVersion: subprocess.CompletedProcess[str] = subprocess.run(
+			systemProcess_dpkg_query: subprocess.CompletedProcess[str] = subprocess.run(
 				['/usr/bin/dpkg-query', '--show', '--showformat=${Version}', 'ffmpeg']
 				, check=False
 				, stdout=subprocess.PIPE
 				, stderr=subprocess.DEVNULL
 				, text=True
 			)
-			if systemProcessLinuxFFmpegVersion.returncode == 0:
-				versionFFmpeg = systemProcessLinuxFFmpegVersion.stdout.strip()
-				if ':' in versionFFmpeg:
-					_versionFFmpegEpochIgnored, versionFFmpeg = versionFFmpeg.split(':', maxsplit=1)
+			if systemProcess_dpkg_query.returncode == 0 and ':' in systemProcess_dpkg_query.stdout:
+				_name, versionFFmpeg = systemProcess_dpkg_query.stdout.strip().split(':', maxsplit=1)
 		if not versionFFmpeg:
 			systemProcessFFprobeVersion: subprocess.CompletedProcess[str] = subprocess.run(
 				['ffprobe', '-hide_banner', '-show_entries', 'program_version=version', '-of', 'csv=p=0']  # noqa: S607
@@ -80,8 +70,8 @@ def verifyFFmpegColab() -> None:
 			)
 			versionFFmpeg = systemProcessFFprobeVersion.stdout.strip()
 
-		majorVersionFFmpeg, _versionFFmpegRemainderIgnored = versionFFmpeg.split('.', maxsplit=1)
-		if int(majorVersionFFmpeg) < 7:
+		versionMajor, _version = versionFFmpeg.split('.', maxsplit=1)
+		if int(versionMajor) < 7:
 			filenameFFmpegReleaseArchive: str = 'ffmpeg-release.tar.xz'
 			subprocess.run(
 				[
