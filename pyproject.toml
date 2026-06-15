@@ -89,7 +89,7 @@ run = { branch = true, data_file = "tests/coverage/.coverage", omit = [
 ], parallel = true, source = ["."] }
 
 [tool.pytest]
-addopts = ["--color=auto", "-n 1"]
+addopts = ["--color=yes", "-n 2", "--tb=line"]
 log_auto_indent = "On"
 testpaths = ["tests"]
 
