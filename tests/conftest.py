@@ -26,9 +26,9 @@ if TYPE_CHECKING:
 
 # ================== Settings =====================================================================
 
-def pytest_configure(config: pytest.Config) -> None:
-	"""Install FFmpeg before tests start when GitHub Actions Linux needs it."""
-	FFmpegGitHub()
+# def pytest_configure(config: pytest.Config) -> None:
+# 	"""Install FFmpeg before tests start when GitHub Actions Linux needs it."""
+# 	FFmpegGitHub()
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
