@@ -1,6 +1,7 @@
 # ruff: noqa: DOC201 A002
 from __future__ import annotations
 
+from analyzeAudio.ffmpeg import FFmpegGitHub
 from collections import ChainMap
 from hunterHearsPy import readAudioFile, stft
 from tests import (
@@ -24,6 +25,10 @@ if TYPE_CHECKING:
 	from typing import Any
 
 # ================== Settings =====================================================================
+
+def pytest_configure(config: pytest.Config) -> None:
+	"""Install FFmpeg before tests start when GitHub Actions Linux needs it."""
+	FFmpegGitHub()
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:

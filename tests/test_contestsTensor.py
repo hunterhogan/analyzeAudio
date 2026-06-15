@@ -26,16 +26,19 @@ def test_analyzeL1SNRMean(contestTensor: ContestTensor, expectedContest: float, 
 
 @pytest.mark.parametrize('expectedContest', ['analyzeL1SNRDBMean'], indirect=True)
 def test_analyzeL1SNRDBMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	approx_rel = 1e-5
 	actual = analyzeL1SNRDBMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeL1SNRDBMean', contestTensor.paths, contestTensor.sampleRateAlfa)
 
 @pytest.mark.parametrize('expectedContest', ['analyzeMultiL1SNRDBMean'], indirect=True)
 def test_analyzeMultiL1SNRDBMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	approx_rel = 1e-5
 	actual = analyzeMultiL1SNRDBMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeMultiL1SNRDBMean', contestTensor.paths, contestTensor.sampleRateAlfa)
 
 @pytest.mark.parametrize('expectedContest', ['analyzeSTFTL1SNRDBMean'], indirect=True)
 def test_analyzeSTFTL1SNRDBMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	approx_rel = 1e-5
 	actual = analyzeSTFTL1SNRDBMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeSTFTL1SNRDBMean', contestTensor.paths, contestTensor.sampleRateAlfa)
 

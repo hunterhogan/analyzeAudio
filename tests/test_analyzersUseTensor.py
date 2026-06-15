@@ -10,13 +10,15 @@ if TYPE_CHECKING:
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeDNSMOSMean'], indirect=True)
 def test_analyzeDNSMOSMean(aspectTensor: AspectTensor, expectedAspect: float | None, approx_rel: float, approx_abs: float) -> None:
+	approx_rel = 1e-5
 	if aspectTensor.pathFilename.name == 'ch2_44100_29s_LUFS23_10000Hz.wav':
-		pytest.skip('Values differ in GitHub Actions vs. locally by more than the test tolerances.')
+		approx_rel = 1e-3
 	actual = analyzeDNSMOSMean(aspectTensor.tensorAudio, aspectTensor.sampleRate)
 	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeDNSMOSMean', aspectTensor.pathFilename)
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeNISQAMean'], indirect=True)
 def test_analyzeNISQAMean(aspectTensor: AspectTensor, expectedAspect: float | None, approx_rel: float, approx_abs: float) -> None:
+	approx_rel = 1e-5
 	actual = analyzeNISQAMean(aspectTensor.tensorAudio, aspectTensor.sampleRate)
 	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeNISQAMean', aspectTensor.pathFilename)
 

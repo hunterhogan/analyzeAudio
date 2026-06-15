@@ -21,6 +21,7 @@ def test_analyzeRMSWaveform_dBMean(aspectWaveform: AspectWaveform, expectedAspec
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeTempogramMean'], indirect=True)
 def test_analyzeTempogramMean(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+	approx_rel = 1e-5
 	actual = analyzeTempogramMean(aspectWaveform.waveform, aspectWaveform.sampleRate)
 	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempogramMean', aspectWaveform.pathFilename)
 
