@@ -57,19 +57,18 @@ def _assertMessage(function: str, actual: float | None, expected: float | None
 	, *
 	, pathFilename: str | None = None
 	, pytorchOnCPU: bool | None = None
-	, paths: ContestFilename | None = None
-	, sampleRate: int | None = None
+	, paths: str | None = None
+	, sampleRate: str | None = None
 ) -> str:
 	parameters: list[str] = []
 	if pathFilename is not None:
 		parameters.append(f'{pathFilename=}')
-
 	if pytorchOnCPU is not None:
 		parameters.append(f'{pytorchOnCPU=}')
 	if paths is not None:
-		parameters.extend([f'pathFilenameAlfa={paths.pathFilenameAlfa.name!r}', f'pathFilenameBeta={paths.pathFilenameBeta.name!r}'])
+		parameters.append(paths)
 	if sampleRate is not None:
-		parameters.append(f'{sampleRate=}')
+		parameters.append(sampleRate)
 	return f'{function}({", ".join(parameters)}) = {actual!r}, but {expected = }.'
 
 def assert_approx(
@@ -81,7 +80,7 @@ def assert_approx(
 def assert_contest(
 	actual: float | None, expected: float | None, rel: float, abs: float, analyzer: str, paths: ContestFilename, sampleRate: int
 ) -> None:
-	message = _assertMessage(analyzer, actual, expected, paths=paths, sampleRate=sampleRate)
+	message = _assertMessage(analyzer, actual, expected, paths=f'pathFilenameAlfa={paths.pathFilenameAlfa.name!r}, pathFilenameBeta={paths.pathFilenameBeta.name!r}', sampleRate=f'{sampleRate=}')
 	assert actual == pytest.approx(expected, rel=rel, abs=abs, nan_ok=True), message  # pyright: ignore[reportUnknownMemberType]
 
 # ================== Audio Aspects =================================================================
