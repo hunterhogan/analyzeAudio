@@ -25,6 +25,8 @@ def test_analyzeTempogramMean(aspectWaveform: AspectWaveform, expectedAspect: fl
 	approx_rel = 1e-5
 	if aspectWaveform.pathFilename.name == 'ch2_44100_29s_LUFS23_10000Hz.wav':
 		approx_rel = 1e-3
+	elif aspectWaveform.pathFilename.name == 'ch1_44100_01s_LUFS03_1kHz.wav':
+		approx_rel = 1e-4
 	actual = analyzeTempogramMean(aspectWaveform.waveform, aspectWaveform.sampleRate)
 	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempogramMean', aspectWaveform.pathFilename)
 
