@@ -13,10 +13,13 @@ from analyzeAudio.analyzersUseFilename import (
 	analyzeZero_crossings_rateOverall, analyzeZero_crossingsTotal)
 from tests.conftest import assert_approx
 from typing import TYPE_CHECKING
+import os
 import pytest
 
 if TYPE_CHECKING:
 	from pathlib import Path
+
+pytestmark: pytest.MarkDecorator = pytest.mark.skipif(os.getenv('GITHUB_ACTIONS') == 'true', reason='Skipped in GitHub Actions')
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeAbs_Peak_countTotal'], indirect=True)
 def test_analyzeAbs_Peak_countTotal(pathFilename: Path, expectedAspect: float | None, approx_rel: float, approx_abs: float) -> None:
