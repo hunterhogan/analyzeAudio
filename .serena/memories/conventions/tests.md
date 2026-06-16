@@ -22,3 +22,4 @@
 - Centralize multi-parameter scenario configuration through pytest parametrization, fixture params, or static test-data modules; avoid scattered pickers, fragmented dictionaries, and pseudo-fixture registries.
 - Test filenames use `test_<module_name>.py`; test functions use `test_<behavior_being_tested>`; fixtures remain camelCase.
 - The user prompt says `Use the MCP test runners`; if unavailable, run the local pytest command and note the fallback.
+- In `analyzeAudio`, the full pytest suite is expensive and currently takes roughly 500 seconds. Prefer compile checks, direct targeted validations, and focused pytest files/nodes first. Ask before running the full suite unless the user explicitly requests it or the change has broad unavoidable blast radius.

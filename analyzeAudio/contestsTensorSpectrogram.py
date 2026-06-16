@@ -1,7 +1,6 @@
 # ruff: noqa: D100 DOC201
 from __future__ import annotations
 
-from analyzeAudio import truncateTensors
 from analyzeAudio.registry import registrationAudioContest
 from auraloss import freq
 from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
@@ -45,14 +44,13 @@ def _analyzeLoss(aspect: nn.Module, tensorSpectrogramMagnitudeAlfa: Tensor, tens
 	[1] PyTorch `torch.nn.Module`
 		https://pytorch.org/docs/stable/generated/torch.nn.Module.html
 	"""
-	return aspect(*truncateTensors([tensorSpectrogramMagnitudeBeta, tensorSpectrogramMagnitudeAlfa]))
+	return aspect(tensorSpectrogramMagnitudeBeta, tensorSpectrogramMagnitudeAlfa)
 
 def analyzeComplexScaleInvariantSignalNoiseRatio(
 		tensorSpectrogramAlfa: Tensor, tensorSpectrogramBeta: Tensor, **keywordArguments: Any
 ) -> Tensor:
 	"""Compute C-SI-SNR values for two complex spectrogram tensors."""
-	preds, target = truncateTensors([tensorSpectrogramBeta, tensorSpectrogramAlfa])
-	return complex_scale_invariant_signal_noise_ratio(preds, target, **keywordArguments)
+	return complex_scale_invariant_signal_noise_ratio(tensorSpectrogramBeta, tensorSpectrogramAlfa, **keywordArguments)
 
 @registrationAudioContest('C-SI-SNR mean')
 def analyzeComplexScaleInvariantSignalNoiseRatioMean(

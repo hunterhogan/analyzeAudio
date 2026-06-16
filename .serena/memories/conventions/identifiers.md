@@ -8,6 +8,7 @@
 - Use type/structure prefixes when semantically useful: `listPathFilenames`, `arraySpectrograms`, `dictionaryConcurrency`.
 - Domain compound terms are atomic: e.g. `powerSpectralDensity`, `amplitudeThreshold`, `lengthWindowingFunction`.
 - Proper nouns and referenced symbols keep canonical casing/spelling. Do not invent near-miss spellings or truncate.
+- During non-naming tasks, existing identifiers are authoritative. Do not rename variables, parameters, functions, classes, aliases, keys, labels, or files for clarity, preference, or consistency unless the user explicitly asks for naming work or the rename is strictly required by the requested change.
 - One identifier has one meaning across scopes. Avoid reusing a name for different semantics.
 - Prohibited: single-character identifiers, bare `_`, abbreviations (`np`, `cfg`, `params`, `specs`), diminutives, empty semantics (`result`, `output`, `temp`, `data`, `thing`, `value`) unless no better domain term exists.
 - If a placeholder is truly needed, `Target` can be acceptable; do not append `Target` casually.

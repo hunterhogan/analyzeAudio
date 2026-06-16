@@ -3,6 +3,7 @@
 - If the task is only type annotations, do not change logic, formatting, docstrings, or identifiers.
 - Annotate precisely and completely: every function/method parameter, return type, class attribute, module-level binding, and non-obvious variable at first authoritative introduction.
 - Never use `Any` or `object` unless unavoidable with documented third-party/dynamic boundary justification. Prefer unions, `TypeVar`, `TypedDict`, `Protocol`, or parameterized containers.
+- Never weaken an existing annotation. Do not replace precise types such as `bool`, `str`, `int`, concrete containers, or project aliases with `Any`, `object`, or a broader type unless the user explicitly requested the type change or the exact requested implementation requires it and the reason is stated.
 - No bare containers. Use `list[T]`, `dict[K, V]`, `tuple[...]`, `set[T]`, `Callable[[...], R]`, `Iterator[T]`, `Generator[Y, S, R]`.
 - Use PEP 585 built-in generics, not `typing.List`/`Dict`/`Tuple`/`Set`.
 - Use PEP 604 unions, not `Optional` or `Union`.

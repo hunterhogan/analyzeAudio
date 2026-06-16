@@ -14,7 +14,7 @@ from analyzeAudio._theTypes import (
 	SpectrogramMagnitude as SpectrogramMagnitude, SpectrogramPower as SpectrogramPower, typeReturned as typeReturned)
 
 # isort: split
-from analyzeAudio._beDRY import truncateTensors as truncateTensors
+from analyzeAudio._beDRY import KValue as KValue
 
 # isort: split
 from analyzeAudio.registry import (

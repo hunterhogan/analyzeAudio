@@ -127,6 +127,86 @@ expectedTensor: dict[str, dict[tuple[str, str], float]] = {
 		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 1.1550732851028442
 		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 10.0505952835083
 	}
+	, 'analyzePerceptualEvaluationSpeechQualityMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 1.0301473140716553
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 1.0711169242858887
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 1.1628379821777344
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 2.8347082138061523
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 2.290205955505371
+		, ('reference_other.wav', 'comparand_other_good.wav'): 3.148733615875244
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 1.3901567459106445
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 2.1413185596466064
+	}
+	, 'analyzeShortTimeObjectiveIntelligibilityMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 0.08338840168478226
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 0.25002379348901227
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 0.6307645185871401
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 0.9268120722077655
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 0.7319747936879211
+		, ('reference_other.wav', 'comparand_other_good.wav'): 0.8701679745015911
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 0.4811557317310314
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 0.7248293183321699
+	}
+	, 'analyzeSignalNoiseRatioMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 0.9917116165161133
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 19.4245548248291
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 5.083650588989258
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 20.693679809570312
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 1.438258409500122
+		, ('reference_other.wav', 'comparand_other_good.wav'): 18.661479949951172
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): -3.387763738632202
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 14.685758590698242
+	}
+	, 'analyzeScaleInvariantSignalNoiseRatioMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 9.397436141967773
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 24.659942626953125
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 4.031733512878418
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 21.026296615600586
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 3.757873058319092
+		, ('reference_other.wav', 'comparand_other_good.wav'): 19.973011016845703
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.382457733154297
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 14.581550598144531
+	}
+	, 'analyzeScaleInvariantSignalDistortionRatioMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 9.397308349609375
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 24.65981674194336
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 4.031726837158203
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 21.02611541748047
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 3.7578227519989014
+		, ('reference_other.wav', 'comparand_other_good.wav'): 19.973007202148438
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.3827900886535645
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 14.581903457641602
+	}
+	, 'analyzeSignalDistortionRatioMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 10.557310104370117
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 26.460002899169922
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 5.965348243713379
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 21.640296936035156
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 7.264517784118652
+		, ('reference_other.wav', 'comparand_other_good.wav'): 20.351207733154297
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 6.0286865234375
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 14.899955749511719
+	}
+	, 'analyzeSourceAggregatedSignalDistortionRatioMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 9.397294998168945
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 24.659507751464844
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 4.028922080993652
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 21.026697158813477
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 3.7699639797210693
+		, ('reference_other.wav', 'comparand_other_good.wav'): 19.98312759399414
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.382047653198242
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 14.575895309448242
+	}
+	, 'analyzePermutationInvariantTrainingMean': {
+		('reference_bass.wav', 'comparand_bass_bad.wav'): 9.397308349609375
+		, ('reference_bass.wav', 'comparand_bass_good.wav'): 24.65981674194336
+		, ('reference_drums.wav', 'comparand_drums_bad.wav'): 4.0317277908325195
+		, ('reference_drums.wav', 'comparand_drums_good.wav'): 21.02611541748047
+		, ('reference_other.wav', 'comparand_other_bad.wav'): 3.7578234672546387
+		, ('reference_other.wav', 'comparand_other_good.wav'): 19.973007202148438
+		, ('reference_vocals.wav', 'comparand_vocals_bad.wav'): 2.382791519165039
+		, ('reference_vocals.wav', 'comparand_vocals_good.wav'): 14.581904411315918
+	}
 	, 'analyzeDCLossMean': {
 		('reference_bass.wav', 'comparand_bass_bad.wav'): 3.317744631203823e-05
 		, ('reference_bass.wav', 'comparand_bass_good.wav'): 6.772154392820084e-07

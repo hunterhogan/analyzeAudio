@@ -7,6 +7,8 @@
 - Use established project abstractions, standard-library APIs, test-framework features, and trusted library APIs before custom algorithms or concepts. Do not invent dispatch schemes, registries, selector mappings, or other conceptual machinery when an existing mechanism can express the behavior.
 - Do not write `for` loops or comprehensions containing `for` unless the user pre-approves that specific loop. If a loop or comprehension seems necessary, stop coding and ask before adding it. Avoid `while-break`; put exit logic in the `while` condition.
 - Preserve semantic abstractions. Do not inline a named domain function/predicate just because the expression is short.
+- Scope discipline is mandatory: edit only the symbols/files needed for the user's requested behavior. Do not opportunistically fix, reimplement, rename, refactor, reformat, or change adjacent code while implementing missing functionality. If an unrelated issue is discovered, report it separately instead of changing it.
+- Existing public behavior, defaults, and logic are binding unless the user requested that exact change or the requested implementation cannot work without it. Ask before changing unrelated logic.
 - No superfluous bindings that only rename an existing expression used once. Use the original expression directly unless the binding carries new semantics.
 - Python-native boundaries: use `pathlib`/Python APIs for filesystem/text/data work. Use `subprocess` only for canonical external tools such as `git`, FFmpeg, or FFprobe.
 - Prefer typed Python configuration objects/modules over JSON/YAML/TOML/env vars unless the external format is a domain/tooling standard.

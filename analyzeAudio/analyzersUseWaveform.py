@@ -11,8 +11,6 @@ if TYPE_CHECKING:
 	from numpy import dtype, floating, ndarray
 	from typing import Any
 
-# TODO `librosa.zero_crossings`.
-
 def analyzeRMSWaveform(waveform: Audio, **keywordArguments: Any) -> ArrayAspectWaveformFramewise:
 	"""Compute framewise root-mean-square amplitude.
 
@@ -256,6 +254,13 @@ def analyzeTempoMean(waveform: Audio, sampleRate: int, **keywordArguments: Any) 
 
 	"""
 	return float(analyzeTempo(waveform, sampleRate, **keywordArguments).mean().item())
+
+def analyzeZeroCrossings(waveform: Audio, **keywordArguments: Any) -> ArrayAspectWaveformFramewise:  # noqa: D103
+	return librosa.zero_crossings(y=waveform, **keywordArguments)  # pyright: ignore[reportUnknownMemberType]
+
+@registrationAudioAspect('Zero Crossings total')
+def analyzeZeroCrossingsTotal(waveform: Audio, **keywordArguments: Any) -> float:  # noqa: D103
+	return float(analyzeZeroCrossings(waveform, **keywordArguments).sum(axis=-1).mean().item())
 
 def analyzeZeroCrossingRate(waveform: Audio, **keywordArguments: Any) -> ArrayAspectWaveformFramewise:
 	"""Compute the zero-crossing rate of the waveform.

@@ -3,8 +3,11 @@ from __future__ import annotations
 from analyzeAudio.contestsTensor import (
 	analyzeChromaSTFTLossMean, analyzeDCLossMean, analyzeESRLossMean, analyzeL1SNRDBMean, analyzeL1SNRMean, analyzeLogCoshLossMean,
 	analyzeLogWMSEMean, analyzeMelSTFTLossMean, analyzeMultiL1SNRDBMean, analyzeMultiResolutionSTFTLossMean,
-	analyzeRandomResolutionSTFTLossMean, analyzeSDSDRLossMean, analyzeSISDRLossMean, analyzeSNRLossMean, analyzeSTFTL1SNRDBMean,
-	analyzeSTFTLossMean, analyzeSumAndDifferenceSTFTLossMean)
+	analyzePerceptualEvaluationSpeechQualityMean, analyzePermutationInvariantTrainingMean, analyzeRandomResolutionSTFTLossMean,
+	analyzeScaleInvariantSignalDistortionRatioMean, analyzeScaleInvariantSignalNoiseRatioMean, analyzeSDSDRLossMean,
+	analyzeShortTimeObjectiveIntelligibilityMean, analyzeSignalDistortionRatioMean, analyzeSignalNoiseRatioMean, analyzeSISDRLossMean,
+	analyzeSNRLossMean, analyzeSourceAggregatedSignalDistortionRatioMean, analyzeSTFTL1SNRDBMean, analyzeSTFTLossMean,
+	analyzeSumAndDifferenceSTFTLossMean)
 from tests.conftest import assert_contest
 from typing import TYPE_CHECKING
 import numpy
@@ -41,6 +44,46 @@ def test_analyzeSTFTL1SNRDBMean(contestTensor: ContestTensor, expectedContest: f
 	approx_rel = 1e-5
 	actual = analyzeSTFTL1SNRDBMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
 	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeSTFTL1SNRDBMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzePerceptualEvaluationSpeechQualityMean'], indirect=True)
+def test_analyzePerceptualEvaluationSpeechQualityMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzePerceptualEvaluationSpeechQualityMean(contestTensor.tensorAlfa, contestTensor.tensorBeta, contestTensor.sampleRateAlfa)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzePerceptualEvaluationSpeechQualityMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzeShortTimeObjectiveIntelligibilityMean'], indirect=True)
+def test_analyzeShortTimeObjectiveIntelligibilityMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeShortTimeObjectiveIntelligibilityMean(contestTensor.tensorAlfa, contestTensor.tensorBeta, contestTensor.sampleRateAlfa)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeShortTimeObjectiveIntelligibilityMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzeSignalNoiseRatioMean'], indirect=True)
+def test_analyzeSignalNoiseRatioMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeSignalNoiseRatioMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeSignalNoiseRatioMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzeScaleInvariantSignalNoiseRatioMean'], indirect=True)
+def test_analyzeScaleInvariantSignalNoiseRatioMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeScaleInvariantSignalNoiseRatioMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeScaleInvariantSignalNoiseRatioMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzeScaleInvariantSignalDistortionRatioMean'], indirect=True)
+def test_analyzeScaleInvariantSignalDistortionRatioMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeScaleInvariantSignalDistortionRatioMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeScaleInvariantSignalDistortionRatioMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzeSignalDistortionRatioMean'], indirect=True)
+def test_analyzeSignalDistortionRatioMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeSignalDistortionRatioMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeSignalDistortionRatioMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzeSourceAggregatedSignalDistortionRatioMean'], indirect=True)
+def test_analyzeSourceAggregatedSignalDistortionRatioMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeSourceAggregatedSignalDistortionRatioMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeSourceAggregatedSignalDistortionRatioMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+@pytest.mark.parametrize('expectedContest', ['analyzePermutationInvariantTrainingMean'], indirect=True)
+def test_analyzePermutationInvariantTrainingMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzePermutationInvariantTrainingMean(contestTensor.tensorAlfa, contestTensor.tensorBeta)
+	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzePermutationInvariantTrainingMean', contestTensor.paths, contestTensor.sampleRateAlfa)
 
 @pytest.mark.parametrize('expectedContest', ['analyzeDCLossMean'], indirect=True)
 def test_analyzeDCLossMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:

@@ -394,8 +394,6 @@ underlying library option.
 - [ ] Overhaul the semiotic system.
 - [ ] Install FFmpeg in GitHub Actions for testing.
 - [ ] Assist with installing FFmpeg in arbitrary environments.
-- [ ] Improve speed
-  - [ ] Sophisticated caching of large objects and un-hashable objects.
 
 ## Reference materials
 

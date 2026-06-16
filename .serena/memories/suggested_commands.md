@@ -2,7 +2,7 @@
 
 - Use PowerShell from `C:\apps\analyzeAudio`.
 - Install/editable test environment: `python -m pip install -e .[testing]`.
-- Run tests with project defaults: `pytest`.
+- Run tests with project defaults: `pytest`. In `analyzeAudio`, this full suite currently takes roughly 500 seconds; prefer focused tests first and ask before running the full suite unless explicitly requested or genuinely required.
 - Run a specific test file: `pytest tests\test_other.py`.
 - Run one test: `pytest tests\test_other.py -k testConcurrencyLimit`.
 - Run package CLI after editable install or venv activation: `whatMeasurements`.

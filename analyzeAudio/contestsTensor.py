@@ -1,10 +1,15 @@
+# pyright: reportUnknownVariableType=false
 # ruff: noqa: D100 DOC201
 from __future__ import annotations
 
-from analyzeAudio import truncateTensors
 from analyzeAudio.analyzersUseSpectrogram import analyzeChromagram
 from analyzeAudio.registry import registrationAudioContest
 from torch import tensor
+from torchaudio.functional import resample  # pyright: ignore[reportMissingTypeStubs]
+from torchmetrics.functional.audio import (
+	perceptual_evaluation_speech_quality, permutation_invariant_training, scale_invariant_signal_distortion_ratio,
+	scale_invariant_signal_noise_ratio, short_time_objective_intelligibility, signal_distortion_ratio, signal_noise_ratio,
+	source_aggregated_signal_distortion_ratio)
 from typing import cast, TYPE_CHECKING
 import auraloss
 import numpy
@@ -13,6 +18,7 @@ import torch_log_wmse
 
 if TYPE_CHECKING:
 	from analyzeAudio import AuralossChromaSTFTLoss, SpectrogramPower
+	from collections.abc import Callable
 	from torch import nn, Tensor
 	from typing import Any
 
@@ -29,7 +35,7 @@ def _unsqueezeTo3axes(tensorAudio: Tensor) -> Tensor:
 def _takeMean(tensorLoss: Tensor) -> float:
 	return float(tensorLoss.mean().item())
 
-#======== Reference and Reference and comparand ========================================
+# ======== Reference and Reference and comparand ========================================
 
 def analyzeLogWMSE(
 	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, tensorAudioMixture: Tensor, sampleRate: int, **keywordArguments: Any
@@ -113,9 +119,7 @@ def analyzeLogWMSE(
 	[2] Landschoot, C. `crlandsc/torch-log-wmse`.
 		https://github.com/crlandsc/torch-log-wmse
 	"""
-	tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture = map(
-		_unsqueezeTo3axes, truncateTensors([tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture])
-	)
+	tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture = map(_unsqueezeTo3axes, [tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture])
 
 	dictionaryParameters: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
 	aspect = torch_log_wmse.LogWMSE(audio_length=tensorAudioMixture.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryParameters)
@@ -129,7 +133,7 @@ def analyzeLogWMSEMean(
 	"""Contest 'analyzeLogWMSE mean': mean of the LogWMSE tensor."""
 	return _takeMean(analyzeLogWMSE(tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture, sampleRate, **keywordArguments))
 
-#======== Reference and comparand ========================================
+# ======== Reference and comparand ========================================
 
 def analyzeL1SNR(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> Tensor:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with L1SNR.
@@ -201,7 +205,7 @@ def analyzeL1SNR(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArgu
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.L1SNRLoss('L1SNR', **keywordArguments)
-	return -aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa])))
+	return -aspect(*map(_unsqueezeLT4AxesBy1, [tensorAudioBeta, tensorAudioAlfa]))
 
 @registrationAudioContest('analyzeL1SNR mean')
 def analyzeL1SNRMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -292,7 +296,7 @@ def analyzeL1SNRDB(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordAr
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.L1SNRDBLoss('L1SNRDB', **keywordArguments)
-	return -aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa])))
+	return -aspect(*map(_unsqueezeLT4AxesBy1, [tensorAudioBeta, tensorAudioAlfa]))
 
 @registrationAudioContest('analyzeL1SNRDB mean')
 def analyzeL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -390,7 +394,7 @@ def analyzeMultiL1SNRDB(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keyw
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.MultiL1SNRDBLoss('MultiL1SNRDB', **keywordArguments)
-	return -aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa])))
+	return -aspect(*map(_unsqueezeLT4AxesBy1, [tensorAudioBeta, tensorAudioAlfa]))
 
 @registrationAudioContest('analyzeMultiL1SNRDB mean')
 def analyzeMultiL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
@@ -495,17 +499,107 @@ def analyzeSTFTL1SNRDB(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywo
 		https://github.com/crlandsc/torch-l1-snr
 	"""
 	aspect = torch_l1_snr.STFTL1SNRDBLoss('STFTL1SNRDB', **keywordArguments)
-	return -aspect(*map(_unsqueezeLT4AxesBy1, truncateTensors([tensorAudioBeta, tensorAudioAlfa])))
+	return -aspect(*map(_unsqueezeLT4AxesBy1, [tensorAudioBeta, tensorAudioAlfa]))
 
 @registrationAudioContest('analyzeSTFTL1SNRDB mean')
 def analyzeSTFTL1SNRDBMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
 	"""Contest 'analyzeSTFTL1SNRDB mean': mean of the STFTL1SNRDB tensor."""
 	return _takeMean(analyzeSTFTL1SNRDB(tensorAudioAlfa, tensorAudioBeta, **keywordArguments))
 
-#======== Analyze Loss ===============================================================================
+# ======== TorchMetrics audio functional contests ========================================
+
+def analyzePerceptualEvaluationSpeechQuality(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int) -> Tensor:
+	"""Compute PESQ values for two waveform tensors."""
+	return perceptual_evaluation_speech_quality(
+		resample(tensorAudioAlfa, sampleRate, 16000), resample(tensorAudioBeta, sampleRate, 16000), 16000, mode='wb'
+	)
+
+@registrationAudioContest('PESQ mean')
+def analyzePerceptualEvaluationSpeechQualityMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int) -> float:
+	"""Contest 'PESQ mean': mean perceptual evaluation of speech quality."""
+	return _takeMean(analyzePerceptualEvaluationSpeechQuality(tensorAudioAlfa, tensorAudioBeta, sampleRate))
+
+def analyzeShortTimeObjectiveIntelligibility(
+	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int, **keywordArguments: Any
+) -> Tensor:
+	"""Compute STOI values for two waveform tensors."""
+	return short_time_objective_intelligibility(tensorAudioAlfa, tensorAudioBeta, sampleRate, **keywordArguments)
+
+@registrationAudioContest('STOI mean')
+def analyzeShortTimeObjectiveIntelligibilityMean(
+	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, sampleRate: int, **keywordArguments: Any
+) -> float:
+	"""Contest 'STOI mean': mean short-time objective intelligibility."""
+	return _takeMean(analyzeShortTimeObjectiveIntelligibility(tensorAudioAlfa, tensorAudioBeta, sampleRate, **keywordArguments))
+
+def analyzeSignalNoiseRatio(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> Tensor:
+	"""Compute SNR values for two waveform tensors."""
+	return signal_noise_ratio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments)
+
+@registrationAudioContest('SNR mean')
+def analyzeSignalNoiseRatioMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Contest 'SNR mean': mean signal-to-noise ratio."""
+	return _takeMean(analyzeSignalNoiseRatio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments))
+
+def analyzeScaleInvariantSignalNoiseRatio(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> Tensor:
+	"""Compute SI-SNR values for two waveform tensors."""
+	return scale_invariant_signal_noise_ratio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments)
+
+@registrationAudioContest('SI-SNR mean')
+def analyzeScaleInvariantSignalNoiseRatioMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Contest 'SI-SNR mean': mean scale-invariant signal-to-noise ratio."""
+	return _takeMean(analyzeScaleInvariantSignalNoiseRatio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments))
+
+def analyzeScaleInvariantSignalDistortionRatio(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> Tensor:
+	"""Compute SI-SDR values for two waveform tensors."""
+	return scale_invariant_signal_distortion_ratio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments)
+
+@registrationAudioContest('SI-SDR mean')
+def analyzeScaleInvariantSignalDistortionRatioMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Contest 'SI-SDR mean': mean scale-invariant signal-to-distortion ratio."""
+	return _takeMean(analyzeScaleInvariantSignalDistortionRatio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments))
+
+def analyzeSignalDistortionRatio(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> Tensor:
+	"""Compute SDR values for two waveform tensors."""
+	return signal_distortion_ratio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments)
+
+@registrationAudioContest('SDR mean')
+def analyzeSignalDistortionRatioMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Contest 'SDR mean': mean signal-to-distortion ratio."""
+	return _takeMean(analyzeSignalDistortionRatio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments))
+
+def analyzeSourceAggregatedSignalDistortionRatio(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> Tensor:
+	"""Compute SA-SDR values for two waveform tensors."""
+	return source_aggregated_signal_distortion_ratio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments)
+
+@registrationAudioContest('SA-SDR mean')
+def analyzeSourceAggregatedSignalDistortionRatioMean(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> float:
+	"""Contest 'SA-SDR mean': mean source-aggregated signal-to-distortion ratio."""
+	return _takeMean(analyzeSourceAggregatedSignalDistortionRatio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments))
+
+# TODO wtf is this?
+def analyzePermutationInvariantTraining(
+	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, metricFunction: Callable[..., Tensor], **keywordArguments: Any
+) -> tuple[Tensor, Tensor]:
+	"""Compute PIT best metric values and permutations for two source tensors."""
+	preds, target = map(_unsqueezeTo3axes, [tensorAudioBeta, tensorAudioAlfa])
+	return permutation_invariant_training(preds, target, metricFunction, **keywordArguments)
+
+@registrationAudioContest('PIT SI-SDR mean')
+def analyzePermutationInvariantTrainingMean(
+	tensorAudioAlfa: Tensor
+	, tensorAudioBeta: Tensor
+	, metricFunction: Callable[..., Tensor] = scale_invariant_signal_distortion_ratio
+	, **keywordArguments: Any
+) -> float:
+	"""Contest 'PIT SI-SDR mean': mean best permutation-invariant SI-SDR."""
+	aspect, _idk = analyzePermutationInvariantTraining(tensorAudioAlfa, tensorAudioBeta, metricFunction, **keywordArguments)
+	return _takeMean(aspect)
+
+# ======== Analyze Loss ===============================================================================
 
 def _analyzeLoss(aspect: nn.Module, tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor) -> Tensor:
-	return aspect(*map(_unsqueezeTo3axes, truncateTensors([tensorAudioAlfa, tensorAudioBeta])))
+	return aspect(*map(_unsqueezeTo3axes, [tensorAudioAlfa, tensorAudioBeta]))
 
 def analyzeDCLoss(tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, **keywordArguments: Any) -> Tensor:
 	"""Score `tensorAudioBeta` against `tensorAudioAlfa` with direct-current offset loss.

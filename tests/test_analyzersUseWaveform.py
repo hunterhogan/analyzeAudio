@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from analyzeAudio.analyzersUseWaveform import (
-	analyzeRMSWaveform_dBMean, analyzeRMSWaveformMean, analyzeTempogramMean, analyzeTempoMean, analyzeZeroCrossingRateMean)
+	analyzeRMSWaveform_dBMean, analyzeRMSWaveformMean, analyzeTempogramMean, analyzeTempoMean, analyzeZeroCrossingRateMean,
+	analyzeZeroCrossingsTotal)
 from tests.conftest import assert_approx
 from typing import TYPE_CHECKING
 import pytest
@@ -34,3 +35,8 @@ def test_analyzeTempoMean(aspectWaveform: AspectWaveform, expectedAspect: float,
 def test_analyzeZeroCrossingRateMean(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
 	actual = analyzeZeroCrossingRateMean(aspectWaveform.waveform)
 	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingRateMean', aspectWaveform.pathFilename)
+
+@pytest.mark.parametrize('expectedAspect', ['analyzeZeroCrossingsTotal'], indirect=True)
+def test_analyzeZeroCrossingsTotal(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeZeroCrossingsTotal(aspectWaveform.waveform)
+	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingsTotal', aspectWaveform.pathFilename)

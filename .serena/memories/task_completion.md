@@ -1,7 +1,7 @@
 # Task Completion
 
 - Before finishing any coding task, check the dirty worktree with `git status --short` and distinguish own changes from pre-existing user changes.
-- For Python source changes, run the most targeted useful verification first:
+- For Python source changes, run the most targeted useful verification first. In `analyzeAudio`, the full pytest suite takes roughly 500 seconds, so do not run it by default; ask first unless the user requested it or the change genuinely requires broad validation:
   - Changed pure code path with existing tests: `pytest <target>` or `pytest -k <name>`.
   - Broader behavior change: `pytest`.
   - Type-heavy change: `pyright` as well as tests.
