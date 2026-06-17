@@ -381,13 +381,25 @@ whatAspects
 whatContests
 ```
 
-## API standardization
+## API standardization and data-format ignorance
 
-A top priority for this package is a public API that is as standardized as
-possible across filename, waveform, spectrogram, tensor, and contest analyzers.
-The package wraps libraries with very different calling conventions, but analyzer
-function signatures should model this package's dispatcher inputs, not every
-underlying library option.
+A top priority for this package is a public API that is as standardized as possible across filename,
+waveform, spectrogram, tensor, and contest analyzers. The package wraps libraries with very different
+calling conventions, but analyzer function signatures should model this package's dispatcher inputs,
+not every underlying library option.
+
+Furthermore, a user only needs to provide a pathFilename and the audio aspect they want to analyze.
+The user should not need to know whether the aspect was measured from a waveform in a NumPy ndarray or
+a mel-scaled, magnitude spectrogram with a logarithm amplitude scale stored in a PyTorch tensor. And
+if the user wants to analyze aspects that require different data formats, the user doesn't need to
+worry about conversions.
+
+Nevertheless, users should generally have the power to change function parameters and select the data
+format of outputs. Therefore, the documentation must inform those users without confusing the users
+who don't care, and the API must be designed to accommodate both kinds of users.
+
+This is an analysis package, and transformations should generally be handled by `hunterHearsPy` so
+that transformations are consistent and their APIs are uniform.
 
 ## Wishlist
 
