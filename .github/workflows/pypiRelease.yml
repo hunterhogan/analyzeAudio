@@ -53,7 +53,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '>=3.13'
-      - run: pipx run build --sdist
+      - run: pipx run build
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b #v1.14.0
         with:

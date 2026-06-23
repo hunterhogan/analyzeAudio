@@ -39,14 +39,14 @@ class ParametersMelSpectrogram(TypedDict, total=False):
 	win_length: int
 	window: str | tuple[Any, ...] | float | Callable[[int], ndarray] | ArrayLike
 
-Audio: TypeAlias = ndarray[tuple[int, ...], dtype[floating[Any]]]
-ArrayAspect: TypeAlias = ndarray[tuple[int, ...], dtype[floating[Any]]]
+Audio: TypeAlias = ndarray[tuple[Any, ...], dtype[floating[Any]]]
+ArrayAspect: TypeAlias = ndarray[tuple[Any, ...], dtype[floating[Any]]]
 SpectrogramMagnitude: TypeAlias = ndarray[tuple[int, int, int], dtype[floating[Any]]]
 SpectrogramPower: TypeAlias = ndarray[tuple[int, int, int], dtype[floating[Any]]]
 ArrayAspectSpectrogramFramewise: TypeAlias = ndarray[tuple[int, Literal[1], int], dtype[floating[Any]]]
 ArrayAspectWaveformFramewise: TypeAlias = ndarray[tuple[Literal[1], int], dtype[floating[Any]]]
 
-ArrayChannelData: TypeAlias = ndarray[tuple[int, int], dtype[float64]]
+ArrayChannelData: TypeAlias = ndarray[tuple[Any, ...], dtype[float64]]
 ArrayOverallData: TypeAlias = ndarray[tuple[int], dtype[float64]]
 
 class AuralossChromaSTFTLoss(Protocol):

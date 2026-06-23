@@ -8,7 +8,7 @@ permissions:
 jobs:
 
   get-project-info:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       tests-python-versions: ${{ steps.get-project-info.outputs.versions }}
 
@@ -44,7 +44,7 @@ jobs:
 
   make-testbeds:
     needs: get-project-info
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         tests-python-versions: ${{ fromJson(needs.get-project-info.outputs.tests-python-versions) }}

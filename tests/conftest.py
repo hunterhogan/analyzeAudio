@@ -1,13 +1,12 @@
-# ruff: noqa: DOC201 A002
+# pyright: reportUnknownMemberType=false
 from __future__ import annotations
 
-from analyzeAudio.ffmpeg import FFmpegGitHub
 from collections import ChainMap
 from hunterHearsPy import readAudioFile, stft
 from tests import (
 	AspectSpectrogram, AspectSpectrogramMagnitude, AspectSpectrogramPower, AspectTensor, AspectWaveform, ContestFilename, ContestSpectrogram,
 	ContestSpectrogramMagnitude, ContestTensor, ContestTensorSpectrogram, ContestTensorSpectrogramMagnitude, ContestWaveform,
-	listPathFilenamesContests, listPathFilenamesDataSamples, pathFilenameMixture)
+	listPathFilenamesContests, listPathFilenamesDataSamples, messageTestFailure, pathFilenameMixture)
 from tests.dataSamples import expected
 from tests.dataSamples.SpeakSoftly_BrokenMan60sec import expected as contestExpected
 from typing import TYPE_CHECKING
@@ -22,57 +21,49 @@ if TYPE_CHECKING:
 	from hunterHearsPy import Spectrogram, Waveform
 	from pathlib import Path
 	from torch import Tensor
-	from typing import Any
 
-# ================== Settings =====================================================================
+#================== Settings =====================================================================
 
-# def pytest_configure(config: pytest.Config) -> None:
-# 	"""Install FFmpeg before tests start when GitHub Actions Linux needs it."""
-# 	FFmpegGitHub()
+# TODO	"""Install FFmpeg before tests start when GitHub Actions Linux needs it."""
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
 	"""Sort collected tests by node id for stable fixture-cache access patterns."""
 	items.sort(key=lambda item: item.nodeid)
 
-@pytest.fixture(scope='session')
-def approx_rel(request: pytest.FixtureRequest) -> float:
-	"""Return the relative tolerance for approximate comparisons."""
-	return 1e-6
-
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def approx_abs(request: pytest.FixtureRequest) -> float:
 	"""Return the absolute tolerance for approximate comparisons."""
 	return 1e-12
 
-# ================== Assert =======================================================================
+@pytest.fixture()
+def approx_rel(request: pytest.FixtureRequest) -> float:
+	"""Return the relative tolerance for approximate comparisons."""
+	return 1e-6
 
-def uniformMessageTestFailure(function: str, actual: Any, expected: Any, *arguments: Any, **keywordArguments: Any) -> str:
-	"""Format assertion message for any test comparison."""
-	parameters: list[str] = list(map(repr, arguments))
-	parameters.extend(f'{keyAndValue[0]}={keyAndValue[1]!r}' for keyAndValue in keywordArguments.items())
-	return f'{function}({", ".join(parameters)}) = {actual!r}, but {expected = }'
+@pytest.fixture()
+def atol(request: pytest.FixtureRequest) -> float:
+	"""Return the absolute tolerance for `numpy.allclose` comparisons."""
+	return 1e-08
 
-def assert_approx(
-	actual: float | None, expected: float | None, rel: float, abs: float, analyzer: str, pathFilename: Path, pytorchOnCPU: bool | None = None,
-) -> None:
-	assert actual == pytest.approx(expected, rel=rel, abs=abs, nan_ok=True), uniformMessageTestFailure(  # pyright: ignore[reportUnknownMemberType]
-		analyzer, actual, expected, pathFilename=pathFilename.name, **({} if pytorchOnCPU is None else {'pytorchOnCPU': pytorchOnCPU})
+@pytest.fixture()
+def rtol(request: pytest.FixtureRequest) -> float:
+	"""Return the relative tolerance for `numpy.allclose` comparisons."""
+	return 1e-05
+
+#================== Assert =======================================================================
+
+def assert_approx(actual: float | None, expected: float | None, pytest_rel: float, pytest_abs: float, analyzer: str, pathFilename: Path, pytorchOnCPU: bool | None = None) -> None:
+	assert actual == pytest.approx(expected, rel=pytest_rel, abs=pytest_abs, nan_ok=True), messageTestFailure(
+		actual, expected, analyzer, pathFilename=pathFilename.name, **({} if pytorchOnCPU is None else {'pytorchOnCPU': pytorchOnCPU})
 	)
 
-def assert_contest(
-	actual: float | None, expected: float | None, rel: float, abs: float, analyzer: str, paths: ContestFilename, sampleRate: int
-) -> None:
-	assert actual == pytest.approx(expected, rel=rel, abs=abs, nan_ok=True), uniformMessageTestFailure(  # pyright: ignore[reportUnknownMemberType]
-		analyzer
-		, actual
-		, expected
-		, pathFilenameAlfa=paths.pathFilenameAlfa.name
-		, pathFilenameBeta=paths.pathFilenameBeta.name
-		, sampleRate=sampleRate
+def assert_contest(actual: float | None, expected: float | None, pytest_rel: float, pytest_abs: float, analyzer: str, paths: ContestFilename, sampleRate: int) -> None:
+	assert actual == pytest.approx(expected, rel=pytest_rel, abs=pytest_abs, nan_ok=True), messageTestFailure(
+		actual, expected, analyzer, pathFilenameAlfa=paths.pathFilenameAlfa.name, pathFilenameBeta=paths.pathFilenameBeta.name, sampleRate=sampleRate
 	)
 
-# ================== Audio Aspects =================================================================
+#================== Audio Aspects =================================================================
 
 @pytest.fixture(params=listPathFilenamesDataSamples, ids=lambda pathFilename: pathFilename.name, scope='session')
 def pathFilename(request: pytest.FixtureRequest) -> Path:
@@ -110,7 +101,7 @@ def aspectSpectrogramPower(aspectSpectrogramMagnitude: AspectSpectrogramMagnitud
 @pytest.fixture(scope='session')
 def aspectTensor(aspectWaveform: AspectWaveform) -> AspectTensor:
 	"""Return each static audio tensor with its source path and sample rate."""
-	return AspectTensor(aspectWaveform.pathFilename, torch.from_numpy(aspectWaveform.waveform), aspectWaveform.sampleRate)  # pyright: ignore[reportUnknownMemberType]
+	return AspectTensor(aspectWaveform.pathFilename, torch.from_numpy(aspectWaveform.waveform), aspectWaveform.sampleRate)
 
 @pytest.fixture(scope='session')
 def expectedAspect(request: pytest.FixtureRequest, pathFilename: Path) -> float | None:
@@ -119,7 +110,7 @@ def expectedAspect(request: pytest.FixtureRequest, pathFilename: Path) -> float 
 	dictionaryExpected: ChainMap[str, dict[str, float | None]] = ChainMap(expected.expectedFilename, expected.expectedSpectrogram, expected.expectedTensor, expected.expectedWaveform)  # pyright: ignore[reportArgumentType] # ty:ignore[invalid-assignment, invalid-argument-type]
 	return dictionaryExpected[analyzer][pathFilename.name]  # pyright: ignore[reportReturnType]
 
-# ================== Contests ======================================================================
+#================== Contests ======================================================================
 
 def _idContestFilename(paths: ContestFilename) -> str:
 	return f'{paths.pathFilenameAlfa.stem}--{paths.pathFilenameBeta.stem}'
@@ -142,68 +133,66 @@ def contestWaveform(pathFilenamesContest: ContestFilename) -> ContestWaveform:
 def contestSpectrogram(contestWaveform: ContestWaveform) -> ContestSpectrogram:
 	"""Return each contest complex-valued spectrogram pair with its sample rates."""
 	return ContestSpectrogram(
-		contestWaveform.paths,
-		stft(contestWaveform.waveformAlfa, sampleRate=contestWaveform.sampleRateAlfa),
-		contestWaveform.sampleRateAlfa,
-		stft(contestWaveform.waveformBeta, sampleRate=contestWaveform.sampleRateBeta),
-		contestWaveform.sampleRateBeta,
+		contestWaveform.paths
+		, stft(contestWaveform.waveformAlfa, sampleRate=contestWaveform.sampleRateAlfa)
+		, contestWaveform.sampleRateAlfa
+		, stft(contestWaveform.waveformBeta, sampleRate=contestWaveform.sampleRateBeta)
+		, contestWaveform.sampleRateBeta
 	)
 
 @pytest.fixture(scope='session')
 def contestSpectrogramMagnitude(contestSpectrogram: ContestSpectrogram) -> ContestSpectrogramMagnitude:
 	"""Return each contest magnitude spectrogram pair with its sample rates."""
 	return ContestSpectrogramMagnitude(
-		contestSpectrogram.paths,
-		numpy.absolute(contestSpectrogram.spectrogramAlfa),
-		contestSpectrogram.sampleRateAlfa,
-		numpy.absolute(contestSpectrogram.spectrogramBeta),
-		contestSpectrogram.sampleRateBeta,
+		contestSpectrogram.paths
+		, numpy.absolute(contestSpectrogram.spectrogramAlfa)
+		, contestSpectrogram.sampleRateAlfa
+		, numpy.absolute(contestSpectrogram.spectrogramBeta)
+		, contestSpectrogram.sampleRateBeta
 	)
 
 @pytest.fixture(scope='session')
 def contestTensorSpectrogram(contestSpectrogram: ContestSpectrogram) -> ContestTensorSpectrogram:
 	"""Return each contest complex-valued spectrogram tensor pair with its sample rates."""
 	return ContestTensorSpectrogram(
-		contestSpectrogram.paths,
-		torch.view_as_real(torch.from_numpy(contestSpectrogram.spectrogramAlfa)),  # pyright: ignore[reportUnknownMemberType]
-		contestSpectrogram.sampleRateAlfa,
-		torch.view_as_real(torch.from_numpy(contestSpectrogram.spectrogramBeta)),  # pyright: ignore[reportUnknownMemberType]
-		contestSpectrogram.sampleRateBeta,
+		contestSpectrogram.paths
+		, torch.view_as_real(torch.from_numpy(contestSpectrogram.spectrogramAlfa))
+		, contestSpectrogram.sampleRateAlfa
+		, torch.view_as_real(torch.from_numpy(contestSpectrogram.spectrogramBeta))
+		, contestSpectrogram.sampleRateBeta
 	)
 
 @pytest.fixture(scope='session')
 def contestTensorSpectrogramMagnitude(contestSpectrogramMagnitude: ContestSpectrogramMagnitude) -> ContestTensorSpectrogramMagnitude:
 	"""Return each contest magnitude spectrogram tensor pair with its sample rates."""
 	return ContestTensorSpectrogramMagnitude(
-		contestSpectrogramMagnitude.paths,
-		torch.from_numpy(contestSpectrogramMagnitude.spectrogramMagnitudeAlfa),  # pyright: ignore[reportUnknownMemberType]
-		contestSpectrogramMagnitude.sampleRateAlfa,
-		torch.from_numpy(contestSpectrogramMagnitude.spectrogramMagnitudeBeta),  # pyright: ignore[reportUnknownMemberType]
-		contestSpectrogramMagnitude.sampleRateBeta,
+		contestSpectrogramMagnitude.paths
+		, torch.from_numpy(contestSpectrogramMagnitude.spectrogramMagnitudeAlfa)
+		, contestSpectrogramMagnitude.sampleRateAlfa
+		, torch.from_numpy(contestSpectrogramMagnitude.spectrogramMagnitudeBeta)
+		, contestSpectrogramMagnitude.sampleRateBeta
 	)
 
 @pytest.fixture(scope='session')
 def contestTensor(contestWaveform: ContestWaveform) -> ContestTensor:
 	"""Return each contest complex-valued spectrogram pair with its sample rates."""
 	return ContestTensor(
-		contestWaveform.paths,
-		torch.from_numpy(contestWaveform.waveformAlfa),  # pyright: ignore[reportUnknownMemberType]
-		contestWaveform.sampleRateAlfa,
-		torch.from_numpy(contestWaveform.waveformBeta),  # pyright: ignore[reportUnknownMemberType]
-		contestWaveform.sampleRateBeta,
+		contestWaveform.paths
+		, torch.from_numpy(contestWaveform.waveformAlfa)
+		, contestWaveform.sampleRateAlfa
+		, torch.from_numpy(contestWaveform.waveformBeta)
+		, contestWaveform.sampleRateBeta
 	)
 
 @pytest.fixture(scope='session')
 def tensorAudioMixture(aPathFilename: Path = pathFilenameMixture) -> Tensor:
 	"""Return the audio mixture tensor with its sample rate."""
-	return torch.from_numpy(readAudioFile(aPathFilename))  # pyright: ignore[reportUnknownMemberType]
+	return torch.from_numpy(readAudioFile(aPathFilename))
 
 @pytest.fixture(scope='session')
 def expectedContest(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilename) -> float:
 	"""Return the stored expected contest value for the current contest fixture, function, and path pair."""
 	analyzer: str = request.param
-	dictionaryExpectedContest = ChainMap(
-		contestExpected.expectedTensorSpectrogram, contestExpected.expectedSpectrogram, contestExpected.expectedTensor
-	)
+	dictionaryExpectedContest = ChainMap(contestExpected.expectedTensorSpectrogram, contestExpected.expectedSpectrogram, contestExpected.expectedTensor)
 	keyName = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
 	return dictionaryExpectedContest[analyzer][keyName]

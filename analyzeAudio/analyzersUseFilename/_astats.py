@@ -1,5 +1,3 @@
-# ty:ignore[invalid-return-type]
-# pyright: reportReturnType=false
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
@@ -50,9 +48,9 @@ def analyzeAbs_Peak_countTotal(pathFilename: str | PathLike[Any]) -> float | Non
 	absPeakCount : float | None
 		Scalar total count, or None when unavailable.
 	"""
-	arrayAspect = analyzeAbs_Peak_count(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeAbs_Peak_count(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = arrayAspect[-1]
+		aspect: float | None = float(arrayAspect[-1])
 	else:
 		aspect = None
 	return aspect
@@ -92,9 +90,9 @@ def analyzeBit_depthMean(pathFilename: str | PathLike[Any]) -> float | None:
 	bitDepth : float | None
 		Mean bit depth across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeBit_depth(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeBit_depth(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -153,9 +151,9 @@ def analyzeCrest_factorMean(pathFilename: str | PathLike[Any]) -> float | None:
 	crestFactor : float | None
 		Mean crest factor across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeCrest_factor(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeCrest_factor(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -205,9 +203,9 @@ def analyzeDC_offsetMean(pathFilename: str | PathLike[Any]) -> float | None:
 	DCoffset : float | None
 		Mean DC offset across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeDC_offset(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeDC_offset(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -258,9 +256,9 @@ def analyzeDynamic_rangeOverall(pathFilename: str | PathLike[Any]) -> float | No
 	dynamicRange : float | None
 		Mean dynamic range in decibels, or None when unavailable.
 	"""
-	arrayAspect = analyzeDynamic_range(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeDynamic_range(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -316,9 +314,9 @@ def analyzeEntropyMean(pathFilename: str | PathLike[Any]) -> float | None:
 	signalEntropy : float | None
 		Mean Shannon entropy across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeEntropy(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeEntropy(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -358,9 +356,9 @@ def analyzeFlat_factorMean(pathFilename: str | PathLike[Any]) -> float | None:
 	flatFactor : float | None
 		Mean proportion across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeFlat_factor(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeFlat_factor(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -401,9 +399,9 @@ def analyzeMax_differenceOverall(pathFilename: str | PathLike[Any]) -> float | N
 	maxDifference : float | None
 		Mean maximum absolute difference across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeMax_difference(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeMax_difference(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -443,9 +441,9 @@ def analyzeMax_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	maxLevel : float | None
 		Mean maximum sample value across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeMax_level(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeMax_level(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -485,9 +483,9 @@ def analyzeMean_differenceMean(pathFilename: str | PathLike[Any]) -> float | Non
 	meanDifference : float | None
 		Mean value across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeMean_difference(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeMean_difference(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -528,9 +526,9 @@ def analyzeMin_differenceOverall(pathFilename: str | PathLike[Any]) -> float | N
 	minDifference : float | None
 		Mean minimum absolute difference across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeMin_difference(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeMin_difference(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -570,9 +568,9 @@ def analyzeMin_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	minLevel : float | None
 		Mean minimum sample value across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeMin_level(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeMin_level(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -613,9 +611,9 @@ def analyzeNoise_floorOverall(pathFilename: str | PathLike[Any]) -> float | None
 	noiseFloor : float | None
 		Mean noise-floor level in dBFS across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeNoise_floor(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeNoise_floor(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -655,9 +653,9 @@ def analyzeNoise_floor_countTotal(pathFilename: str | PathLike[Any]) -> float | 
 	noiseFloorCount : float | None
 		Scalar total count, or None when unavailable.
 	"""
-	arrayAspect = analyzeNoise_floor_count(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeNoise_floor_count(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -697,9 +695,9 @@ def analyzeNumber_of_samplesTotal(pathFilename: str | PathLike[Any]) -> float | 
 	numberOfSamples : float | None
 		Scalar total number of samples, or None when unavailable.
 	"""
-	arrayAspect = analyzeNumber_of_samples(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeNumber_of_samples(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect[-1]
+		aspect = float(arrayAspect[-1])
 	else:
 		aspect = None
 	return aspect
@@ -739,9 +737,9 @@ def analyzePeak_countTotal(pathFilename: str | PathLike[Any]) -> float | None:
 	peakCount : float | None
 		Scalar total count, or None when unavailable.
 	"""
-	arrayAspect = analyzePeak_count(pathFilename)
+	arrayAspect: ArrayChannelData = analyzePeak_count(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -797,9 +795,9 @@ def analyzePeak_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	peakDB : float | None
 		Mean peak level in dBFS, or None when unavailable.
 	"""
-	arrayAspect = analyzePeak_level(pathFilename)
+	arrayAspect: ArrayChannelData = analyzePeak_level(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -839,9 +837,9 @@ def analyzeRMS_differenceOverall(pathFilename: str | PathLike[Any]) -> float | N
 	RMSdifference : float | None
 		Mean RMS difference across channels, or None when unavailable.
 	"""
-	arrayAspect = analyzeRMS_difference(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeRMS_difference(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -899,9 +897,9 @@ def analyzeRMS_levelOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	RMSlevel : float | None
 		Scalar RMS level in dBFS, or None when unavailable.
 	"""
-	arrayAspect = analyzeRMS_level(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeRMS_level(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect[-1]
+		aspect: float | None = float(arrayAspect[-1])
 	else:
 		aspect = None
 	return aspect
@@ -954,9 +952,9 @@ def analyzeRMS_peakOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	RMSpeak : float | None
 		Mean short-term RMS peak in dBFS, or None when unavailable.
 	"""
-	arrayAspect = analyzeRMS_peak(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeRMS_peak(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -997,9 +995,9 @@ def analyzeRMS_troughOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	RMStrough : float | None
 		Mean short-term RMS trough in dBFS, or None when unavailable.
 	"""
-	arrayAspect = analyzeRMS_trough(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeRMS_trough(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -1064,9 +1062,9 @@ def analyzeZero_crossingsTotal(pathFilename: str | PathLike[Any]) -> float | Non
 	zeroCrossings : float | None
 		Mean zero-crossing count, or None when unavailable.
 	"""
-	arrayAspect = analyzeZero_crossings(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeZero_crossings(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect
@@ -1132,9 +1130,9 @@ def analyzeZero_crossings_rateOverall(pathFilename: str | PathLike[Any]) -> floa
 	zeroCrossingsRate : float | None
 		Mean normalized zero-crossing rate, or None when unavailable.
 	"""
-	arrayAspect = analyzeZero_crossings_rate(pathFilename)
+	arrayAspect: ArrayChannelData = analyzeZero_crossings_rate(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).astype(float)
+		aspect: float | None = numpy.mean(arrayAspect[..., -1:None]).item()
 	else:
 		aspect = None
 	return aspect

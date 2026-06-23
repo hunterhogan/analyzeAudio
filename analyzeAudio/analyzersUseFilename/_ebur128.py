@@ -1,20 +1,15 @@
-# pyright: reportArgumentType=false
-# pyright: reportAssignmentType=false
-# pyright: reportReturnType=false
-# ty:ignore[invalid-argument-type]
-# ty:ignore[invalid-assignment]
-# ty:ignore[invalid-return-type]
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
 from analyzeAudio.analyzersUseFilename._wideRange import ffprobeAllInclusiveCache
 from analyzeAudio.registry import registrationAudioAspect
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import numpy
 
 if TYPE_CHECKING:
 	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from os import PathLike
+	from typing import Any
 
 arrayOverallDataEmpty: ArrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)
 
@@ -26,7 +21,7 @@ def analyzeTruePeakChannel(pathFilename: str | PathLike[Any]) -> ArrayChannelDat
 	listAspectChannels: list[ArrayOverallData] = [ffprobeAllInclusiveCache(pathFilename).get(f'true_peaks_ch{channel}', arrayOverallDataEmpty)]
 	while keepGoing:
 		channel += 1
-		aspectChannel = ffprobeAllInclusiveCache(pathFilename).get(f'true_peaks_ch{channel}', None)
+		aspectChannel: ArrayOverallData | None = ffprobeAllInclusiveCache(pathFilename).get(f'true_peaks_ch{channel}', None)
 		if aspectChannel is not None:
 			listAspectChannels.append(aspectChannel)
 		else:
@@ -68,9 +63,9 @@ def analyzeTruePeakOverall(pathFilename: str | PathLike[Any]) -> float | None:
 		Maximum value of the framewise true-peak trajectory.
 
 	"""
-	arrayAspect = analyzeTruePeak(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeTruePeak(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect.max()
+		aspect: float | None = float(arrayAspect.max())
 	else:
 		aspect = None
 	return aspect
@@ -112,9 +107,9 @@ def analyzeLUFSMomentaryOverall(pathFilename: str | PathLike[Any]) -> float | No
 		Maximum value of the framewise momentary-loudness trajectory.
 
 	"""
-	arrayAspect = analyzeLUFSMomentary(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeLUFSMomentary(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect.max()
+		aspect: float | None = float(arrayAspect.max())
 	else:
 		aspect = None
 	return aspect
@@ -157,9 +152,9 @@ def analyzeLUFSShortTermOverall(pathFilename: str | PathLike[Any]) -> float | No
 		Maximum value of the framewise short-term-loudness trajectory.
 
 	"""
-	arrayAspect = analyzeLUFSShortTerm(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeLUFSShortTerm(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect.max()
+		aspect: float | None = float(arrayAspect.max())
 	else:
 		aspect = None
 	return aspect
@@ -224,9 +219,9 @@ def analyzeLUFSIntegratedOverall(pathFilename: str | PathLike[Any]) -> float | N
 	integratedLoudness : float | None
 		Integrated loudness in LUFS.
 	"""
-	arrayAspect = analyzeLUFSIntegrated(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeLUFSIntegrated(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect[-1]
+		aspect: float | None = float(arrayAspect[-1])
 	else:
 		aspect = None
 	return aspect
@@ -292,9 +287,9 @@ def analyzeLRAOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	loudnessRange : float | None
 		Loudness range in loudness units.
 	"""
-	arrayAspect = analyzeLRA(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeLRA(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect[-1]
+		aspect: float | None = float(arrayAspect[-1])
 	else:
 		aspect = None
 	return aspect
@@ -348,9 +343,9 @@ def analyzeLUFSlowOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	loudnessLow : float | None
 		Lower loudness bound in LUFS.
 	"""
-	arrayAspect = analyzeLUFSlow(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeLUFSlow(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect[-1]
+		aspect: float | None = float(arrayAspect[-1])
 	else:
 		aspect = None
 	return aspect
@@ -404,9 +399,9 @@ def analyzeLUFShighOverall(pathFilename: str | PathLike[Any]) -> float | None:
 	loudnessHigh : float | None
 		Upper loudness bound in LUFS.
 	"""
-	arrayAspect = analyzeLUFShigh(pathFilename)
+	arrayAspect: ArrayOverallData = analyzeLUFShigh(pathFilename)
 	if 0 < len(arrayAspect):
-		aspect = arrayAspect[-1]
+		aspect: float | None = float(arrayAspect[-1])
 	else:
 		aspect = None
 	return aspect
