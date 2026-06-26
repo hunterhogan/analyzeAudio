@@ -27,27 +27,27 @@ import contextlib
 import inspect
 
 if TYPE_CHECKING:
-	from analyzeAudio import analyzersAudioAspects, parameterSpecifications, typeReturned
+	from analyzeAudio import AnalyzerAudioAspects, 归个, 形
 	from collections.abc import Callable
 
 with contextlib.suppress(RuntimeError):
 	multiprocessing_set_start_method('spawn')
 
-audioAspects: dict[str, analyzersAudioAspects] = {}
+audioAspects: dict[str, AnalyzerAudioAspects] = {}
 """Store analyzer metadata by registered audio aspect name.
 
 You can inspect `audioAspects` to retrieve the analyzer function and the ordered list of
 parameter names for each registered audio aspect.
 """
 
-audioContests: dict[str, analyzersAudioAspects] = {}
+audioContests: dict[str, AnalyzerAudioAspects] = {}
 """Store analyzer metadata by registered audio aspect name.
 
 You can inspect `audioContests` to retrieve the analyzer function and the ordered list of
 parameter names for each registered audio aspect.
 """
 
-def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpecifications, typeReturned]], Callable[parameterSpecifications, typeReturned]]:
+def registrationAudioAspect(aspectName: str) -> Callable[[Callable[形, 归个]], Callable[形, 归个]]:
 	"""Register one analyzer function under one audio aspect name.
 
 	You can use this function as a decorator factory when an analyzer function should become
@@ -62,7 +62,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 
 	Returns
 	-------
-	registrar : Callable[[Callable[parameterSpecifications, typeReturned]], Callable[parameterSpecifications, typeReturned]]
+	registrar : Callable[[Callable[形, 归个]], Callable[形, 归个]]
 		A decorator that records one analyzer function and then returns the same analyzer function.
 
 	Registration
@@ -88,7 +88,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 
 	"""
 
-	def registrar(registrant: Callable[parameterSpecifications, typeReturned]) -> Callable[parameterSpecifications, typeReturned]:
+	def registrar(registrant: Callable[形, 归个]) -> Callable[形, 归个]:
 		"""I use this nested function to record one analyzer function in the module registry.
 
 		This function receives `registrant`, stores `registrant` and the ordered parameter names of
@@ -97,12 +97,12 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 
 		Parameters
 		----------
-		registrant : Callable[parameterSpecifications, typeReturned]
+		registrant : Callable[形, 归个]
 			The analyzer function to register under the enclosing `aspectName`.
 
 		Returns
 		-------
-		registrant : Callable[parameterSpecifications, typeReturned]
+		registrant : Callable[形, 归个]
 			The same analyzer function after the registry entry has been written.
 
 		"""
@@ -110,7 +110,7 @@ def registrationAudioAspect(aspectName: str) -> Callable[[Callable[parameterSpec
 		return registrant
 	return registrar
 
-def registrationAudioContest(aspectName: str) -> Callable[[Callable[parameterSpecifications, typeReturned]], Callable[parameterSpecifications, typeReturned]]:
+def registrationAudioContest(aspectName: str) -> Callable[[Callable[形, 归个]], Callable[形, 归个]]:
 	"""Register one analyzer function under one audio aspect name.
 
 	You can use this function as a decorator factory when an analyzer function should become
@@ -125,7 +125,7 @@ def registrationAudioContest(aspectName: str) -> Callable[[Callable[parameterSpe
 
 	Returns
 	-------
-	registrar : Callable[[Callable[parameterSpecifications, typeReturned]], Callable[parameterSpecifications, typeReturned]]
+	registrar : Callable[[Callable[形, 归个]], Callable[形, 归个]]
 		A decorator that records one analyzer function and then returns the same analyzer function.
 
 	Registration
@@ -152,7 +152,7 @@ def registrationAudioContest(aspectName: str) -> Callable[[Callable[parameterSpe
 
 	"""
 
-	def registrar(registrant: Callable[parameterSpecifications, typeReturned]) -> Callable[parameterSpecifications, typeReturned]:
+	def registrar(registrant: Callable[形, 归个]) -> Callable[形, 归个]:
 		"""I use this nested function to record one analyzer function in the module registry.
 
 		This function receives `registrant`, stores `registrant` and the ordered parameter names of
@@ -161,12 +161,12 @@ def registrationAudioContest(aspectName: str) -> Callable[[Callable[parameterSpe
 
 		Parameters
 		----------
-		registrant : Callable[parameterSpecifications, typeReturned]
+		registrant : Callable[形, 归个]
 			The analyzer function to register under the enclosing `aspectName`.
 
 		Returns
 		-------
-		registrant : Callable[parameterSpecifications, typeReturned]
+		registrant : Callable[形, 归个]
 			The same analyzer function after the registry entry has been written.
 
 		"""

@@ -6,7 +6,8 @@ import numpy
 import pytest
 
 if TYPE_CHECKING:
-	from hunterHearsPy import 个, 形ndarray
+	from analyzeAudio import 个
+	from hunterHearsPy.theTypes import 形ndarray
 	from typing import Any
 
 #================== Assert scalar and built-in containers ========================================================================
@@ -29,7 +30,7 @@ def assert_array_equal(actual: 形ndarray, expected: 形ndarray, function: str, 
 	"""Assert that two arrays are equal, and if not, raise an AssertionError with a detailed message."""
 	assert numpy.array_equal(actual, expected), messageTestFailure_ndarray(actual, expected, function, *arguments, **keywordArguments)
 
-def assert_allclose(actual: Any, expected: Any, rtol: float, atol: float, function: str, *arguments: Any, **keywordArguments: Any) -> None:
+def assert_allclose(actual: 形ndarray, expected: 形ndarray, rtol: float, atol: float, function: str, *arguments: Any, **keywordArguments: Any) -> None:
 	assert numpy.allclose(actual, expected, rtol, atol), messageTestFailure_ndarray(actual, expected, function, *arguments, **keywordArguments)
 
 def messageTestFailure_ndarray(actual: 形ndarray, expected: 形ndarray, function: str, *arguments: Any, **keywordArguments: Any) -> str:

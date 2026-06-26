@@ -4,13 +4,13 @@ from __future__ import annotations
 from collections import ChainMap
 from hunterHearsPy import readAudioFile, stft
 from tests import (
-	AspectSpectrogram, AspectSpectrogramMagnitude, AspectSpectrogramPower, AspectTensor, AspectWaveform, ContestFilename, ContestSpectrogram,
-	ContestSpectrogramMagnitude, ContestTensor, ContestTensorSpectrogram, ContestTensorSpectrogramMagnitude, ContestWaveform,
-	listPathFilenamesContests, listPathFilenamesDataSamples, messageTestFailure, pathFilenameMixture)
+	ContestPathFilenames, ContestSpectrogram, ContestSpectrogramMagnitude, ContestSpectrograms, ContestTensor, ContestTensorSpectrogram,
+	ContestTensorSpectrogramMagnitude, ContestWaveform, ContestWaveforms, listPathFilenamesContests, listPathFilenamesDataSamples,
+	messageTestFailure, pathFilenameMixture, SpectrogramAndData, SpectrogramMagnitudeAndData, SpectrogramPowerAndData, TensorAndData,
+	WaveformAndData)
 from tests.dataSamples import expected
 from tests.dataSamples.SpeakSoftly_BrokenMan60sec import expected as contestExpected
 from typing import TYPE_CHECKING
-import librosa
 import numpy
 import pytest
 import soundfile
@@ -18,7 +18,7 @@ import torch
 
 if TYPE_CHECKING:
 	from analyzeAudio import Audio, SpectrogramMagnitude, SpectrogramPower
-	from hunterHearsPy import Spectrogram, Waveform
+	from hunterHearsPy.theTypes import Spectrogram, Waveform
 	from pathlib import Path
 	from torch import Tensor
 
@@ -58,12 +58,12 @@ def assert_approx(actual: float | None, expected: float | None, pytest_rel: floa
 		actual, expected, analyzer, pathFilename=pathFilename.name, **({} if pytorchOnCPU is None else {'pytorchOnCPU': pytorchOnCPU})
 	)
 
-def assert_contest(actual: float | None, expected: float | None, pytest_rel: float, pytest_abs: float, analyzer: str, paths: ContestFilename, sampleRate: int) -> None:
+def assert_contest(actual: float | None, expected: float | None, pytest_rel: float, pytest_abs: float, analyzer: str, contestPathFilenames: ContestPathFilenames, sampleRate: int) -> None:
 	assert actual == pytest.approx(expected, rel=pytest_rel, abs=pytest_abs, nan_ok=True), messageTestFailure(
-		actual, expected, analyzer, pathFilenameAlfa=paths.pathFilenameAlfa.name, pathFilenameBeta=paths.pathFilenameBeta.name, sampleRate=sampleRate
+		actual, expected, analyzer, pathFilenameAlfa=contestPathFilenames.alfa.name, pathFilenameBeta=contestPathFilenames.beta.name, sampleRate=sampleRate
 	)
 
-#================== Audio Aspects =================================================================
+#================== Audio and data =================================================================
 
 @pytest.fixture(params=listPathFilenamesDataSamples, ids=lambda pathFilename: pathFilename.name, scope='session')
 def pathFilename(request: pytest.FixtureRequest) -> Path:
@@ -72,36 +72,37 @@ def pathFilename(request: pytest.FixtureRequest) -> Path:
 	return pathFilename
 
 @pytest.fixture(scope='session')
-def aspectWaveform(pathFilename: Path) -> AspectWaveform:
+def waveformAndData(pathFilename: Path) -> WaveformAndData:
 	"""Return each static waveform with its source path and sample rate."""
+	# TODO Use the sampleRate encoded in pathFilename.stem and `readAudioFile`.
 	with soundfile.SoundFile(pathFilename) as readSoundFile:
 		sampleRate: int = readSoundFile.samplerate
 		waveform: Audio = readSoundFile.read(dtype='float32').astype(numpy.float32)
 	waveform = waveform.T
-	return AspectWaveform(pathFilename, waveform, sampleRate)
+	return WaveformAndData(pathFilename, waveform, sampleRate)
 
 @pytest.fixture(scope='session')
-def aspectSpectrogram(aspectWaveform: AspectWaveform) -> AspectSpectrogram:
+def spectrogramAndData(waveformAndData: WaveformAndData) -> SpectrogramAndData:
 	"""Return each static spectrogram with its source path and sample rate."""
-	spectrogram: Spectrogram = librosa.stft(aspectWaveform.waveform)
-	return AspectSpectrogram(aspectWaveform.pathFilename, spectrogram, aspectWaveform.sampleRate)
+	spectrogram: Spectrogram = stft(numpy.atleast_2d(waveformAndData.waveform), sampleRate=waveformAndData.sampleRate)
+	return SpectrogramAndData(waveformAndData.pathFilename, spectrogram, waveformAndData.sampleRate)
 
 @pytest.fixture(scope='session')
-def aspectSpectrogramMagnitude(aspectSpectrogram: AspectSpectrogram) -> AspectSpectrogramMagnitude:
+def spectrogramMagnitudeAndData(spectrogramAndData: SpectrogramAndData) -> SpectrogramMagnitudeAndData:
 	"""Return each static spectrogram magnitude with its source path and sample rate."""
-	spectrogramMagnitude: SpectrogramMagnitude = numpy.absolute(aspectSpectrogram.spectrogram)
-	return AspectSpectrogramMagnitude(aspectSpectrogram.pathFilename, spectrogramMagnitude, aspectSpectrogram.sampleRate)
+	spectrogramMagnitude: SpectrogramMagnitude = numpy.absolute(spectrogramAndData.spectrogram)
+	return SpectrogramMagnitudeAndData(spectrogramAndData.pathFilename, spectrogramMagnitude, spectrogramAndData.sampleRate)
 
 @pytest.fixture(scope='session')
-def aspectSpectrogramPower(aspectSpectrogramMagnitude: AspectSpectrogramMagnitude) -> AspectSpectrogramPower:
+def spectrogramPowerAndData(spectrogramMagnitudeAndData: SpectrogramMagnitudeAndData) -> SpectrogramPowerAndData:
 	"""Return each static spectrogram power with its source path and sample rate."""
-	spectrogramPower: SpectrogramPower = aspectSpectrogramMagnitude.spectrogramMagnitude**2
-	return AspectSpectrogramPower(aspectSpectrogramMagnitude.pathFilename, spectrogramPower, aspectSpectrogramMagnitude.sampleRate)
+	spectrogramPower: SpectrogramPower = spectrogramMagnitudeAndData.spectrogramMagnitude**2
+	return SpectrogramPowerAndData(spectrogramMagnitudeAndData.pathFilename, spectrogramPower, spectrogramMagnitudeAndData.sampleRate)
 
 @pytest.fixture(scope='session')
-def aspectTensor(aspectWaveform: AspectWaveform) -> AspectTensor:
+def tensorAndData(waveformAndData: WaveformAndData) -> TensorAndData:
 	"""Return each static audio tensor with its source path and sample rate."""
-	return AspectTensor(aspectWaveform.pathFilename, torch.from_numpy(aspectWaveform.waveform), aspectWaveform.sampleRate)
+	return TensorAndData(waveformAndData.pathFilename, torch.from_numpy(waveformAndData.waveform), waveformAndData.sampleRate)
 
 @pytest.fixture(scope='session')
 def expectedAspect(request: pytest.FixtureRequest, pathFilename: Path) -> float | None:
@@ -112,21 +113,22 @@ def expectedAspect(request: pytest.FixtureRequest, pathFilename: Path) -> float 
 
 #================== Contests ======================================================================
 
-def _idContestFilename(paths: ContestFilename) -> str:
-	return f'{paths.pathFilenameAlfa.stem}--{paths.pathFilenameBeta.stem}'
+def _idContestFilename(contestPathFilenames: ContestPathFilenames) -> str:
+	return f'{contestPathFilenames.alfa.stem}--{contestPathFilenames.beta.stem}'
 
 @pytest.fixture(params=listPathFilenamesContests, ids=_idContestFilename, scope='session')
-def pathFilenamesContest(request: pytest.FixtureRequest) -> ContestFilename:
+def pathFilenamesContest(request: pytest.FixtureRequest) -> ContestPathFilenames:
 	"""Return each matching reference and comparand audio-file pair."""
-	pathFilenamesContest: ContestFilename = request.param
+	pathFilenamesContest: ContestPathFilenames = request.param
 	return pathFilenamesContest
 
 @pytest.fixture(scope='session')
-def contestWaveform(pathFilenamesContest: ContestFilename) -> ContestWaveform:
+def contestWaveform(pathFilenamesContest: ContestPathFilenames) -> ContestWaveform:
 	"""Return each contest waveform pair with its sample rates."""
-	waveformAlfa: Waveform = readAudioFile(pathFilenamesContest.pathFilenameAlfa)
-	waveformBeta: Waveform = readAudioFile(pathFilenamesContest.pathFilenameBeta)
+	# be DRY: one function loads files: `waveformAndData`.
 	sampleRate = 44100
+	waveformAlfa: Waveform = readAudioFile(pathFilenamesContest.alfa, sampleRateDesired=sampleRate)
+	waveformBeta: Waveform = readAudioFile(pathFilenamesContest.beta, sampleRateDesired=sampleRate)
 	return ContestWaveform(pathFilenamesContest, waveformAlfa, sampleRate, waveformBeta, sampleRate)
 
 @pytest.fixture(scope='session')
@@ -138,6 +140,14 @@ def contestSpectrogram(contestWaveform: ContestWaveform) -> ContestSpectrogram:
 		, contestWaveform.sampleRateAlfa
 		, stft(contestWaveform.waveformBeta, sampleRate=contestWaveform.sampleRateBeta)
 		, contestWaveform.sampleRateBeta
+	)
+
+@pytest.fixture(scope='session')
+def Z0Z_contestSpectrogram(contestWaveform: ContestWaveforms) -> ContestSpectrograms:
+	"""Return each contest complex-valued spectrogram pair with its sample rates."""
+	return ContestSpectrograms(
+		alfa=spectrogramAndData(contestWaveform.alfa)
+		, beta=spectrogramAndData(contestWaveform.beta)
 	)
 
 @pytest.fixture(scope='session')
@@ -185,14 +195,14 @@ def contestTensor(contestWaveform: ContestWaveform) -> ContestTensor:
 	)
 
 @pytest.fixture(scope='session')
-def tensorAudioMixture(aPathFilename: Path = pathFilenameMixture) -> Tensor:
-	"""Return the audio mixture tensor with its sample rate."""
-	return torch.from_numpy(readAudioFile(aPathFilename))
-
-@pytest.fixture(scope='session')
-def expectedContest(request: pytest.FixtureRequest, pathFilenamesContest: ContestFilename) -> float:
+def expectedContest(request: pytest.FixtureRequest, pathFilenamesContest: ContestPathFilenames) -> float:
 	"""Return the stored expected contest value for the current contest fixture, function, and path pair."""
 	analyzer: str = request.param
 	dictionaryExpectedContest = ChainMap(contestExpected.expectedTensorSpectrogram, contestExpected.expectedSpectrogram, contestExpected.expectedTensor)
-	keyName = (pathFilenamesContest.pathFilenameAlfa.name, pathFilenamesContest.pathFilenameBeta.name)
+	keyName = (pathFilenamesContest.alfa.name, pathFilenamesContest.beta.name)
 	return dictionaryExpectedContest[analyzer][keyName]
+
+@pytest.fixture(scope='session')
+def tensorAudioMixture(aPathFilename: Path = pathFilenameMixture) -> Tensor:
+	"""Return the audio mixture tensor with its sample rate."""
+	return torch.from_numpy(readAudioFile(aPathFilename))

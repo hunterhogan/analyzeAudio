@@ -8,6 +8,7 @@ from analyzeAudio.contestsTensor import (
 	analyzeShortTimeObjectiveIntelligibilityMean, analyzeSignalDistortionRatioMean, analyzeSignalNoiseRatioMean, analyzeSISDRLossMean,
 	analyzeSNRLossMean, analyzeSourceAggregatedSignalDistortionRatioMean, analyzeSTFTL1SNRDBMean, analyzeSTFTLossMean,
 	analyzeSumAndDifferenceSTFTLossMean)
+from tests import ContestPathFilenames
 from tests.conftest import assert_contest
 from typing import TYPE_CHECKING
 import numpy
@@ -15,12 +16,19 @@ import pytest
 
 if TYPE_CHECKING:
 	from tests import ContestTensor
+	from tests._dataBaskets import ContestTensors
 	from torch import Tensor
 
 @pytest.mark.parametrize('expectedContest', ['analyzeLogWMSEMean'], indirect=True)
 def test_analyzeLogWMSEMean(contestTensor: ContestTensor, tensorAudioMixture: Tensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
 	actual = analyzeLogWMSEMean(contestTensor.tensorAlfa, contestTensor.tensorBeta, tensorAudioMixture, contestTensor.sampleRateAlfa)
 	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeLogWMSEMean', contestTensor.paths, contestTensor.sampleRateAlfa)
+
+# Example
+# @pytest.mark.parametrize('expectedContest', ['analyzeL1SNRMean'], indirect=True)
+# def test_analyzeL1SNRMean(contestTensors: ContestTensors, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
+# 	actual = analyzeL1SNRMean(contestTensors.alfa.tensorAudio, contestTensors.beta.tensorAudio)
+# 	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeL1SNRMean', ContestPathFilenames(contestTensors.alfa.pathFilename, contestTensors.beta.pathFilename), contestTensors.alfa.sampleRate)
 
 @pytest.mark.parametrize('expectedContest', ['analyzeL1SNRMean'], indirect=True)
 def test_analyzeL1SNRMean(contestTensor: ContestTensor, expectedContest: float, approx_rel: float, approx_abs: float) -> None:

@@ -4,76 +4,97 @@ from typing import NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from analyzeAudio import Audio, SpectrogramMagnitude, SpectrogramPower
-	from hunterHearsPy import Spectrogram, Waveform
+	from hunterHearsPy.theTypes import Spectrogram, Waveform
 	from pathlib import Path
 	from torch import Tensor
 
-class AspectSpectrogram(NamedTuple):
+class SpectrogramAndData(NamedTuple):
 	pathFilename: Path
 	spectrogram: Spectrogram
 	sampleRate: int
 
-class AspectSpectrogramMagnitude(NamedTuple):
+class SpectrogramMagnitudeAndData(NamedTuple):
 	pathFilename: Path
 	spectrogramMagnitude: SpectrogramMagnitude
 	sampleRate: int
 
-class AspectSpectrogramPower(NamedTuple):
+class SpectrogramPowerAndData(NamedTuple):
 	pathFilename: Path
 	spectrogramPower: SpectrogramPower
 	sampleRate: int
 
-class AspectTensor(NamedTuple):
+class TensorAndData(NamedTuple):
 	pathFilename: Path
 	tensorAudio: Tensor
 	sampleRate: int
 
-class AspectWaveform(NamedTuple):
+class WaveformAndData(NamedTuple):
 	pathFilename: Path
 	waveform: Audio
 	sampleRate: int
 
-class ContestFilename(NamedTuple):
-	pathFilenameAlfa: Path
-	pathFilenameBeta: Path
+class ContestPathFilenames(NamedTuple):
+	alfa: Path
+	beta: Path
 
+class ContestSpectrograms(NamedTuple):
+	alfa: SpectrogramAndData
+	beta: SpectrogramAndData
+
+class ContestSpectrogramsMagnitude(NamedTuple):
+	alfa: SpectrogramMagnitudeAndData
+	beta: SpectrogramMagnitudeAndData
+
+class ContestTensorSpectrograms(NamedTuple):
+	alfa: TensorAndData
+	beta: TensorAndData
+
+class ContestTensorSpectrogramsMagnitude(NamedTuple):
+	alfa: TensorAndData
+	beta: TensorAndData
+
+class ContestTensors(NamedTuple):
+	alfa: TensorAndData
+	beta: TensorAndData
+
+class ContestWaveforms(NamedTuple):
+	alfa: WaveformAndData
+	beta: WaveformAndData
+
+# old system
 class ContestSpectrogram(NamedTuple):
-	paths: ContestFilename
+	paths: ContestPathFilenames
 	spectrogramAlfa: Spectrogram
 	sampleRateAlfa: int
 	spectrogramBeta: Spectrogram
 	sampleRateBeta: int
-
 class ContestSpectrogramMagnitude(NamedTuple):
-	paths: ContestFilename
+	paths: ContestPathFilenames
 	spectrogramMagnitudeAlfa: SpectrogramMagnitude
 	sampleRateAlfa: int
 	spectrogramMagnitudeBeta: SpectrogramMagnitude
 	sampleRateBeta: int
-
 class ContestTensorSpectrogram(NamedTuple):
-	paths: ContestFilename
+	paths: ContestPathFilenames
 	tensorSpectrogramAlfa: Tensor
 	sampleRateAlfa: int
 	tensorSpectrogramBeta: Tensor
 	sampleRateBeta: int
-
 class ContestTensorSpectrogramMagnitude(NamedTuple):
-	paths: ContestFilename
+	paths: ContestPathFilenames
 	tensorSpectrogramMagnitudeAlfa: Tensor
 	sampleRateAlfa: int
 	tensorSpectrogramMagnitudeBeta: Tensor
 	sampleRateBeta: int
-
 class ContestTensor(NamedTuple):
-	paths: ContestFilename
+	paths: ContestPathFilenames
 	tensorAlfa: Tensor
 	sampleRateAlfa: int
 	tensorBeta: Tensor
 	sampleRateBeta: int
 
 class ContestWaveform(NamedTuple):
-	paths: ContestFilename
+	paths: ContestPathFilenames
 	waveformAlfa: Waveform
 	sampleRateAlfa: int
 	waveformBeta: Waveform

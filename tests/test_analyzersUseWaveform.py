@@ -8,37 +8,37 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
-	from tests import AspectWaveform
+	from tests import WaveformAndData
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeRMSWaveformMean'], indirect=True)
-def test_analyzeRMSWaveformMean(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeRMSWaveformMean(aspectWaveform.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeRMSWaveformMean', aspectWaveform.pathFilename)
+def test_analyzeRMSWaveformMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeRMSWaveformMean(waveformAndData.waveform)
+	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeRMSWaveformMean', waveformAndData.pathFilename)
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeRMSWaveform_dBMean'], indirect=True)
-def test_analyzeRMSWaveform_dBMean(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeRMSWaveform_dBMean(aspectWaveform.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeRMSWaveform_dBMean', aspectWaveform.pathFilename)
+def test_analyzeRMSWaveform_dBMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeRMSWaveform_dBMean(waveformAndData.waveform)
+	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeRMSWaveform_dBMean', waveformAndData.pathFilename)
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeTempogramMean'], indirect=True)
-def test_analyzeTempogramMean(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+def test_analyzeTempogramMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
 	approx_rel = 1e-4
-	if aspectWaveform.pathFilename.name == 'ch2_44100_29s_LUFS23_10000Hz.wav':
+	if waveformAndData.pathFilename.name == 'ch2_44100_29s_LUFS23_10000Hz.wav':
 		approx_rel = 1e-3
-	actual = analyzeTempogramMean(aspectWaveform.waveform, aspectWaveform.sampleRate)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempogramMean', aspectWaveform.pathFilename)
+	actual = analyzeTempogramMean(waveformAndData.waveform, waveformAndData.sampleRate)
+	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempogramMean', waveformAndData.pathFilename)
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeTempoMean'], indirect=True)
-def test_analyzeTempoMean(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeTempoMean(aspectWaveform.waveform, aspectWaveform.sampleRate)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempoMean', aspectWaveform.pathFilename)
+def test_analyzeTempoMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeTempoMean(waveformAndData.waveform, waveformAndData.sampleRate)
+	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempoMean', waveformAndData.pathFilename)
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeZeroCrossingRateMean'], indirect=True)
-def test_analyzeZeroCrossingRateMean(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeZeroCrossingRateMean(aspectWaveform.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingRateMean', aspectWaveform.pathFilename)
+def test_analyzeZeroCrossingRateMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeZeroCrossingRateMean(waveformAndData.waveform)
+	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingRateMean', waveformAndData.pathFilename)
 
 @pytest.mark.parametrize('expectedAspect', ['analyzeZeroCrossingsTotal'], indirect=True)
-def test_analyzeZeroCrossingsTotal(aspectWaveform: AspectWaveform, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeZeroCrossingsTotal(aspectWaveform.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingsTotal', aspectWaveform.pathFilename)
+def test_analyzeZeroCrossingsTotal(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
+	actual = analyzeZeroCrossingsTotal(waveformAndData.waveform)
+	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingsTotal', waveformAndData.pathFilename)

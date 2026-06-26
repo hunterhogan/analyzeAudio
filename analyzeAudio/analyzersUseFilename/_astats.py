@@ -3,12 +3,13 @@ from __future__ import annotations
 
 from analyzeAudio.analyzersUseFilename._wideRange import ffprobeAllInclusiveCache
 from analyzeAudio.registry import registrationAudioAspect
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import numpy
 
 if TYPE_CHECKING:
 	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from os import PathLike
+	from typing import Any
 
 arrayChannelDataEmpty: ArrayChannelData = numpy.array([], dtype=numpy.float64).reshape(0, 0)
 arrayOverallDataEmpty: ArrayOverallData = numpy.array([], dtype=numpy.float64).reshape(0)

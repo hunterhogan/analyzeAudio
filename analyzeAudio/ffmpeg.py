@@ -1,3 +1,4 @@
+# ruff: noqa: D103
 """Install FFmpeg."""
 from __future__ import annotations
 

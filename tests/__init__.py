@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 # isort: split
-from tests._theTypes import (
-	AspectSpectrogram as AspectSpectrogram, AspectSpectrogramMagnitude as AspectSpectrogramMagnitude,
-	AspectSpectrogramPower as AspectSpectrogramPower, AspectTensor as AspectTensor, AspectWaveform as AspectWaveform,
-	ContestFilename as ContestFilename, ContestSpectrogram as ContestSpectrogram, ContestSpectrogramMagnitude as ContestSpectrogramMagnitude,
-	ContestTensor as ContestTensor, ContestTensorSpectrogram as ContestTensorSpectrogram,
-	ContestTensorSpectrogramMagnitude as ContestTensorSpectrogramMagnitude, ContestWaveform as ContestWaveform)
+from tests._dataBaskets import (
+	ContestPathFilenames as ContestPathFilenames, ContestSpectrogram as ContestSpectrogram,
+	ContestSpectrogramMagnitude as ContestSpectrogramMagnitude, ContestSpectrograms as ContestSpectrograms,
+	ContestSpectrogramsMagnitude as ContestSpectrogramsMagnitude, ContestTensor as ContestTensor, ContestTensors as ContestTensors,
+	ContestTensorSpectrogram as ContestTensorSpectrogram, ContestTensorSpectrogramMagnitude as ContestTensorSpectrogramMagnitude,
+	ContestTensorSpectrograms as ContestTensorSpectrograms, ContestTensorSpectrogramsMagnitude as ContestTensorSpectrogramsMagnitude,
+	ContestWaveform as ContestWaveform, ContestWaveforms as ContestWaveforms, SpectrogramAndData as SpectrogramAndData,
+	SpectrogramMagnitudeAndData as SpectrogramMagnitudeAndData, SpectrogramPowerAndData as SpectrogramPowerAndData,
+	TensorAndData as TensorAndData, WaveformAndData as WaveformAndData)
 
 # isort: split
 from tests._theSSOT import (

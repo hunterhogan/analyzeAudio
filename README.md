@@ -406,6 +406,18 @@ that transformations are consistent and their APIs are uniform.
 - [ ] Overhaul the semiotic system.
 - [ ] Install FFmpeg in GitHub Actions for testing.
 - [ ] Assist with installing FFmpeg in arbitrary environments.
+- [ ] De-duplicate the test infrastructure in this package and `hunterHearsPy`. A Pytest plugin? A new package? Add to `hunterHearsPy`? Add to `hunterMakesPy`?
+
+### The near-term plan
+
+- [ ] Replace `ContestWaveform` with `ContestWaveforms`, etc.
+  - [ ] Change fixtures: they must NOT duplicate the logic of the existing fixtures such as `waveformAndData`.
+  - [ ] Change tests to new namespace.
+- [ ] Replace calls to conftest Assert functions with the abstracted conftestAnnex.assert_approx function.
+- [ ] Replace dataSamples with files from dataAudioTests dataset.
+- [ ] Recompute expected values for anything downstream of stft due to change from librosa to hunterHearsPy.
+- [ ] Lexemes: "contest" -> "compare"
+- [ ] For the dataSamples, add the appropriate license information.
 
 ## Reference materials
 

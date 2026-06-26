@@ -6,12 +6,14 @@ from analyzeAudio._theSSOT import settingsPackage  # pyright: ignore[reportUnuse
 
 # isort: split
 from analyzeAudio._theTypes import (
-	analyzersAudioAspects as analyzersAudioAspects, ArrayAspect as ArrayAspect,
+	AnalyzerAudioAspects as AnalyzerAudioAspects, ArrayAspect as ArrayAspect,
 	ArrayAspectSpectrogramFramewise as ArrayAspectSpectrogramFramewise, ArrayAspectWaveformFramewise as ArrayAspectWaveformFramewise,
 	ArrayChannelData as ArrayChannelData, ArrayOverallData as ArrayOverallData, Audio as Audio,
-	AuralossChromaSTFTLoss as AuralossChromaSTFTLoss, BleedFull as BleedFull, BleedFullArray as BleedFullArray,
-	ParametersMelSpectrogram as ParametersMelSpectrogram, parameterSpecifications as parameterSpecifications,
-	SpectrogramMagnitude as SpectrogramMagnitude, SpectrogramPower as SpectrogramPower, typeReturned as typeReturned)
+	AuralossChromaSTFTLoss as AuralossChromaSTFTLoss, ParametersMelSpectrogram as ParametersMelSpectrogram,
+	SpectrogramMagnitude as SpectrogramMagnitude, SpectrogramPower as SpectrogramPower, 个 as 个, 归个 as 归个, 形 as 形)
+
+# isort: split
+from analyzeAudio._dataBaskets import BleedFull as BleedFull, BleedFullArray as BleedFullArray
 
 # isort: split
 from analyzeAudio._beDRY import KValue as KValue

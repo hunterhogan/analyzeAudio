@@ -2,16 +2,16 @@
 from __future__ import annotations
 
 from analyzeAudio.registry import registrationAudioAspect
-from numpy import dtype, ndarray
-from typing import Any, TYPE_CHECKING
+from numpy import log10
+from typing import TYPE_CHECKING
 import librosa
-import numpy
 import sys
 import warnings
 
 if TYPE_CHECKING:
 	from analyzeAudio import ArrayAspect, ArrayAspectSpectrogramFramewise, SpectrogramMagnitude, SpectrogramPower
-	from numpy import float32
+	from numpy import dtype, float32, ndarray
+	from typing import Any
 
 def analyzeChromagram(spectrogramPower: SpectrogramPower, sampleRate: int, **keywordArguments: Any) -> ndarray[tuple[int, int, int], dtype[float32]]:
 	"""Compute octave-equivalent pitch-class energy over time.
@@ -145,7 +145,7 @@ def analyzeRMSSpectrogram_dB(spectrogramMagnitude: SpectrogramMagnitude, **keywo
 
 	"""
 	rootMeanSquare: ArrayAspectSpectrogramFramewise = analyzeRMSSpectrogram(spectrogramMagnitude, **keywordArguments)
-	return 20 * numpy.log10(rootMeanSquare, where=(rootMeanSquare != 0), out=None)
+	return 20 * log10(rootMeanSquare, where=(rootMeanSquare != 0), out=None)
 
 @registrationAudioAspect('RMS Spectrogram dB mean')
 def analyzeRMSSpectrogram_dBMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:
@@ -441,7 +441,7 @@ def analyzeSpectralFlatness_dB(spectrogramMagnitude: SpectrogramMagnitude, **key
 		on Acoustics, Speech, and Signal Processing, 22(3), 207–217.
 	"""
 	spectralFlatness: ArrayAspectSpectrogramFramewise = analyzeSpectralFlatness(spectrogramMagnitude, **keywordArguments)
-	return 20 * numpy.log10(spectralFlatness, where=(spectralFlatness != 0), out=None)
+	return 20 * log10(spectralFlatness, where=(spectralFlatness != 0), out=None)
 
 @registrationAudioAspect('Spectral Flatness dB mean')
 def analyzeSpectralFlatness_dBMean(spectrogramMagnitude: SpectrogramMagnitude, **keywordArguments: Any) -> float:

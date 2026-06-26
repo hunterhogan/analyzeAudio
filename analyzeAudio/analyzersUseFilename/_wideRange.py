@@ -4,13 +4,14 @@ from __future__ import annotations
 from analyzeAudio.analyzersUseFilename._pythonator import pythonizeFFprobe
 from functools import cache
 from operator import getitem
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import pathlib
 import subprocess  # noqa: S404
 
 if TYPE_CHECKING:
 	from analyzeAudio import ArrayChannelData, ArrayOverallData
 	from os import PathLike
+	from typing import Any
 
 # https://ffmpeg.org/ffmpeg-filters.html#drmeter
 # Potential aspect, but it doesn't work.

@@ -22,24 +22,25 @@ from __future__ import annotations
 
 from analyzeAudio.registry import audioAspects
 from concurrent.futures import as_completed, ProcessPoolExecutor
+from hunterHearsPy import stft
 from hunterMakesPy.parseParameters import defineConcurrencyLimit
-from pathlib import Path, PurePath
+from pathlib import PurePath
+from tqdm.auto import tqdm
 from typing import TYPE_CHECKING
-import librosa
 import numpy
 import soundfile
 import torch
 
 if TYPE_CHECKING:
 	from analyzeAudio import Audio, SpectrogramMagnitude, SpectrogramPower
-	from collections.abc import Sequence
+	from collections.abc import Callable, Sequence
 	from concurrent.futures import Future
-	from hunterHearsPy import Spectrogram
+	from hunterHearsPy.theTypes import Spectrogram
 	from os import PathLike
 	from torch import Tensor
 	from typing import Any
 
-def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequence[str]) -> list[str | float]:
+def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequence[str]) -> tuple[str | float, ...]:
 	"""
 	Compute requested aspect values for one audio file.
 
@@ -67,18 +68,14 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequenc
 	[1] `analyzeAudio.audioAspectsRegistry.audioAspects`
 
 	"""  # noqa: DOC501
-	# raises FileNotFoundError if the file does not exist
-	Path(pathFilename).stat()
-	# TODO rethink that ^^^. I _think_ I created this as a form of "fail fast" before I knew the term
-	# "fail fast", but this doesn't fail fast with concurrency.
 	dictionaryAspectsAnalyzed: dict[str, str | float] = dict.fromkeys(listAspectNames, 'not found')
 	"""Despite returning a list, use a dictionary to preserve the order of the listAspectNames.
 	Similarly, 'not found' ensures the returned list length == len(listAspectNames)"""
 
-	# NOTE I don't use `hunterHearsPy.readAudioFile` here because it currently forces all mono into
-	# two channels, which it probably should not do. So check to see if I have changed it.
+	# TODO I don't use `hunterHearsPy.readAudioFile` here because the sample rate is set by the
+	# function instead of being read from the file.
 	with soundfile.SoundFile(pathFilename) as readSoundFile:
-		sampleRate: int = readSoundFile.samplerate  # pyright: ignore[reportUnusedVariable]  # noqa: F841
+		sampleRate: int = readSoundFile.samplerate  # pyright: ignore[reportUnusedVariable]
 		waveform: Audio = readSoundFile.read(dtype='float32', always_2d=True).astype(numpy.float32)
 		waveform = waveform.T
 
@@ -95,21 +92,20 @@ def analyzeAudioFile(pathFilename: str | PathLike[Any], listAspectNames: Sequenc
 			else:
 				raise RuntimeError from ERRORmessage
 
-	spectrogram: Spectrogram = librosa.stft(waveform)
+	spectrogram: Spectrogram = stft(waveform, sampleRate=sampleRate)
 	spectrogramMagnitude: SpectrogramMagnitude = numpy.absolute(spectrogram)
 	spectrogramPower: SpectrogramPower = spectrogramMagnitude ** 2  # pyright: ignore[reportUnusedVariable] # noqa: F841
 
 	pytorchOnCPU: bool = not torch.cuda.is_available()  # pyright: ignore[reportUnusedVariable] # False if GPU available, True if not  # noqa: F841
 
-	for aspectName in listAspectNames:
-		if aspectName in audioAspects:
-			analyzer = audioAspects[aspectName]['analyzer']
-			analyzerParameters: list[str] = audioAspects[aspectName]['analyzerParameters']
-			dictionaryAspectsAnalyzed[aspectName] = analyzer(*map(vars().get, analyzerParameters))
+	for aspectName in filter(audioAspects.__contains__, listAspectNames):
+		analyzer: Callable[..., Any] = audioAspects[aspectName]['analyzer']
+		analyzerParameters: list[str] = audioAspects[aspectName]['analyzerParameters']
+		dictionaryAspectsAnalyzed[aspectName] = analyzer(*map(vars().get, analyzerParameters))
 
-	return [dictionaryAspectsAnalyzed[aspectName] for aspectName in listAspectNames]
+	return tuple(map(dictionaryAspectsAnalyzed.__getitem__, listAspectNames))
 
-def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[PathLike[Any]], listAspectNames: Sequence[str], *, CPUlimit: bool | float | int | None = None) -> list[list[str | float]]:
+def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str | PathLike[Any]], listAspectNames: Sequence[str], *, CPUlimit: bool | float | int | None = None) -> list[list[str | float]]:
 	"""
 	Compute requested aspect values for many audio files.
 
@@ -171,19 +167,21 @@ def analyzeAudioListPathFilenames(listPathFilenames: Sequence[str] | Sequence[Pa
 	[2] `analyzeAudio.dataTabularTOpathFilenameDelimited`
 
 	"""
-	rowsListFilenameAspectValues: list[list[str | float]] = []
-
 	max_workers: int = defineConcurrencyLimit(limit=CPUlimit)
 
-	with ProcessPoolExecutor(max_workers=max_workers) as concurrencyManager:
-		dictionaryConcurrency: dict[Future[list[str | float]], str | PathLike[Any]] = {
+	with ProcessPoolExecutor(max_workers) as concurrencyManager:
+		dictionaryConcurrency: dict[Future[tuple[str | float, ...]], str | PathLike[Any]] = {
 			concurrencyManager.submit(analyzeAudioFile, pathFilename, listAspectNames): pathFilename
 				for pathFilename in listPathFilenames}
 
-		for claimTicket in as_completed(dictionaryConcurrency):
-			listAspectValues: list[str | float] = claimTicket.result()
-			rowsListFilenameAspectValues.append(
-				[str(PurePath(dictionaryConcurrency[claimTicket]).as_posix())]  # noqa: RUF005
-				+ listAspectValues)
+		disabled: bool = True
+		if (3 < len(listPathFilenames) and (5 < (max(len(listPathFilenames) / max_workers, 1) * len(listAspectNames)))):
+			disabled = False
+
+		rowsListFilenameAspectValues: list[list[str | float]] = [
+			[PurePath(dictionaryConcurrency[claimTicket]).as_posix(), *claimTicket.result()] for claimTicket
+				in tqdm(as_completed(dictionaryConcurrency), total=len(dictionaryConcurrency), unit='files', desc='Analyze audio file'
+					, leave=False, disable=disabled)
+		]
 
 	return rowsListFilenameAspectValues

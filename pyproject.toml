@@ -1,6 +1,6 @@
 [project]
 name = "analyzeAudio"
-version = "0.6.1"
+version = "0.7.0"
 description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -50,7 +50,7 @@ classifiers = [
 ]
 dependencies = [
   "auraloss",
-  "hunterHearsPy>=1.0.3",
+  "hunterHearsPy>=1.3.0",
   "hunterMakesPy>=0.7.0",
   "librosa",
   "numpy",
