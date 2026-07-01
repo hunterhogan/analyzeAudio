@@ -1,3 +1,4 @@
+# ruff: noqa: D103
 """Register audio analyzers by measurable aspect name.
 
 (AI generated docstring)
@@ -46,6 +47,8 @@ audioContests: dict[str, AnalyzerAudioAspects] = {}
 You can inspect `audioContests` to retrieve the analyzer function and the ordered list of
 parameter names for each registered audio aspect.
 """
+
+audioMetadata: dict[str, AnalyzerAudioAspects] = {}
 
 def registrationAudioAspect(aspectName: str) -> Callable[[Callable[形, 归个]], Callable[形, 归个]]:
 	"""Register one analyzer function under one audio aspect name.
@@ -174,6 +177,12 @@ def registrationAudioContest(aspectName: str) -> Callable[[Callable[形, 归个]
 		return registrant
 	return registrar
 
+def registrationStreamMetadata(aspectName: str) -> Callable[[Callable[形, 归个]], Callable[形, 归个]]:
+	def registrar(registrant: Callable[形, 归个]) -> Callable[形, 归个]:
+		audioMetadata[aspectName] = {'analyzer': registrant, 'analyzerParameters': inspect.getfullargspec(registrant).args}
+		return registrant
+	return registrar
+
 def getListAvailableAudioAspects() -> list[str]:
 	"""Return the registered audio aspect names in sorted order.
 
@@ -190,11 +199,11 @@ def getListAvailableAudioAspects() -> list[str]:
 	return sorted(audioAspects.keys())
 
 def getListAvailableAudioContests() -> list[str]:
-	"""Return the registered audio aspect names in sorted order.
+	"""Return the registered audio contest names in sorted order.
 
-	You can use this function to inspect which audio aspect names are currently available in the
+	You can use this function to inspect which audio contest names are currently available in the
 	shared registry. This function is useful when another function expects one or more registered
-	audio aspect names such as `listAspectNames`.
+	audio contest names such as `listAspectNames`.
 
 	Returns
 	-------
@@ -204,10 +213,17 @@ def getListAvailableAudioContests() -> list[str]:
 	"""
 	return sorted(audioContests.keys())
 
-# NOTE Importing the modules triggers the registration of analyzer functions.
-# isort: split
-from analyzeAudio import (  # pyright: ignore[reportUnusedImport] # noqa: E402
-	analyzersUseFilename, analyzersUseSpectrogram, analyzersUseTensor, analyzersUseWaveform)
+def getListAvailableAudioMetadata() -> list[str]:
+	"""Return the registered audio metadata names in sorted order.
 
-# isort: split
-from analyzeAudio import contestsSpectrogram, contestsTensor, contestsTensorSpectrogram  # pyright: ignore[reportUnusedImport] # noqa: E402
+	You can use this function to inspect which audio metadata names are currently available in the
+	shared registry. This function is useful when another function expects one or more registered
+	audio metadata names such as `listAspectNames`.
+
+	Returns
+	-------
+	listAvailableAudioMetadata : list[str]
+		The sorted list of registered audio metadata names.
+
+	"""
+	return sorted(audioMetadata.keys())

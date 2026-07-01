@@ -127,8 +127,8 @@ def contestWaveform(pathFilenamesContest: ContestPathFilenames) -> ContestWavefo
 	"""Return each contest waveform pair with its sample rates."""
 	# be DRY: one function loads files: `waveformAndData`.
 	sampleRate = 44100
-	waveformAlfa: Waveform = readAudioFile(pathFilenamesContest.alfa, sampleRateDesired=sampleRate)
-	waveformBeta: Waveform = readAudioFile(pathFilenamesContest.beta, sampleRateDesired=sampleRate)
+	waveformAlfa: Waveform = readAudioFile(pathFilenamesContest.alfa, sampleRate)
+	waveformBeta: Waveform = readAudioFile(pathFilenamesContest.beta, sampleRate)
 	return ContestWaveform(pathFilenamesContest, waveformAlfa, sampleRate, waveformBeta, sampleRate)
 
 @pytest.fixture(scope='session')

@@ -10,10 +10,10 @@
   - `analyzeAudioFile`: validates path existence, reads audio with `soundfile`, transposes waveform to channel-first, computes torch tensor/spectrogram/magnitude/power once, dispatches analyzers by matching parameter names against local bindings.
   - `analyzeAudioListPathFilenames`: uses `ProcessPoolExecutor`, `hunterMakesPy.parseParameters.defineConcurrencyLimit`, and clears per-file analyzer cache entries as futures finish.
 - Analyzer module roles:
-  - `analyzersUseFilename.py`: FFmpeg/FFprobe-backed filename analyzers; `ffprobeShotgunAndCache()` parses lavfi JSON through `pythonizeFFprobe()` and caches results.
-  - `analyzersUseWaveform.py`: librosa waveform features: tempogram, RMS, tempo, zero-crossing rate.
-  - `analyzersUseSpectrogram.py`: librosa spectrogram features: chromagram, spectral contrast/bandwidth/centroid/flatness.
-  - `analyzersUseTensor.py`: torchmetrics SRMR analyzer.
+  - `analyzeFilename.py`: FFmpeg/FFprobe-backed filename analyzers; `ffprobeShotgunAndCache()` parses lavfi JSON through `pythonizeFFprobe()` and caches results.
+  - `analyzeWaveform.py`: librosa waveform features: tempogram, RMS, tempo, zero-crossing rate.
+  - `analyzeSpectrogram.py`: librosa spectrogram features: chromagram, spectral contrast/bandwidth/centroid/flatness.
+  - `analyzeTensor.py`: torchmetrics SRMR analyzer.
   - `pythonator.py`: converts FFprobe JSON, especially lavfi frame tags, to Python/numpy structures.
   - `ffmpeg.py`: Colab-only FFmpeg upgrade helper.
 - `tests/` currently contains minimal pytest coverage; `tests/dataSamples/` contains audio/video fixtures used for manual or future tests.

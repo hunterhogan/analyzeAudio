@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from functools import partial
+from humpy_toolz import dissoc, keymap, merge, valmap
+from operator import add
 from typing import Any, NamedTuple
 import json
 import numpy
@@ -15,12 +18,16 @@ import numpy
 # NOTE You changed the code because a static type checker was mad at you. Ask yourself,
 # "Are you the tool or is the type checker the tool?"
 
+streamIndexHARDCODED: int = 0
+streamIndex: int = streamIndexHARDCODED
+
 class Blackdetect(NamedTuple):
 	black_start: float | None = None
 	black_end: float | None = None
 
-def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[defaultdict[str, Any] | dict[str, Any], dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]]]:
+def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[dict[str, Any], dict[str, str], dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]]]:
 	FFroot: dict[str, Any] = json.loads(FFprobeJSON_utf8)
+	streamMetadata: dict[str, str] = {}
 	Z0Z_dictionaries: dict[str, numpy.ndarray[Any, Any] | dict[str, numpy.ndarray[Any, Any]]] = {}
 	if 'packets_and_frames' in FFroot:  # Divide into 'packets' and 'frames'
 		FFroot = defaultdict(list, FFroot)
@@ -120,6 +127,13 @@ def pythonizeFFprobe(FFprobeJSON_utf8: str) -> tuple[defaultdict[str, Any] | dic
 			)
 			Z0Z_dictionaries['blackdetect'] = arrayBlackdetect
 			# Z0Z_dictionaries['blackdetect'] = numpy.array(listTuplesBlackdetect, dtype=[('black_start', numpy.float32), ('black_end', numpy.float32)], copy=False) # uncommentToFixBlackdetect
-	if not leftCrumbs:
+	if 'frames' in FFroot and not leftCrumbs:
 		del FFroot['frames']
-	return FFroot, Z0Z_dictionaries
+	if 'streams' in FFroot:
+		FFstream: dict[str, Any] = FFroot['streams'][streamIndex]
+		streamMetadata = merge(
+			valmap(str, dissoc(FFstream, 'disposition', 'tags'))
+			, keymap(partial(add, 'disposition.'), valmap(str, FFstream.get('disposition', {})))
+			, keymap(partial(add, 'tags.'), valmap(str, FFstream.get('tags', {})))
+		)
+	return FFroot, streamMetadata, Z0Z_dictionaries

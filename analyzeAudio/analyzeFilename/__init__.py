@@ -1,7 +1,7 @@
 # ruff: noqa: D104
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseFilename._aspectralstats import (
+from analyzeAudio.analyzeFilename._aspectralstats import (
 	analyzeSpectral_centroid as analyzeSpectral_centroid, analyzeSpectral_centroid_mean as analyzeSpectral_centroid_mean,
 	analyzeSpectral_crest as analyzeSpectral_crest, analyzeSpectral_crest_mean as analyzeSpectral_crest_mean,
 	analyzeSpectral_decrease as analyzeSpectral_decrease, analyzeSpectral_decrease_mean as analyzeSpectral_decrease_mean,
@@ -15,7 +15,7 @@ from analyzeAudio.analyzersUseFilename._aspectralstats import (
 	analyzeSpectral_slope as analyzeSpectral_slope, analyzeSpectral_slope_mean as analyzeSpectral_slope_mean,
 	analyzeSpectral_spread as analyzeSpectral_spread, analyzeSpectral_spread_mean as analyzeSpectral_spread_mean,
 	analyzeSpectral_variance as analyzeSpectral_variance, analyzeSpectral_variance_mean as analyzeSpectral_variance_mean)
-from analyzeAudio.analyzersUseFilename._astats import (
+from analyzeAudio.analyzeFilename._astats import (
 	analyzeAbs_Peak_count as analyzeAbs_Peak_count, analyzeAbs_Peak_countTotal as analyzeAbs_Peak_countTotal,
 	analyzeBit_depth as analyzeBit_depth, analyzeBit_depthMean as analyzeBit_depthMean, analyzeCrest_factor as analyzeCrest_factor,
 	analyzeCrest_factorMean as analyzeCrest_factorMean, analyzeDC_offset as analyzeDC_offset, analyzeDC_offsetMean as analyzeDC_offsetMean,
@@ -36,7 +36,7 @@ from analyzeAudio.analyzersUseFilename._astats import (
 	analyzeRMS_trough as analyzeRMS_trough, analyzeRMS_troughOverall as analyzeRMS_troughOverall,
 	analyzeZero_crossings as analyzeZero_crossings, analyzeZero_crossings_rate as analyzeZero_crossings_rate,
 	analyzeZero_crossings_rateOverall as analyzeZero_crossings_rateOverall, analyzeZero_crossingsTotal as analyzeZero_crossingsTotal)
-from analyzeAudio.analyzersUseFilename._ebur128 import (
+from analyzeAudio.analyzeFilename._ebur128 import (
 	analyzeLRA as analyzeLRA, analyzeLRAOverall as analyzeLRAOverall, analyzeLUFShigh as analyzeLUFShigh,
 	analyzeLUFShighOverall as analyzeLUFShighOverall, analyzeLUFSIntegrated as analyzeLUFSIntegrated,
 	analyzeLUFSIntegratedOverall as analyzeLUFSIntegratedOverall, analyzeLUFSlow as analyzeLUFSlow,
@@ -44,3 +44,22 @@ from analyzeAudio.analyzersUseFilename._ebur128 import (
 	analyzeLUFSMomentaryOverall as analyzeLUFSMomentaryOverall, analyzeLUFSShortTerm as analyzeLUFSShortTerm,
 	analyzeLUFSShortTermOverall as analyzeLUFSShortTermOverall, analyzeTruePeak as analyzeTruePeak,
 	analyzeTruePeakOverall as analyzeTruePeakOverall)
+from analyzeAudio.analyzeFilename._streams import (
+	get_avg_frame_rate as get_avg_frame_rate, get_bit_rate as get_bit_rate, get_bits_per_raw_sample as get_bits_per_raw_sample,
+	get_bits_per_sample as get_bits_per_sample, get_channel_layout as get_channel_layout, get_channels as get_channels,
+	get_codec_long_name as get_codec_long_name, get_codec_name as get_codec_name, get_codec_tag as get_codec_tag,
+	get_codec_tag_string as get_codec_tag_string, get_codec_type as get_codec_type,
+	get_disposition_attached_pic as get_disposition_attached_pic, get_disposition_captions as get_disposition_captions,
+	get_disposition_clean_effects as get_disposition_clean_effects, get_disposition_comment as get_disposition_comment,
+	get_disposition_default as get_disposition_default, get_disposition_dependent as get_disposition_dependent,
+	get_disposition_descriptions as get_disposition_descriptions, get_disposition_dub as get_disposition_dub,
+	get_disposition_forced as get_disposition_forced, get_disposition_hearing_impaired as get_disposition_hearing_impaired,
+	get_disposition_karaoke as get_disposition_karaoke, get_disposition_lyrics as get_disposition_lyrics,
+	get_disposition_metadata as get_disposition_metadata, get_disposition_multilayer as get_disposition_multilayer,
+	get_disposition_non_diegetic as get_disposition_non_diegetic, get_disposition_original as get_disposition_original,
+	get_disposition_still_image as get_disposition_still_image, get_disposition_timed_thumbnails as get_disposition_timed_thumbnails,
+	get_disposition_visual_impaired as get_disposition_visual_impaired, get_duration as get_duration, get_duration_ts as get_duration_ts,
+	get_id as get_id, get_initial_padding as get_initial_padding, get_max_bit_rate as get_max_bit_rate, get_nb_frames as get_nb_frames,
+	get_nb_read_frames as get_nb_read_frames, get_nb_read_packets as get_nb_read_packets, get_profile as get_profile,
+	get_r_frame_rate as get_r_frame_rate, get_sample_fmt as get_sample_fmt, get_sample_rate as get_sample_rate, get_start_pts as get_start_pts,
+	get_start_time as get_start_time, get_time_base as get_time_base)

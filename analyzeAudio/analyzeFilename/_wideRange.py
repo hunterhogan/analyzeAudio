@@ -1,15 +1,15 @@
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseFilename._pythonator import pythonizeFFprobe
+from analyzeAudio.analyzeFilename._pythonator import pythonizeFFprobe
 from functools import cache
-from operator import getitem
 from typing import TYPE_CHECKING
 import pathlib
 import subprocess  # noqa: S404
 
 if TYPE_CHECKING:
 	from analyzeAudio import ArrayChannelData, ArrayOverallData
+	from numpy import ndarray
 	from os import PathLike
 	from typing import Any
 
@@ -42,7 +42,7 @@ def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, Arr
 	# `str(pathlib.Path(pathFilenameBeta))`.
 	pFn = pathlib.PureWindowsPath(pathFilename)
 	# for lavfi amovie/movie, the colons after driveLetter letters need to be escaped twice.
-	lavfiPathFilename = pFn.drive.replace(":", "\\\\:") + pathlib.PureWindowsPath(pFn.root, pFn.relative_to(pFn.anchor)).as_posix()
+	lavfiPathFilename: str = pFn.drive.replace(":", "\\\\:") + pathlib.PureWindowsPath(pFn.root, pFn.relative_to(pFn.anchor)).as_posix()
 
 	filterChain: list[str] = []
 	filterChain += ["aspectralstats"]
@@ -67,7 +67,9 @@ def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, Arr
 
 	systemProcessFFprobe = subprocess.Popen(commandLineFFprobe, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	stdoutFFprobe, _DISCARDstderr = systemProcessFFprobe.communicate()
-	FFprobeStructured = getitem(pythonizeFFprobe(stdoutFFprobe.decode('utf-8')), -1)
+	wtf: tuple[dict[str, Any], dict[str, str], dict[str, ndarray[Any, Any] | dict[str, ndarray[Any, Any]]]] = pythonizeFFprobe(stdoutFFprobe.decode('utf-8'))
+	FFprobeStructured = wtf[-1]
+	# FFprobeStructured = getitem(pythonizeFFprobe(stdoutFFprobe.decode('utf-8')), -1)  # noqa: ERA001
 
 	dictionaryAspects: dict[str, ArrayChannelData | ArrayOverallData] = {}
 	if 'aspectralstats' in FFprobeStructured:
@@ -90,3 +92,31 @@ def ffprobeAllInclusiveCache(pathFilename: str | PathLike[Any]) -> dict[str, Arr
 		# first pass.
 
 	return dictionaryAspects
+
+@cache
+def ffprobeAudioMetadata(pathFilename: str | PathLike[Any]) -> dict[str, str]:
+	FFprobePathFilename: str = pathlib.Path(pathFilename).as_posix()
+
+	entriesFFprobe: list[str] = ['stream']
+
+	commandLineFFprobe: list[str] = [
+		"ffprobe"
+		, "-hide_banner"
+		, "-show_entries"
+		, ':'.join(entriesFFprobe)
+		, "-show_optional_fields"
+		, "always"
+		, "-output_format"
+		, "json=compact=1"
+		, FFprobePathFilename
+	]
+
+	systemProcessFFprobe = subprocess.Popen(commandLineFFprobe, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdoutFFprobe, _DISCARDstderr = systemProcessFFprobe.communicate()
+	stupid: tuple[dict[str, Any], dict[str, str], dict[str, ndarray[Any, Any] | dict[str, ndarray[Any, Any]]]] = pythonizeFFprobe(stdoutFFprobe.decode('utf-8'))
+	streamMetadata: dict[str, str] = stupid[-2]
+
+	# streamMetadata: dict[str, dict[int, dict[str, Any]]] = {}  # noqa: ERA001
+	# str | int | Fraction | float | bool
+
+	return streamMetadata

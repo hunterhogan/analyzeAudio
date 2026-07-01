@@ -3,6 +3,7 @@ amovie
 asisdr
 aspectralstats
 astats
+atleast
 axcorrelate
 Blackdetect
 bleedless

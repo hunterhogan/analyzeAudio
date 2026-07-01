@@ -199,7 +199,7 @@ Summary names usually return one number. Direct analyzer functions without
 summary words usually return the per-frame, per-channel, or per-band values.
 
 ```python
-from analyzeAudio.analyzersUseFilename import (
+from analyzeAudio.analyzeFilename import (
     analyzeLUFSIntegratedOverall,
     analyzeLUFSMomentary,
 )
@@ -215,7 +215,7 @@ Waveform analyzers accept waveform samples shaped as channels by samples.
 ```python
 import numpy
 import soundfile
-from analyzeAudio.analyzersUseWaveform import (
+from analyzeAudio.analyzeWaveform import (
     analyzeRMSWaveformMean,
     analyzeTempoMean,
     analyzeZeroCrossingRateMean,
@@ -235,7 +235,7 @@ Spectrogram analyzers accept magnitude or power spectrograms.
 ```python
 import librosa
 import numpy
-from analyzeAudio.analyzersUseSpectrogram import (
+from analyzeAudio.analyzeSpectrogram import (
     analyzeChromagramMean,
     analyzeSpectralCentroidMean,
 )
@@ -262,7 +262,7 @@ Filename contests compare two audio files:
 | `analyzeKSI_SDRmean` | Bounded score from SI-SDR.                       |
 
 ```python
-from analyzeAudio.analyzersUseFilename import (
+from analyzeAudio.analyzeFilename import (
     analyzePSNRmean,
     analyzeSDRmean,
     analyzeSI_SDRmean,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -8,7 +9,7 @@ if TYPE_CHECKING:
 	from pathlib import PurePath
 	from typing import Any
 
-def dataTabularTOpathFilenameDelimited(pathFilename: PathLike[Any] | PurePath, tableRows: Iterable[Iterable[Any]], tableColumns: Iterable[Any], delimiterOutput: str = '\t') -> None:
+def dataTabularTOpathFilenameDelimited(pathFilename: PathLike[Any] | PurePath, tableRows: Iterable[Iterable[Any]], tableColumns: Iterable[Any], delimiterOutput: str = '\t') -> PathLike[Any] | PurePath:
 	r"""Write tabular rows to a delimited text file.
 
 	You can use this function to write `tableRows` and `tableColumns` to
@@ -25,6 +26,11 @@ def dataTabularTOpathFilenameDelimited(pathFilename: PathLike[Any] | PurePath, t
 		Column label sequence for the optional header row.
 	delimiterOutput : str = '\t'
 		Text delimiter inserted between adjacent cells.
+
+	Returns
+	-------
+	pathFilename : PathLike[Any] | PurePath
+		Path of the output text file.
 
 	Examples
 	--------
@@ -51,10 +57,11 @@ def dataTabularTOpathFilenameDelimited(pathFilename: PathLike[Any] | PurePath, t
 	[1] `analyzeAudio.analyzeAudioListPathFilenames`
 
 	"""
-	with open(pathFilename, 'w', newline='', encoding='utf-8') as writeStream:  # noqa: PTH123
+	with Path(pathFilename).open('w', newline='', encoding='utf-8') as writeStream:
 		# Write headers if they exist
 		if tableColumns:
 			writeStream.write(delimiterOutput.join(map(str, tableColumns)) + '\n')
 
-		# Write rows
 		writeStream.writelines(delimiterOutput.join(map(str, row)) + '\n' for row in tableRows)
+
+	return pathFilename

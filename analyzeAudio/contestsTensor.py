@@ -2,7 +2,7 @@
 # ruff: noqa: D100 DOC201
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseSpectrogram import analyzeChromagram
+from analyzeAudio.analyzeSpectrogram import analyzeChromagram
 from analyzeAudio.registry import registrationAudioContest
 from torch import tensor
 from torchaudio.functional import resample  # pyright: ignore[reportMissingTypeStubs]
@@ -577,7 +577,7 @@ def analyzeSourceAggregatedSignalDistortionRatioMean(tensorAudioAlfa: Tensor, te
 	"""Contest 'SA-SDR mean': mean source-aggregated signal-to-distortion ratio."""
 	return _takeMean(analyzeSourceAggregatedSignalDistortionRatio(tensorAudioAlfa, tensorAudioBeta, **keywordArguments))
 
-# TODO wtf is this?
+# TODO What other "metricFunction" work with this?
 def analyzePermutationInvariantTraining(
 	tensorAudioAlfa: Tensor, tensorAudioBeta: Tensor, metricFunction: Callable[..., Tensor], **keywordArguments: Any
 ) -> tuple[Tensor, Tensor]:

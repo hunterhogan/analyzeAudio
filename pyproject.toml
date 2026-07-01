@@ -1,6 +1,6 @@
 [project]
 name = "analyzeAudio"
-version = "0.7.0"
+version = "0.8.0"
 description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -49,6 +49,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
+  "Z0Z_tools>=2.2.1",
   "auraloss",
   "hunterHearsPy>=1.3.0",
   "hunterMakesPy>=0.7.0",
@@ -62,7 +63,8 @@ dependencies = [
   "tqdm"
 ]
 optional-dependencies = { development = ["pytest-cov", "scipy-stubs"], testing = [
-  "pytest", "pytest-xdist"
+  "pytest",
+  "pytest-xdist"
 ] }
 
 [project.urls]
@@ -76,7 +78,8 @@ Repository = "https://github.com/hunterhogan/analyzeAudio.git"
 [project.scripts]
 whatAspects = "analyzeAudio:getListAvailableAudioAspects"
 whatContests = "analyzeAudio:getListAvailableAudioContests"
-whatMeasurements = "analyzeAudio:getListAvailableAudioAspects"
+whatMeasurements = "analyzeAudio:getListAvailableAudioAspects"  # backwards compatibility for all zero of my users.
+whatMetadata = "analyzeAudio:getListAvailableAudioMetadata"
 
 [build-system]
 requires = ["setuptools"]
@@ -89,7 +92,7 @@ run = { branch = true, data_file = "tests/coverage/.coverage", omit = [
 ], parallel = true, source = ["."] }
 
 [tool.pytest]
-addopts = ["--color=yes", "-n 1", "--tb=line"]
+addopts = ["--color=yes", "--tb=line", "-n 1"]
 log_auto_indent = "On"
 testpaths = ["tests"]
 

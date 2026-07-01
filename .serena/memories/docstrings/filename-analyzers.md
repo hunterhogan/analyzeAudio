@@ -1,4 +1,4 @@
-- In `analyzeAudio/analyzersUseFilename.py`, keep user-facing prose focused on the measured aspect and returned value.
+- In `analyzeAudio/analyzeFilename.py`, keep user-facing prose focused on the measured aspect and returned value.
 - Avoid implementation phrasing like "other wrappers read one key" or private cache/internal call descriptions in non-technical sections.
 - Remove non-essential `See Also` blocks when they only describe internal package structure instead of user choice points.
 - Keep private function docstrings first-person (`I use this ...`) but still avoid "helper" wording.

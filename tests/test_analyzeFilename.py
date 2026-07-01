@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseFilename import (
+from analyzeAudio.analyzeFilename import (
 	analyzeAbs_Peak_countTotal, analyzeBit_depthMean, analyzeCrest_factorMean, analyzeDC_offsetMean, analyzeDynamic_rangeOverall,
 	analyzeEntropyMean, analyzeFlat_factorMean, analyzeLRAOverall, analyzeLUFShighOverall, analyzeLUFSIntegratedOverall, analyzeLUFSlowOverall,
 	analyzeLUFSMomentaryOverall, analyzeLUFSShortTermOverall, analyzeMax_differenceOverall, analyzeMax_levelOverall,

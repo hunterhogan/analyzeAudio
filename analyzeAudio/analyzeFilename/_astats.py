@@ -1,7 +1,7 @@
 """Analyzers that use the filename of an audio file to analyze its audio data."""
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseFilename._wideRange import ffprobeAllInclusiveCache
+from analyzeAudio.analyzeFilename._wideRange import ffprobeAllInclusiveCache
 from analyzeAudio.registry import registrationAudioAspect
 from typing import TYPE_CHECKING
 import numpy

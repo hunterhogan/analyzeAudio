@@ -21,10 +21,20 @@ from analyzeAudio._beDRY import KValue as KValue
 # isort: split
 from analyzeAudio.registry import (
 	audioAspects as audioAspects, audioContests as audioContests, getListAvailableAudioAspects as getListAvailableAudioAspects,
-	getListAvailableAudioContests as getListAvailableAudioContests)
+	getListAvailableAudioContests as getListAvailableAudioContests, getListAvailableAudioMetadata as getListAvailableAudioMetadata)
+
+# NOTE Importing the modules triggers the registration of functions.
+# isort: split
+from analyzeAudio import analyzeFilename, analyzeSpectrogram, analyzeTensor, analyzeWaveform  # pyright: ignore[reportUnusedImport]
+
+# isort: split
+from analyzeAudio import contestsSpectrogram, contestsTensor, contestsTensorSpectrogram  # pyright: ignore[reportUnusedImport]
 
 # isort: split
 from analyzeAudio.analyze import analyzeAudioFile as analyzeAudioFile, analyzeAudioListPathFilenames as analyzeAudioListPathFilenames
+
+# isort: split
+from analyzeAudio.metadata import getMetadata as getMetadata, getMetadataPathFilenames as getMetadataPathFilenames
 
 # isort: split
 from analyzeAudio._misfit import dataTabularTOpathFilenameDelimited as dataTabularTOpathFilenameDelimited

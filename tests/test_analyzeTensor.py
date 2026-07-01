@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseTensor import analyzeDNSMOSMean, analyzeNISQAMean, analyzeSRMRMean
+from analyzeAudio.analyzeTensor import analyzeDNSMOSMean, analyzeNISQAMean, analyzeSRMRMean
 from tests.conftest import assert_approx
 from typing import TYPE_CHECKING
 import pytest

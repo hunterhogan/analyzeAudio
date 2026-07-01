@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseWaveform import (
+from analyzeAudio.analyzeWaveform import (
 	analyzeRMSWaveform_dBMean, analyzeRMSWaveformMean, analyzeTempogramMean, analyzeTempoMean, analyzeZeroCrossingRateMean,
 	analyzeZeroCrossingsTotal)
 from tests.conftest import assert_approx

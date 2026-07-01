@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from analyzeAudio.analyzersUseSpectrogram import (
+from analyzeAudio.analyzeSpectrogram import (
 	analyzeChromagramMean, analyzeSpectralBandwidthMean, analyzeSpectralCentroidMean, analyzeSpectralContrastMean,
 	analyzeSpectralFlatness_dBMean, analyzeSpectralFlatnessMean)
 from typing import TYPE_CHECKING
