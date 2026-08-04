@@ -2,4 +2,5 @@
 respect-type-ignore-comments = false
 
 [environment]
+extra-paths = ["./typings"]
 python-platform = "all"
