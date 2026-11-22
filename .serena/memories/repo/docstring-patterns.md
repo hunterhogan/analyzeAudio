@@ -1,9 +1,0 @@
-- Keep Summary + non-technical description focused on user WWWWWH (what/when/why/which input/which output).
-- Do not describe internal call structure in non-technical sections (for example: alignment subroutines, internal dispatch, reshape steps).
-- Do not use "wrapper" or "helper" in docstrings. Use precise terms such as function, loss function, score, or reduction.
-- Public docstrings must not reference private symbols or private-function names.
-- If implementation mechanics are important, place mechanics in a technical section with precise terminology and equations.
-- For paired functions such as `analyzeX` and `analyzeXMean`, describe each function as a first-class API: `analyzeXMean` computes a mean statistic; it is not described as a wrapper.
-- Example rewrite:
-  - Avoid: "aligns trailing frame length through `_analyzeLoss`"
-  - Prefer: "returns spectral convergence loss between two spectrogram magnitudes"
