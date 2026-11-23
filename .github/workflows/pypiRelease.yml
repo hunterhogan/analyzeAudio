@@ -1,3 +1,4 @@
+# path-sync copy -n shared
 # See https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
 
 name: Make PyPI Release
@@ -6,6 +7,7 @@ on:
   workflow_run:
     workflows: ["Python Tests"]
     types: [completed]
+    branches: [main]
   workflow_dispatch:
   release:
     types: [published, released]
