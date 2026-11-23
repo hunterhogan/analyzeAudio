@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from functools import partial
-from humpy_toolz import dissoc, keymap, merge, valmap
+from humpy_cytoolz.dicttoolz import dissoc, keymap, merge, valmap
 from operator import add
 from typing import Any, NamedTuple
 import json

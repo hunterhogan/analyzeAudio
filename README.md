@@ -16,6 +16,21 @@ verifyFFmpegColab()
 [![pip install analyzeAudio](https://img.shields.io/badge/pip_install-analyzeAudio-gray.svg?labelColor=blue)](https://pypi.org/project/analyzeAudio/)
 [![uv add analyzeAudio](https://img.shields.io/badge/uv_add-analyzeAudio-gray.svg?labelColor=blue)](https://pypi.org/project/analyzeAudio/)
 
+## Contributing
+
+From the checkout, activate a virtual environment with pip 25.1 or later. Use
+the `testing` dependency group for an editable install and the test suite.
+
+```console
+pip install -e . --group testing
+pytest
+```
+
+Use `pip install -e . --group dev` for the test suite, coverage plugin, and
+development stubs. These commands replace the former `testing` and
+`development` extras. The test suite uses the audio samples in the checkout
+and needs FFmpeg and FFprobe on `PATH`.
+
 ## What is in the package
 
 `analyzeAudio` provides two user-facing kinds of audio analysis.
