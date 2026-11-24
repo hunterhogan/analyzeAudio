@@ -35,7 +35,7 @@ def FFmpegGitHub() -> None:
 					, stderr=subprocess.DEVNULL
 					, text=True
 				)
-				versionMajor = int(getitem(processFFprobeVersion.stdout.strip().split('.', maxsplit=1), 0))
+				versionMajor = int(getitem(processFFprobeVersion.stdout.strip().removeprefix('n').split('.', maxsplit=1), 0))
 
 			if versionMajor < 7:
 				pathFilename_xz: Path = pathFFmpeg / 'ffmpeg-release.tar.xz'
