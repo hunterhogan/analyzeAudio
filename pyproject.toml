@@ -66,11 +66,11 @@ whatMeasurements = "analyzeAudio:getListAvailableAudioAspects"  # backwards comp
 whatMetadata = "analyzeAudio:getListAvailableAudioMetadata"
 
 [build-system]
-requires = ["setuptools>=77.0.3"]
+requires = ["setuptools>=77.0.1"]
 build-backend = "setuptools.build_meta"
 
 [dependency-groups]
-dev = [{ include-group = "testing" }, "pytest-cov", "scipy-stubs", "types-tqdm"]
+development = [{ include-group = "testing" }, "pytest-cov", "scipy-stubs", "types-tqdm"]
 testing = ["pytest", "pytest-xdist"]
 
 [tool.coverage]
@@ -337,7 +337,7 @@ skip-magic-trailing-comma = true
 
 [tool.setuptools]
 package-data = { "*" = ["py.typed"] }
-packages = { find = { include = ["analyzeAudio*"] } }
+packages = { find = { include = ["analyzeAudio", "analyzeAudio.*"], namespaces = false } }
 
 # === DO_NOT_EDIT: path-sync hunterhogan ===
 [tool.tombi.format.rules]
