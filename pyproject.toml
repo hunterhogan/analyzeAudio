@@ -1,7 +1,7 @@
 # path-sync copy -n hunterhogan
 [project]
 name = "analyzeAudio"
-version = "0.8.0"
+version = "0.8.1"
 description = "Measure one or more aspects of one or more audio files."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
@@ -49,7 +49,7 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Information Analysis",
   "Typing :: Typed",
 ]
-dependencies = ["Z0Z_tools>=2.2.1", "auraloss", "hunterHearsPy>=1.3.0", "hunterMakesPy>=0.7.0", "librosa", "numpy", "scipy", "torch", "torch_l1_snr", "torch_log_wmse", "torchmetrics[audio]", "tqdm"]
+dependencies = ["Z0Z_tools>=4.1.2", "auraloss", "hunterHearsPy>=1.4.1", "hunterMakesPy>=0.10.0", "librosa", "numpy", "scipy", "torch", "torch_l1_snr", "torch_log_wmse", "torchmetrics[audio]>=1.6.0", "tqdm"]
 
 [project.urls]
 Context7 = "https://context7.com/hunterhogan/analyzeaudio"
@@ -65,13 +65,13 @@ whatContests = "analyzeAudio:getListAvailableAudioContests"
 whatMeasurements = "analyzeAudio:getListAvailableAudioAspects"  # backwards compatibility for all zero of my users.
 whatMetadata = "analyzeAudio:getListAvailableAudioMetadata"
 
+[dependency-groups]
+development = ["pytest-cov", "scipy-stubs", "types-tqdm", { include-group = "testing" }]
+testing = ["pytest", "pytest-xdist"]
+
 [build-system]
 requires = ["setuptools>=77.0.1"]
 build-backend = "setuptools.build_meta"
-
-[dependency-groups]
-development = [{ include-group = "testing" }, "pytest-cov", "scipy-stubs", "types-tqdm"]
-testing = ["pytest", "pytest-xdist"]
 
 [tool.coverage]
 report = { exclude_lines = ["if TYPE_CHECKING:", "if __name__ == \"__main__\":"], ignore_errors = false }
@@ -101,15 +101,7 @@ use_parentheses = true
 preset = "strict"
 enabled-ignores = ["pyrefly"]
 infer-with-first-use = false
-project-excludes = [
-  "typings",
-  "typings/**/*",
-  "**/node_modules",
-  "**/__pycache__",
-  "**/.*",
-  ".venv",
-  ".vAnalysis",
-]
+project-excludes = ["typings", "typings/**/*", "**/node_modules", "**/__pycache__", "**/.*", ".venv", ".vAnalysis"]
 site-packages-path = ["./typings"]
 # === OK_EDIT: path-sync hunterhogan ===
 
@@ -158,45 +150,7 @@ line-length = 140
 # === DO_NOT_EDIT: path-sync hunterhogan ===
 [tool.ruff.lint]
 preview = true
-allowed-confusables = [
-  "–",
-  "’",
-  "′",
-  "×",
-  "−",
-  "∖",
-  "∗",
-  "∣",
-  "∨",
-  "∪",
-  "∼",
-  "⊗",
-  "ℂ",
-  "ℋ",
-  "ℒ",
-  "ℓ",
-  "ℕ",
-  "ℙ",
-  "ℚ",
-  "ℝ",
-  "ℤ",
-  "ℰ",
-  "ℱ",
-  "𝒪",
-  "𝒮",
-  "𝔼",
-  "𝕀",
-  "𝟙",
-  "α",
-  "Β",
-  "γ",
-  "ι",
-  "Κ",
-  "ν",
-  "ο",
-  "ρ",
-  "σ",
-]
+allowed-confusables = ["–", "’", "′", "×", "−", "∖", "∗", "∣", "∨", "∪", "∼", "⊗", "ℂ", "ℋ", "ℒ", "ℓ", "ℕ", "ℙ", "ℚ", "ℝ", "ℤ", "ℰ", "ℱ", "𝒪", "𝒮", "𝔼", "𝕀", "𝟙", "α", "Β", "γ", "ι", "Κ", "ν", "ο", "ρ", "σ"]
 ignore = [
   "any-type",
   "bad-quotes-inline-string",
@@ -308,18 +262,7 @@ inline-quotes = "single"
 # === DO_NOT_EDIT: path-sync hunterhogan ===
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["useless-import-alias"]
-"*test*.py" = [
-  "ARG",
-  "assert",
-  "BLE",
-  "D",
-  "docstring-missing-returns",
-  "DTZ",
-  "FBT",
-  "PT",
-  "suspicious-non-cryptographic-random-usage",
-  "TRY",
-]
+"*test*.py" = ["ARG", "assert", "BLE", "D", "docstring-missing-returns", "DTZ", "FBT", "PT", "suspicious-non-cryptographic-random-usage", "TRY"]
 # === OK_EDIT: path-sync hunterhogan ===
 
 # === DO_NOT_EDIT: path-sync hunterhogan ===

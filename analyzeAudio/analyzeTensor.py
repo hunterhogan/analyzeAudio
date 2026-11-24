@@ -1,5 +1,4 @@
 # pyright: reportArgumentType=false
-# ty:ignore[invalid-argument-type]
 # ruff: noqa: D100 D103
 from __future__ import annotations
 
@@ -17,9 +16,8 @@ if TYPE_CHECKING:
 	from typing import Any
 
 # TODO Requires a lot of memory, and concurrency is causing crashes.
-def analyzeDNSMOS(tensorAudio: Tensor, sampleRate: int, **keywordArguments: Any) -> Tensor:
-	defaults: dict[str, bool] = {'personalized': False}
-	return deep_noise_suppression_mean_opinion_score(tensorAudio, sampleRate, {**defaults, **keywordArguments})
+def analyzeDNSMOS(tensorAudio: Tensor, sampleRate: int, *, personalized: bool = False, **keywordArguments: Any) -> Tensor:
+	return deep_noise_suppression_mean_opinion_score(tensorAudio, sampleRate, personalized=personalized, **keywordArguments)
 
 # @registrationAudioAspect('DNSMOS mean')
 def analyzeDNSMOSMean(tensorAudio: Tensor, sampleRate: int) -> float:
