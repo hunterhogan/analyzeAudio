@@ -1,19 +1,24 @@
+"""Expected values are the accepted recordings in `tests.dataSamples.SpeakSoftly_BrokenMan60sec.expected.expectedSpectrogram`.
+
+The recordings floor each mel-scaled decibel spectrogram at `top_db` below the peak of the whole array, as
+`librosa.amplitude_to_db` did before librosa 1.0. From librosa 1.0, `librosa.amplitude_to_db` floors each
+channel at `top_db` below the peak of that channel.
+"""
 from __future__ import annotations
 
 from analyzeAudio.contestsSpectrogram import analyzeBleedlessMelDBMean, analyzeFullnessMelDBMean
-from tests.conftest import assert_contest
+from tests import assert_approx
+from tests.dataSamples.audioFiles import sampleRateSpeakSoftly
 from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
-	from tests import ContestSpectrogramMagnitude
+	from analyzeAudio import SpectrogramMagnitude
+	from hunterMakesPy import CallableFunction
+	from pathlib import Path
 
-@pytest.mark.parametrize('expectedContest', ['analyzeBleedlessMelDBMean'], indirect=True)
-def test_analyzeBleedlessMelDBMean(contestSpectrogramMagnitude: ContestSpectrogramMagnitude, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeBleedlessMelDBMean(contestSpectrogramMagnitude.spectrogramMagnitudeAlfa, contestSpectrogramMagnitude.spectrogramMagnitudeBeta, sr=contestSpectrogramMagnitude.sampleRateAlfa)
-	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeBleedlessMelDBMean', contestSpectrogramMagnitude.paths, contestSpectrogramMagnitude.sampleRateAlfa)
-
-@pytest.mark.parametrize('expectedContest', ['analyzeFullnessMelDBMean'], indirect=True)
-def test_analyzeFullnessMelDBMean(contestSpectrogramMagnitude: ContestSpectrogramMagnitude, expectedContest: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeFullnessMelDBMean(contestSpectrogramMagnitude.spectrogramMagnitudeAlfa, contestSpectrogramMagnitude.spectrogramMagnitudeBeta, sr=contestSpectrogramMagnitude.sampleRateAlfa)
-	assert_contest(actual, expectedContest, approx_rel, approx_abs, 'analyzeFullnessMelDBMean', contestSpectrogramMagnitude.paths, contestSpectrogramMagnitude.sampleRateAlfa)
+@pytest.mark.parametrize('analyzer', (analyzeBleedlessMelDBMean, analyzeFullnessMelDBMean))
+def test_contestSpectrogramMagnitude(analyzer: CallableFunction[..., float], pathFilenamesContest: tuple[Path, Path], spectrogramMagnitudeAlfa: SpectrogramMagnitude
+	, spectrogramMagnitudeBeta: SpectrogramMagnitude, expectedContest: float) -> None:
+	assert_approx(analyzer(spectrogramMagnitudeAlfa, spectrogramMagnitudeBeta, sr=sampleRateSpeakSoftly), expectedContest, 1e-6, 1e-12
+		, analyzer.__name__, pathFilenamesContest[0].name, pathFilenamesContest[1].name, sr=sampleRateSpeakSoftly)

@@ -1,44 +1,26 @@
+"""Expected values are the accepted recordings in `tests.dataSamples.expected.expectedWaveform`."""
 from __future__ import annotations
 
 from analyzeAudio.analyzeWaveform import (
 	analyzeRMSWaveform_dBMean, analyzeRMSWaveformMean, analyzeTempogramMean, analyzeTempoMean, analyzeZeroCrossingRateMean,
 	analyzeZeroCrossingsTotal)
-from tests.conftest import assert_approx
+from tests import assert_approx
 from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
-	from tests import WaveformAndData
+	from analyzeAudio import Audio
+	from hunterMakesPy import CallableFunction
+	from pathlib import Path
 
-@pytest.mark.parametrize('expectedAspect', ['analyzeRMSWaveformMean'], indirect=True)
-def test_analyzeRMSWaveformMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeRMSWaveformMean(waveformAndData.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeRMSWaveformMean', waveformAndData.pathFilename)
+@pytest.mark.parametrize('analyzer', (analyzeRMSWaveform_dBMean, analyzeRMSWaveformMean, analyzeZeroCrossingRateMean, analyzeZeroCrossingsTotal))
+def test_aspectWaveform(analyzer: CallableFunction[[Audio], float], pathFilename: Path, waveform: Audio, expectedAspect: float) -> None:
+	assert_approx(analyzer(waveform), expectedAspect, 1e-6, 1e-12, analyzer.__name__, pathFilename.name)
 
-@pytest.mark.parametrize('expectedAspect', ['analyzeRMSWaveform_dBMean'], indirect=True)
-def test_analyzeRMSWaveform_dBMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeRMSWaveform_dBMean(waveformAndData.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeRMSWaveform_dBMean', waveformAndData.pathFilename)
-
-@pytest.mark.parametrize('expectedAspect', ['analyzeTempogramMean'], indirect=True)
-def test_analyzeTempogramMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	approx_rel = 1e-4
-	if waveformAndData.pathFilename.name == 'ch2_44100_29s_LUFS23_10000Hz.wav':
-		approx_rel = 1e-3
-	actual = analyzeTempogramMean(waveformAndData.waveform, waveformAndData.sampleRate)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempogramMean', waveformAndData.pathFilename)
-
-@pytest.mark.parametrize('expectedAspect', ['analyzeTempoMean'], indirect=True)
-def test_analyzeTempoMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeTempoMean(waveformAndData.waveform, waveformAndData.sampleRate)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeTempoMean', waveformAndData.pathFilename)
-
-@pytest.mark.parametrize('expectedAspect', ['analyzeZeroCrossingRateMean'], indirect=True)
-def test_analyzeZeroCrossingRateMean(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeZeroCrossingRateMean(waveformAndData.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingRateMean', waveformAndData.pathFilename)
-
-@pytest.mark.parametrize('expectedAspect', ['analyzeZeroCrossingsTotal'], indirect=True)
-def test_analyzeZeroCrossingsTotal(waveformAndData: WaveformAndData, expectedAspect: float, approx_rel: float, approx_abs: float) -> None:
-	actual = analyzeZeroCrossingsTotal(waveformAndData.waveform)
-	assert_approx(actual, expectedAspect, approx_rel, approx_abs, 'analyzeZeroCrossingsTotal', waveformAndData.pathFilename)
+@pytest.mark.parametrize('analyzer, pytest_rel', (
+	pytest.param(analyzeTempogramMean, 1e-4, id='analyzeTempogramMean'),
+	pytest.param(analyzeTempoMean, 1e-6, id='analyzeTempoMean'),
+))
+def test_aspectWaveformSampleRate(analyzer: CallableFunction[[Audio, int], float], pytest_rel: float, pathFilename: Path, waveform: Audio, sampleRate: int, expectedAspect: float) -> None:
+	"""`analyzeTempogramMean` keeps the relative tolerance 1e-4 with which the maintainer accepted its recordings."""
+	assert_approx(analyzer(waveform, sampleRate), expectedAspect, pytest_rel, 1e-12, analyzer.__name__, pathFilename.name, sampleRate)

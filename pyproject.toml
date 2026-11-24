@@ -48,7 +48,26 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Information Analysis",
   "Typing :: Typed",
 ]
-dependencies = ["Z0Z_tools>=4.1.2", "auraloss", "hunterHearsPy>=1.4.1", "hunterMakesPy>=0.10.0", "librosa", "numpy", "scipy", "torch", "torch_l1_snr", "torch_log_wmse", "torchmetrics[audio]>=1.6.0", "tqdm"]
+dependencies = [
+  "Z0Z_tools>=4.1.2",
+  "auraloss",
+  "gammatone>=1.0.0; python_version >= '3.15'",
+  "hunterHearsPy>=1.4.1",
+  "hunterMakesPy>=0.10.0",
+  "librosa",
+  "numpy",
+  "pesq>=0.0.4; python_version >= '3.15'",
+  "pystoi>=0.4.0; python_version >= '3.15'",
+  "requests>=2.22.0; python_version >= '3.15'",
+  "scipy",
+  "torch",
+  "torch_l1_snr",
+  "torch_log_wmse>=1.0.0",
+  "torchaudio>=2.0.1",
+  "torchmetrics>=1.6.0; python_version >= '3.15'",
+  "torchmetrics[audio]>=1.6.0; python_version < '3.15'",
+  "tqdm",
+]
 
 [project.urls]
 Context7 = "https://context7.com/hunterhogan/analyzeaudio"
@@ -66,7 +85,7 @@ whatMetadata = "analyzeAudio:getListAvailableAudioMetadata"
 
 [dependency-groups]
 development = ["pytest-cov", "scipy-stubs", "types-tqdm", { include-group = "testing" }]
-testing = ["pytest", "pytest-xdist"]
+testing = ["pytest>=9.0", "pytest-xdist"]
 
 [build-system]
 requires = ["setuptools>=77.0.1"]
@@ -138,7 +157,11 @@ typeCheckingMode = "strict"
 
 [tool.pytest]
 addopts = ["--color=yes", "--tb=line", "-n 1"]
+empty_parameter_set_mark = "fail_at_collect"
+filterwarnings = ["error"]
 log_auto_indent = "On"
+minversion = "9.0"
+strict = true
 testpaths = ["tests"]
 
 # === DO_NOT_EDIT: path-sync hunterhogan ===

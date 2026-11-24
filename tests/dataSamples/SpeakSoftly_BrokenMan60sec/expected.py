@@ -1,3 +1,8 @@
+"""Accepted recordings of each contest, by contest name and the filenames of the reference and the comparand.
+
+Each value is what the named contest returned for the pair when the maintainer accepted it. Some tables also
+record pairs of WAV files, which no test reads.
+"""
 from __future__ import annotations
 
 expectedSpectrogram: dict[str, dict[tuple[str, str], float]] = {
