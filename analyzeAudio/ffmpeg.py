@@ -2,6 +2,7 @@
 """Install FFmpeg."""
 from __future__ import annotations
 
+from itertools import chain
 from operator import getitem
 from pathlib import Path
 import contextlib
@@ -42,7 +43,7 @@ def FFmpegGitHub() -> None:
 				with urllib.request.urlopen(url) as responseFFmpegReleaseArchive, pathFilename_xz.open('wb') as writeStreamBinary:
 					shutil.copyfileobj(responseFFmpegReleaseArchive, writeStreamBinary)
 				subprocess.run(['/usr/bin/tar', '-xf', str(pathFilename_xz), '-C', str(pathFFmpeg)], check=True)
-				pathFFmpegExecutables: Path = next(pathFFmpeg.glob('ffmpeg-*/bin'), next(pathFFmpeg.glob('ffmpeg-*-static')))
+				pathFFmpegExecutables: Path = next(chain(pathFFmpeg.glob('ffmpeg-*/bin'), pathFFmpeg.glob('ffmpeg-*-static')))
 				shutil.copy2(pathFFmpegExecutables / 'ffmpeg', pathFFmpeg / 'ffmpeg')
 				shutil.copy2(pathFFmpegExecutables / 'ffprobe', pathFFmpeg / 'ffprobe')
 				(pathFFmpeg / 'ffmpeg').chmod(0o755)
