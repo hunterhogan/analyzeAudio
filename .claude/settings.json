@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ \"$CLAUDE_CODE_REMOTE\" = \"true\" ] || exit 0; command -v uv >/dev/null 2>&1 || pip install --quiet uv; for tool in ruff ty pyrefly mypy isort pyupgrade flake8 tombi pycroscope; do uv tool install --quiet \"$tool\" || echo \"could not install $tool\" >&2; done; [ -n \"$CLAUDE_ENV_FILE\" ] && echo 'export PATH=\"$HOME/.local/bin:$PATH\"' >> \"$CLAUDE_ENV_FILE\"; exit 0",
+            "timeout": 300
+          }
+        ]
+      }
+    ]
+  }
+}
