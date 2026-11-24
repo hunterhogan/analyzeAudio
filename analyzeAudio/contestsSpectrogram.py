@@ -133,10 +133,16 @@ def analyzeBleedFullMelDB(
 			sys.stderr.write(message + '\n')
 		else:
 			warnings.warn(str(warningMessage.message), warningMessage.category, stacklevel=2)
-	spectrogramMagnitudeAlfa = librosa.amplitude_to_db(spectrogramMagnitudeAlfa, ref=1.0, top_db=top_db)  # pyright: ignore[reportUnknownMemberType]
-	spectrogramMagnitudeBeta = librosa.amplitude_to_db(spectrogramMagnitudeBeta, ref=1.0, top_db=top_db)  # pyright: ignore[reportUnknownMemberType]
+	spectrogramMagnitudeAlfa = _decibelsFlooredAtPeak(spectrogramMagnitudeAlfa, top_db)
+	spectrogramMagnitudeBeta = _decibelsFlooredAtPeak(spectrogramMagnitudeBeta, top_db)
 
 	return _bleedFullArrays(spectrogramMagnitudeAlfa, spectrogramMagnitudeBeta)
+
+def _decibelsFlooredAtPeak(spectrogramMagnitude: SpectrogramMagnitude, top_db: float | None) -> SpectrogramMagnitude:
+	spectrogramDecibels: SpectrogramMagnitude = librosa.amplitude_to_db(spectrogramMagnitude, ref=1.0, top_db=None)  # pyright: ignore[reportUnknownMemberType]
+	if top_db is not None:
+		numpy.maximum(spectrogramDecibels, spectrogramDecibels.max() - top_db, out=spectrogramDecibels)
+	return spectrogramDecibels
 
 def _bleedFullArrays(spectrogramAlfa: SpectrogramMagnitude, spectrogramBeta: SpectrogramMagnitude) -> BleedFullArray:
 	arrayDifferences = spectrogramBeta - spectrogramAlfa

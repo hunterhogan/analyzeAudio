@@ -32,6 +32,13 @@ def _unsqueezeTo3axes(tensorAudio: Tensor) -> Tensor:
 		tensorAudio = tensorAudio.unsqueeze(0)
 	return tensorAudio
 
+def _unsqueezeToStemAxes(tensorAudio: Tensor) -> Tensor:
+	if tensorAudio.ndim < 2:
+		tensorAudio = tensorAudio.unsqueeze(0)
+	if tensorAudio.ndim < 3:
+		tensorAudio = tensorAudio.unsqueeze(-2)
+	return _unsqueezeLT4AxesBy1(tensorAudio)
+
 def _takeMean(tensorLoss: Tensor) -> float:
 	return float(tensorLoss.mean().item())
 
@@ -119,12 +126,15 @@ def analyzeLogWMSE(
 	[2] Landschoot, C. `crlandsc/torch-log-wmse`.
 		https://github.com/crlandsc/torch-log-wmse
 	"""
-	tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture = map(_unsqueezeTo3axes, [tensorAudioAlfa, tensorAudioBeta, tensorAudioMixture])
+	tensorAudioMixture = _unsqueezeTo3axes(tensorAudioMixture)
 
 	dictionaryParameters: dict[str, Any] = {'return_as_loss': False, **keywordArguments}
-	aspect = torch_log_wmse.LogWMSE(audio_length=tensorAudioMixture.shape[-1] // sampleRate, sample_rate=sampleRate, **dictionaryParameters)
+	LogWMSE: type[torch_log_wmse.LogWMSE] = torch_log_wmse.LogWMSE
+	if dictionaryParameters.pop('return_as_loss'):
+		LogWMSE = torch_log_wmse.LogWMSELoss
+	aspect: torch_log_wmse.LogWMSE = LogWMSE(sample_rate=sampleRate, **dictionaryParameters)
 
-	return aspect(tensorAudioMixture, _unsqueezeLT4AxesBy1(tensorAudioBeta), _unsqueezeLT4AxesBy1(tensorAudioAlfa))
+	return aspect(tensorAudioMixture, _unsqueezeToStemAxes(tensorAudioBeta), _unsqueezeToStemAxes(tensorAudioAlfa))
 
 @registrationAudioContest('analyzeLogWMSE mean')
 def analyzeLogWMSEMean(
